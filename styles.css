@@ -1,0 +1,60 @@
+body {
+    /* 设置背景图 */
+    background-image: url('https://img.picui.cn/free/2025/05/03/6815db010a74d.jpg');
+    background-size: cover; /* 背景图覆盖整个页面 */
+    background-position: center; /* 背景图居中 */
+    background-repeat: no-repeat; /* 背景图不重复 */
+    font-family: 'Arial', sans-serif;
+    padding-top: 50px;
+    color: white; /* 设置文字颜色为白色，以便在深色背景上清晰可见 */
+}
+
+.container {
+    max-width: 600px;
+    margin: auto;
+    background: rgba(0, 0, 0, 0.7); /* 半透明黑色背景，让内容更突出 */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.search-container {
+    text-align: center;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #fff; /* 输入框背景为白色 */
+    color: #000; /* 输入框文字为黑色 */
+}
+
+.search-container select {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    margin-top: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #fff; /* 下拉框背景为白色 */
+    color: #000; /* 下拉框文字为黑色 */
+}
+
+.search-container button {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    margin-top: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.search-container button:hover {
+    background-color: #0056b3;
+}
