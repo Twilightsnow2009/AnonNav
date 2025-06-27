@@ -1,5 +1,5 @@
 # AnonNav
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![GitHub stars](https://img.shields.io/github/stars/Twilightsnow2009/AnonNav?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/Twilightsnow2009/AnonNav?style=social)
 
@@ -15,6 +15,27 @@ AnonNav 是一个简洁的导航搜索页面，旨在为用户提供便捷的搜
 
 ## 演示网址。
 演示网址: https://twilightsnow2009.github.io/AnonNav/
+
+## 搜索引擎提供
+必应搜索(屏蔽csdn) 
+https://cn.bing.com/search?q=%s -site:*.csdn.net
+
+央视搜索(可以搜索到免费的动画片和新闻)
+https://search.cctv.com/m/search.php?type=video&qtext=%s
+
+yandex搜索-俄罗斯本土搜索引擎(免人机身份验证)
+https://wap.yandex.com/search/touch/?text=%s&lr=20765
+
+百度搜索
+https://www.baidu.com/s?wd=%s 
+
+360搜索
+https://m.so.com/s?q=%s&src=msearch_next_input&sug_pos=&sug=&nlpv=&ssid=&srcg=home_next
+
+wikihow(互联网上最值得信赖的指南网站)
+https://zh.wikihow.com/wikiHowTo?search=666&Search=
+
+
 
 ## 技术栈
 - **HTML5**：用于构建页面结构。
