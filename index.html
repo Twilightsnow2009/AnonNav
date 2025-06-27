@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnonNav</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://img.picui.cn/free/2025/05/03/6815db010a74d.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: 'Arial', sans-serif;
+            padding-top: 50px;
+            color: white;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .search-container input, .search-container select {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            color: #000;
+            margin-top: 10px;
+        }
+        .search-container button {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            margin-top: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .search-container button:hover {
+            background-color: #0056b3;
+        }
+        .onion-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: white;
+            color: black;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        .onion-button:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <button class="onion-button" onclick="location.href='https://0.0.0.0/'">Tor</button>
+    <div class="container">
+        <h1 class="text-center mb-4">AnonNav</h1>
+        <div class="search-container">
+            <input type="text" id="search-input" class="form-control" placeholder="请输入搜索内容">
+            <select id="search-engine" class="form-select">
+                <option value="https://cn.bing.com/search?q=%s" selected>必应搜索</option>
+                <option value="https://github.com/search?q=%s">GitHub</option>
+                <option value="https://www.google.com/search?q=%s">Google</option>
+                <option value="https://duckduckgo.com/?q=%s">DuckDuckGo</option>
+                <option value="https://www.similarsites.com/site/%s">相似网站</option>
+            </select>
+            <button onclick="performSearch()" class="btn btn-primary mt-3">搜索</button>
+        </div>
+        <div class="custom-search-engine mt-4">
+            <h2 class="text-center mb-3">管理搜索引擎</h2>
+            <form id="custom-search-form">
+                <div class="mb-3">
+                    <label for="engine-name" class="form-label">搜索引擎名称</label>
+                    <input type="text" class="form-control" id="engine-name" placeholder="请输入搜索引擎名称" required>
+                </div>
+                <div class="mb-3">
+                    <label for="engine-url" class="form-label">搜索引擎链接</label>
+                    <input type="text" class="form-control" id="engine-url" placeholder="请输入搜索引擎链接（包含%s占位符）" required>
+                </div>
+                <button type="submit" class="btn btn-success">添加搜索引擎</button>
+            </form>
+            <button onclick="removeSearchEngine()" class="btn btn-danger mt-3">删除选中搜索引擎</button>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function performSearch() {
+            const query = document.getElementById('search-input').value;
+            const selectedEngine = document.getElementById('search-engine').value;
+            const searchUrl = selectedEngine.replace('%s', encodeURIComponent(query));
+            window.open(searchUrl, '_blank');
+        }
+        window.onload = function() {
+            const engines = JSON.parse(localStorage.getItem('customEngines') || '[]');
+            const selectElement = document.getElementById('search-engine');
+            engines.forEach(engine => {
+                const newOption = new Option(engine.name, engine.url);
+                selectElement.add(newOption);
+            });
+        };
+        document.getElementById('custom-search-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const engineName = document.getElementById('engine-name').value;
+            const engineUrl = document.getElementById('engine-url').value;
+            const selectElement = document.getElementById('search-engine');
+            const newOption = new Option(engineName, engineUrl);
+            selectElement.add(newOption);
+            let engines = JSON.parse(localStorage.getItem('customEngines') || '[]');
+            engines.push({ name: engineName, url: engineUrl });
+            localStorage.setItem('customEngines', JSON.stringify(engines));
+            document.getElementById('engine-name').value = '';
+            document.getElementById('engine-url').value = '';
+        });
+        function removeSearchEngine() {
+            const selectElement = document.getElementById('search-engine');
+            const selectedIndex = selectElement.selectedIndex;
+            if (selectedIndex !== -1) {
+                if (selectedIndex > 4) {
+                    if (confirm("确定要删除该搜索引擎吗？")) {
+                        selectElement.remove(selectedIndex);
+                        let engines = JSON.parse(localStorage.getItem('customEngines') || '[]');
+                        engines = engines.filter((_, index) => index !== selectedIndex - 5);
+                        localStorage.setItem('customEngines', JSON.stringify(engines));
+                    }
+                } else {
+                    alert("默认搜索引擎和菜单中的搜索引擎禁止删除");
+                }
+            }
+        }
+    </script>
+</body>
+  </html>
