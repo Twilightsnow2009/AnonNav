@@ -19,6 +19,8 @@ AnonNav 是一个简洁的导航搜索页面，旨在为用户提供便捷的搜
 ## 搜索引擎提供
 必应搜索(屏蔽csdn) 
 https://cn.bing.com/search?q=%s -site:*.csdn.net
+(如果需要屏蔽csdn建议搭配CSDN Search Result Blocker一起使用
+仓库:https://github.com/Twilightsnow2009/CSDN-Search-Result-Blocker)
 
 央视搜索(可以搜索到免费的动画片和新闻)
 https://search.cctv.com/m/search.php?type=video&qtext=%s
