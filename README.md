@@ -39,7 +39,7 @@ https://www.baidu.com/s?wd=%s
 https://m.so.com/s?q=%s&src=msearch_next_input&sug_pos=&sug=&nlpv=&ssid=&srcg=home_next
 
 wikihow(互联网上最值得信赖的指南网站)
-https://zh.wikihow.com/wikiHowTo?search=666&Search=
+https://zh.wikihow.com/wikiHowTo?search=%s&Search=
 
 
 
