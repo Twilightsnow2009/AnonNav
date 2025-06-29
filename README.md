@@ -25,6 +25,8 @@ https://cn.bing.com/search?q=%s -site:*.csdn.net
 
 仓库:https://github.com/Twilightsnow2009/CSDN-Search-Result-Blocker
 
+温馨提示:仅提供搜索语法示例，用户需自行决定是否使用。屏蔽特定网站可能涉及法律风险，请确保你的行为符合相关法律法规。如使用，即用户自愿承担相关风险。
+
 ### 其他搜索引擎提供
 央视搜索(可以搜索到免费的动画片和新闻)
 https://search.cctv.com/m/search.php?type=video&qtext=%s
