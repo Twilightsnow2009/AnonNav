@@ -43,7 +43,8 @@ https://m.so.com/s?q=%s&src=msearch_next_input&sug_pos=&sug=&nlpv=&ssid=&srcg=ho
 wikihow(互联网上最值得信赖的指南网站)
 https://zh.wikihow.com/wikiHowTo?search=%s&Search=
 
-
+shodan搜索
+https://www.shodan.io/search?query=%s
 
 ## 技术栈
 - **HTML5**：用于构建页面结构。
