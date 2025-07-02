@@ -28,20 +28,21 @@ https://cn.bing.com/search?q=%s -site:*.csdn.net
 温馨提示:仅提供搜索语法示例，用户需自行决定是否使用。屏蔽特定网站可能涉及法律风险，请确保你的行为符合相关法律法规。如使用，即用户自愿承担相关风险。
 
 ### 其他搜索引擎提供
- **添加链接时，不要忘了包含占位符**
-央视搜索(可以搜索到免费的动画片和新闻)
+ **温馨提示:自行添加链接时，不要忘了包含占位符**
+ 
+央视搜索(可以搜索到免费的动画片和新闻):
 https://search.cctv.com/m/search.php?type=video&qtext=%s
 
-yandex搜索-俄罗斯本土搜索引擎(免人机身份验证)
+yandex搜索-俄罗斯本土搜索引擎(免人机身份验证):
 https://wap.yandex.com/search/touch/?text=%s
 
-360搜索
+360搜索:
 https://m.so.com/s?q=%s
 
-wikihow(全球领先的指南类网站)
+wikihow(全球领先的指南类网站):
 https://zh.wikihow.com/wikiHowTo?search=%s
 
-shodan搜索
+shodan搜索:
 https://www.shodan.io/search?query=%s
 
 ## 技术栈
