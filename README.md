@@ -16,35 +16,16 @@ AnonNav 是一个简洁的导航搜索页面，旨在为用户提供便捷的搜
 ## 演示网址。
 演示网址: https://twilightsnow2009.github.io/AnonNav/
 
-## 搜索引擎提供
-### 屏蔽csdn
-必应搜索(屏蔽csdn) 
-https://cn.bing.com/search?q=%s -site:*.csdn.net
-
-如果需要屏蔽csdn建议搭配CSDN Search Result Blocker一起使用
-
-仓库:https://github.com/Twilightsnow2009/CSDN-Search-Result-Blocker
-
-温馨提示:仅提供搜索语法示例，用户需自行决定是否使用。屏蔽特定网站可能涉及法律风险，请确保你的行为符合相关法律法规。如使用，即用户自愿承担相关风险。
-
-### 其他搜索引擎提供
- **温馨提示:自行添加链接时，不要忘了包含占位符(%s)**
+## 其他搜索引擎提供
+ **如需添加链接，可查看“更多.md”文件**
  
-央视搜索(可以搜索到免费的动画片和新闻):
-https://search.cctv.com/m/search.php?type=video&qtext=%s
+链接:https://github.com/Twilightsnow2009/AnonNav/blob/main/%E6%9B%B4%E5%A4%9A.md
+ 
+ **如果是从“更多.md”文件(上面的蓝色链接)中复制的，则直接粘贴即可**，我已经帮你们全部添加上去了
+ 
+ **温馨提示:自行添加链接时，不要忘了包含占位符(%s)**
 
-yandex搜索-俄罗斯本土搜索引擎(免人机身份验证):
-https://wap.yandex.com/search/touch/?text=%s
-
-360搜索:
-https://m.so.com/s?q=%s
-
-wikihow(全球领先的指南类网站):
-https://zh.wikihow.com/wikiHowTo?search=%s
-
-shodan搜索:
-https://www.shodan.io/search?query=%s
-
+ 
 ## 技术栈
 - **HTML5**：用于构建页面结构。
 - **CSS3**：结合 Bootstrap 框架和自定义样式，实现页面布局和视觉效果。
