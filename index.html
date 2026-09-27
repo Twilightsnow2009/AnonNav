@@ -6,7 +6,7 @@
 <title>Search</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
-:root {
+:root{
   --bg:#ffffff;
   --text:#222222;
   --text-soft:#666666;
@@ -17,19 +17,6 @@
   --btn-bg:#222;
   --btn-text:#fff;
   --btn-danger:#bb3333;
-}
-@media (prefers-color-scheme: dark){
-  :root.theme-auto{
-    --bg:#121212;
-    --text:#eeeeee;
-    --text-soft:#bbbbbb;
-    --text-light:#777777;
-    --border:#333333;
-    --card-bg:#1e1e1e;
-    --card-border:#333;
-    --btn-bg:#383838;
-    --btn-text:#fff;
-  }
 }
 body.theme-dark{
   --bg:#121212;
@@ -112,7 +99,28 @@ button:hover{opacity:0.85;}
 }
 .tip a{color:var(--text);cursor:pointer;margin:0 4px;}
 
-/*弹窗样式，模仿截图圆角卡片*/
+/*右上角主题切换按钮*/
+.theme-toggle{
+  position:fixed;
+  top:20px;
+  right:20px;
+  width:44px;
+  height:44px;
+  padding:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.15rem;
+  line-height:1;
+  border-radius:50%;
+  background:var(--card-bg);
+  color:var(--text);
+  border:1px solid var(--border);
+  z-index:50;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+/*弹窗样式*/
 .modal{
   position:fixed;
   inset:0;
@@ -157,29 +165,25 @@ button:hover{opacity:0.85;}
 .engine-name{
   font-size:1.1rem;
 }
-.engine-desc{
-  color:var(--text-soft);
-  margin-top:4px;
-  padding-left:31px;
-  display:none;
-}
-.engine-desc.show{display:block;}
 .engine-edit-area{
   padding-left:31px;
   margin-top:8px;
   display:none;
-  gap:6px;
+  gap:8px;
   flex-direction:column;
 }
 .engine-edit-area.show{display:flex;}
 .engine-edit-area input{
+  width:100%;
   padding:7px 9px;
   border:1px solid var(--border);
   border-radius:7px;
   font-size:0.9rem;
   background:var(--bg);
   color:var(--text);
+  outline:none;
 }
+.engine-edit-area input:focus{border-color:#555;}
 
 /*底部按钮*/
 .modal-footer{
@@ -198,11 +202,10 @@ button:hover{opacity:0.85;}
   padding:8px 16px;
 }
 .del-btn{
-  margin-left:31px;
-  margin-top:8px;
   background:var(--btn-danger);
   padding:6px 12px;
   font-size:0.85rem;
+  align-self:flex-start;
 }
 /*页脚*/
 .footer-text{
@@ -214,26 +217,12 @@ button:hover{opacity:0.85;}
   font-size:0.85rem;
   color:var(--text-light);
 }
-/*设置弹窗样式*/
-.setting-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:16px;
-}
-.setting-row label{
-  font-size:1rem;
-}
-.setting-row select{
-  padding:6px 10px;
-  border-radius:8px;
-  border:1px solid var(--border);
-  background:var(--bg);
-  color:var(--text);
-}
 </style>
 </head>
-<body class="theme-auto">
+<body>
+<!-- 右上角主题切换按钮 -->
+<button id="themeToggle" class="theme-toggle" aria-label="切换主题" title="切换主题">🌙</button>
+
 <div class="container">
   <!-- 实时日期时间 -->
   <div class="time-block">
@@ -242,215 +231,69 @@ button:hover{opacity:0.85;}
   </div>
   <h1>Search</h1>
   <div class="search-wrap">
-    <input id="query" type="text" placeholder="输入搜索词…">
-    <button onclick="search()" data-i18n="searchBtn">搜索</button>
+    <input id="query" type="text" placeholder="输入搜索词、网址或 IP…" autocomplete="off">
+    <button onclick="search()">搜索</button>
   </div>
   <div class="tip">
-    <span data-i18n="currentEngine">当前引擎</span>：<span id="engineName"></span>
-    &nbsp;<a onclick="showModal()" data-i18n="changeEngine">更改</a>
-    &nbsp;<a onclick="openSettings()" data-i18n="settings">设置</a>
+    当前引擎：<span id="engineName"></span>
+    &nbsp;<a onclick="showModal()">更改</a>
   </div>
 </div>
 
 <!-- 页脚文字 -->
-<div class="footer-text" data-i18n="footer">本站点托管于GitHub Pages</div>
+<div class="footer-text">本站点托管于GitHub Pages</div>
 
 <!-- 搜索引擎弹窗 -->
 <div id="modal" class="modal hidden">
   <div class="modal-box">
-    <h3 data-i18n="selectEngine">请选择默认搜索引擎</h3>
+    <h3>请选择默认搜索引擎</h3>
     <div id="engineList"></div>
     <div class="add-btn-wrap">
-      <button onclick="addBlankEngine()" data-i18n="addEngine">+ 添加自定义搜索引擎</button>
+      <button onclick="addBlankEngine()">+ 添加自定义搜索引擎</button>
     </div>
     <div class="modal-footer">
-      <button onclick="saveEngines()" data-i18n="ok">确定</button>
-    </div>
-  </div>
-</div>
-
-<!-- 设置弹窗（语言+主题） -->
-<div id="settingModal" class="modal hidden">
-  <div class="modal-box">
-    <h3 data-i18n="siteSettings">网站设置</h3>
-    <div class="setting-row">
-      <label data-i18n="langLabel">语言</label>
-      <select id="langSelect">
-        <option value="auto" data-i18n="auto">跟随系统</option>
-        <option value="zh">中文</option>
-        <option value="en">English</option>
-      </select>
-    </div>
-    <div class="setting-row">
-      <label data-i18n="themeLabel">主题</label>
-      <select id="themeSelect">
-        <option value="auto" data-i18n="auto">跟随系统</option>
-        <option value="light" data-i18n="light">浅色</option>
-        <option value="dark" data-i18n="dark">深色</option>
-      </select>
-    </div>
-    <div class="modal-footer">
-      <button onclick="saveSettings()" data-i18n="ok">确定</button>
+      <button onclick="saveEngines()">确定</button>
     </div>
   </div>
 </div>
 
 <script>
-// 双语文本库
-const i18n = {
-  zh:{
-    searchBtn:"搜索",
-    currentEngine:"当前引擎",
-    changeEngine:"更改",
-    settings:"设置",
-    footer:"本站点托管于GitHub Pages",
-    selectEngine:"请选择默认搜索引擎",
-    addEngine:"+ 添加自定义搜索引擎",
-    ok:"确定",
-    siteSettings:"网站设置",
-    langLabel:"语言",
-    themeLabel:"主题",
-    auto:"跟随系统",
-    light:"浅色",
-    dark:"深色",
-    alertMinEngine:"至少保留一个搜索引擎！",
-    searchPlaceholder:"输入搜索词…",
-    engineDescBaidu:"国内广泛，中文资源丰富",
-    engineDescBing:"界面简洁，英文/国际资讯有优势",
-    engineDesc360:"依托安全技术，结果精准",
-    engineDescSogou:"中文搜索佳，可搜微信文章"
-  },
-  en:{
-    searchBtn:"Search",
-    currentEngine:"Current engine",
-    changeEngine:"Change",
-    settings:"Settings",
-    footer:"Hosted on GitHub Pages",
-    selectEngine:"Select default search engine",
-    addEngine:"+ Add custom engine",
-    ok:"OK",
-    siteSettings:"Site Settings",
-    langLabel:"Language",
-    themeLabel:"Theme",
-    auto:"System default",
-    light:"Light",
-    dark:"Dark",
-    alertMinEngine:"At least one engine must remain!",
-    searchPlaceholder:"Search...",
-    engineDescBaidu:"Widely used in China, rich Chinese resources",
-    engineDescBing:"Clean UI, good for English & global info",
-    engineDesc360:"Safe search with accurate results",
-    engineDescSogou:"Good Chinese search, WeChat articles"
-  }
-};
-
-//内置4套引擎，附带描述
+// 内置4套引擎（只有名称和URL）
 const defaultEngines = [
-  {
-    name:"百度",
-    descKey:"engineDescBaidu",
-    url:"https://www.baidu.com/s?wd=%s"
-  },
-  {
-    name:"Bing",
-    descKey:"engineDescBing",
-    url:"https://cn.bing.com/search?q=%s"
-  },
-  {
-    name:"360搜索",
-    descKey:"engineDesc360",
-    url:"https://www.so.com/s?q=%s"
-  },
-  {
-    name:"搜狗搜索",
-    descKey:"engineDescSogou",
-    url:"https://www.sogou.com/web?query=%s"
-  }
+  { name:"百度",     url:"https://www.baidu.com/s?wd=%s" },
+  { name:"Bing",     url:"https://cn.bing.com/search?q=%s" },
+  { name:"360搜索",  url:"https://www.so.com/s?q=%s" },
+  { name:"搜狗搜索", url:"https://www.sogou.com/web?query=%s" }
 ];
 
 let engineList = [];
 let selectedIndex = 0;
 const STORAGE_ENGINES = "search_engine_list";
-const STORAGE_SELECT = "search_selected_idx";
-const STORAGE_LANG = "search_lang";
-const STORAGE_THEME = "search_theme";
+const STORAGE_SELECT  = "search_selected_idx";
+const STORAGE_THEME   = "search_theme";
 const modal = document.getElementById('modal');
-const settingModal = document.getElementById('settingModal');
 const queryInput = document.getElementById('query');
 const MAGIC_CODE = "20090927";
 const MAGIC_URL = "https://space.bilibili.com/3493294795393244";
-let currentLang = "zh";
-let currentTheme = "auto";
-
-// ===== 国际化渲染 =====
-function applyI18n(){
-  const dict = i18n[currentLang];
-  document.querySelectorAll('[data-i18n]').forEach(el=>{
-    const k = el.getAttribute("data-i18n");
-    el.innerText = dict[k];
-  })
-  queryInput.placeholder = dict.searchPlaceholder;
-}
-function getBrowserLang(){
-  const l = navigator.language || navigator.userLanguage;
-  if(l.startsWith("zh")) return "zh";
-  return "en";
-}
-function loadLang(){
-  const saved = localStorage.getItem(STORAGE_LANG);
-  if(saved && saved !== "auto"){
-    currentLang = saved;
-  }else{
-    currentLang = getBrowserLang();
-  }
-  document.getElementById("langSelect").value = localStorage.getItem(STORAGE_LANG) || "auto";
-  applyI18n();
-}
 
 // ===== 主题系统 =====
-function applyTheme(){
-  const sel = document.getElementById("themeSelect").value;
-  currentTheme = sel;
-  document.body.className = "";
-  if(sel === "auto"){
-    document.body.classList.add("theme-auto");
-  }else if(sel === "light"){
-    document.body.classList.remove("theme-auto");
-  }else{
-    document.body.classList.add("theme-dark");
-  }
+function setTheme(theme){
+  document.body.classList.toggle('theme-dark', theme === 'dark');
+  document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem(STORAGE_THEME, theme);
 }
-function loadTheme(){
-  const saved = localStorage.getItem(STORAGE_THEME) || "auto";
-  document.getElementById("themeSelect").value = saved;
-  applyTheme();
-  //监听系统主题变化（自动模式生效）
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{
-    if(currentTheme === "auto") applyTheme();
-  })
+function initTheme(){
+  const saved = localStorage.getItem(STORAGE_THEME);
+  const initial = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  setTheme(initial);
 }
-
-//设置弹窗
-function openSettings(){
-  settingModal.classList.remove("hidden");
-}
-function saveSettings(){
-  const langSel = document.getElementById("langSelect").value;
-  const themeSel = document.getElementById("themeSelect").value;
-  localStorage.setItem(STORAGE_LANG, langSel);
-  localStorage.setItem(STORAGE_THEME, themeSel);
-  if(langSel !== "auto") currentLang = langSel;
-  else currentLang = getBrowserLang();
-  applyI18n();
-  currentTheme = themeSel;
-  applyTheme();
-  settingModal.classList.add("hidden");
-}
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  setTheme(document.body.classList.contains('theme-dark') ? 'light' : 'dark');
+});
 
 // 时间更新函数
 function updateTime() {
   const now = new Date();
-  console.log(now.toString());
   const year = now.getFullYear();
   const month = String(now.getMonth()+1).padStart(2,'0');
   const day = String(now.getDate()).padStart(2,'0');
@@ -458,11 +301,11 @@ function updateTime() {
   let hours = now.getHours();
   const minute = String(now.getMinutes()).padStart(2,'0');
   let ampm = "AM";
-  if(hours >=12){
+  if(hours >= 12){
     ampm = "PM";
-    if(hours>12) hours -=12;
+    if(hours > 12) hours -= 12;
   }
-  if(hours === 0) hours =12;
+  if(hours === 0) hours = 12;
 
   document.getElementById('timeDate').innerText = `${year}年${month}月${day}日`;
   document.getElementById('timeAmpm').innerText = `${ampm} ${hours}点${minute}分`;
@@ -470,103 +313,123 @@ function updateTime() {
 updateTime();
 setInterval(updateTime, 1000);
 
-//加载本地存储
+// 加载本地存储
 function loadData(){
   const savedList = localStorage.getItem(STORAGE_ENGINES);
   const savedSel = localStorage.getItem(STORAGE_SELECT);
   if(savedList){
-    engineList = JSON.parse(savedList);
+    try{
+      engineList = JSON.parse(savedList).map(e => ({ name:e.name, url:e.url }));
+    }catch(err){
+      engineList = JSON.parse(JSON.stringify(defaultEngines));
+    }
   }else{
+    engineList = JSON.parse(JSON.stringify(defaultEngines));
+  }
+  if(!Array.isArray(engineList) || engineList.length === 0){
     engineList = JSON.parse(JSON.stringify(defaultEngines));
   }
   if(savedSel !== null){
     selectedIndex = Number(savedSel);
-    if(selectedIndex >= engineList.length) selectedIndex = 0;
+    if(!(selectedIndex >= 0 && selectedIndex < engineList.length)) selectedIndex = 0;
   }else{
-    selectedIndex = 0; //默认百度
+    selectedIndex = 0;
   }
   updateEngineText();
 }
 
-//渲染列表
+// 简单 HTML 转义
+function esc(str){
+  return String(str == null ? '' : str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+// 渲染列表（只保留名称 + URL，全部折叠）
 function renderEngineList(){
-  const dict = i18n[currentLang];
   const wrapper = document.getElementById('engineList');
   wrapper.innerHTML = '';
-  engineList.forEach((item,idx)=>{
-    const descText = item.descKey ? dict[item.descKey] : item.desc;
+  engineList.forEach((item, idx)=>{
     const div = document.createElement('div');
     div.className = 'engine-item';
     div.innerHTML = `
-      <div class="engine-main" onclick="toggleDesc(${idx})">
+      <div class="engine-main" onclick="toggleEdit(${idx})">
         <input type="radio" name="eng" value="${idx}" ${idx===selectedIndex?'checked':''}>
-        <div>
-          <div class="engine-name">${item.name}</div>
-        </div>
+        <div class="engine-name">${esc(item.name)}</div>
       </div>
-      <div class="engine-desc" id="desc-${idx}">${descText}</div>
       <div class="engine-edit-area" id="edit-${idx}">
-        <input placeholder="${dict.searchPlaceholder}" value="${item.name}" class="inp-name">
-        <input placeholder="Description" value="${descText}" class="inp-desc">
-        <input placeholder="URL with %s" value="${item.url}" class="inp-url">
+        <input placeholder="名称" value="${esc(item.name)}" class="inp-name">
+        <input placeholder="URL（用 %s 代表关键词）" value="${esc(item.url)}" class="inp-url">
+        <button class="del-btn" onclick="delEngine(${idx})">删除</button>
       </div>
-      <button class="del-btn" onclick="delEngine(${idx})">${dict.ok==='OK'?'Delete':'删除'}</button>
     `;
     wrapper.appendChild(div);
-  })
+  });
 }
 
-//切换描述和编辑区域展开/收起
-function toggleDesc(idx){
-  const descEl = document.getElementById(`desc-${idx}`);
+// 点击展开/收起：一次只展开一个，点另一个自动折叠之前的
+function toggleEdit(idx){
   const editEl = document.getElementById(`edit-${idx}`);
-  descEl.classList.toggle('show');
-  editEl.classList.toggle('show');
+  const wasOpen = editEl.classList.contains('show');
+
+  // 先全部折叠
+  document.querySelectorAll('.engine-edit-area').forEach(el=>el.classList.remove('show'));
+
+  // 选中该引擎
+  const radio = document.querySelector(`input[name="eng"][value="${idx}"]`);
+  if(radio) radio.checked = true;
+
+  // 如果之前是折叠状态，则展开
+  if(!wasOpen) editEl.classList.add('show');
 }
 
-//新增空白自定义引擎
+// 新增空白自定义引擎并自动展开
 function addBlankEngine(){
   engineList.push({
     name:"New Engine",
-    desc:"Custom search engine",
     url:"https://example.com?q=%s"
   });
   renderEngineList();
+  const lastIdx = engineList.length - 1;
+  const editEl = document.getElementById(`edit-${lastIdx}`);
+  if(editEl) editEl.classList.add('show');
 }
 
-//删除引擎，至少保留一条
+// 删除引擎，至少保留一条
 function delEngine(idx){
-  const dict = i18n[currentLang];
-  if(engineList.length <=1){
-    alert(dict.alertMinEngine);
+  if(engineList.length <= 1){
+    alert("至少保留一个搜索引擎！");
     return;
   }
   engineList.splice(idx,1);
   if(selectedIndex === idx){
     selectedIndex = 0;
-  }else if(selectedIndex>idx){
-    selectedIndex -=1;
+  }else if(selectedIndex > idx){
+    selectedIndex -= 1;
   }
   renderEngineList();
 }
 
-//保存：读取所有输入框的值，覆盖engineList
+// 保存：读取所有输入框的值，覆盖 engineList
 function saveEngines(){
   const items = document.querySelectorAll('.engine-item');
-  engineList = [];
+  const newList = [];
   items.forEach(el => {
     const name = el.querySelector('.inp-name').value.trim();
-    const desc = el.querySelector('.inp-desc').value.trim();
-    const url = el.querySelector('.inp-url').value.trim();
+    const url  = el.querySelector('.inp-url').value.trim();
     if(name && url){
-      engineList.push({name, desc, url});
+      newList.push({name, url});
     }
   });
+  if(newList.length === 0) return;
+  engineList = newList;
+
   const sel = document.querySelector('input[name="eng"]:checked');
   if(sel) selectedIndex = Number(sel.value);
+  if(!(selectedIndex >= 0 && selectedIndex < engineList.length)) selectedIndex = 0;
 
-  localStorage.setItem(STORAGE_ENGINES,JSON.stringify(engineList));
-  localStorage.setItem(STORAGE_SELECT,selectedIndex);
+  localStorage.setItem(STORAGE_ENGINES, JSON.stringify(engineList));
+  localStorage.setItem(STORAGE_SELECT, selectedIndex);
   modal.classList.add('hidden');
   updateEngineText();
 }
@@ -577,34 +440,74 @@ function showModal(){
 }
 
 function updateEngineText(){
-  document.getElementById('engineName').textContent = engineList[selectedIndex].name;
+  const engine = engineList[selectedIndex];
+  document.getElementById('engineName').textContent = engine ? engine.name : '';
 }
 
-//搜索【加入神秘代码判断】
+// ===== 智能识别链接 / 域名 / IP =====
+function detectDirectUrl(input){
+  const s = input.trim();
+  if(!s) return null;
+
+  // 1. 完整协议链接
+  if(/^(https?|ftps?|file):\/\/.+/i.test(s)) return s;
+
+  // 2. localhost（可带端口/路径）
+  if(/^localhost(:\d+)?([\/?#].*)?$/i.test(s)) return 'http://' + s;
+
+  // 3. IPv4（可带端口/路径）
+  const ipMatch = s.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(:\d+)?([\/?#].*)?$/);
+  if(ipMatch){
+    const ok = [ipMatch[1],ipMatch[2],ipMatch[3],ipMatch[4]]
+      .every(p => Number(p) <= 255);
+    if(ok) return 'http://' + s;
+  }
+
+  // 4. 域名（可带端口/路径，支持中文域名）
+  const domainRe = /^(([a-z0-9\u4e00-\u9fa5]([a-z0-9\u4e00-\u9fa5-]*[a-z0-9\u4e00-\u9fa5])?\.)+[a-z\u4e00-\u9fa5]{2,})(:\d+)?([\/?#].*)?$/i;
+  if(domainRe.test(s)) return 'http://' + s;
+
+  return null;
+}
+
+// 搜索
 function search(){
   const kw = queryInput.value.trim();
   if(!kw) return;
 
-  // 彩蛋判断
+  // 彩蛋
   if(kw === MAGIC_CODE){
-    localStorage.clear(); //清空全部本地存储
+    localStorage.clear();
     window.location.href = MAGIC_URL;
     return;
   }
 
+  // 优先判断是否为链接 / 域名 / IP
+  const directUrl = detectDirectUrl(kw);
+  if(directUrl){
+    window.location.href = directUrl;
+    return;
+  }
+
+  // 否则用当前引擎搜索
   const engine = engineList[selectedIndex];
+  if(!engine) return;
   const target = engine.url.replace('%s', encodeURIComponent(kw));
   window.location.href = target;
 }
 
-//回车搜索
+// 回车搜索
 queryInput.addEventListener('keydown', e=>{
   if(e.key === 'Enter') search();
-})
+});
 
-//初始化
-loadLang();
-loadTheme();
+// 点击遮罩关闭弹窗
+modal.addEventListener('click', e=>{
+  if(e.target === modal) modal.classList.add('hidden');
+});
+
+// 初始化
+initTheme();
 loadData();
 </script>
 </body>
