@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://twilightsnow2009.github.io/AnonNav/sitemap.xml
