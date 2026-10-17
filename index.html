@@ -39,69 +39,77 @@ body{
   background:var(--bg);
   color:var(--text);
   transition: color 0.3s;
-  background-size:cover;
-  background-position:center center;
-  background-attachment:fixed;
-  background-repeat:no-repeat;
 }
 
-/* ==============================================
-   有壁纸时：借鉴倒计时界面的深蓝渐变遮罩 + 毛玻璃白字
-   ============================================== */
+/* ============ 壁纸层 ============ */
+#wallpaperLayer{
+  position:fixed;
+  inset:0;
+  z-index:0;              /* 修复：从 -1 改成 0 */
+  display:none;
+  pointer-events:none;
+}
+#wallpaperLayer.active{ display:block; }
+#wallpaperImg{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center center;
+}
+#wallpaperOverlay{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(135deg, rgba(15, 28, 48, 0.55), rgba(35, 55, 85, 0.45));
+}
+
 body.has-wallpaper{
-  background:
-    linear-gradient(135deg, rgba(15, 28, 48, 0.55), rgba(35, 55, 85, 0.45)),
-    var(--wall-image, none) center center / cover no-repeat fixed;
-  color: #ffffff;
-  --text: #ffffff;
-  --text-soft: rgba(255, 255, 255, 0.82);
-  --text-light: rgba(255, 255, 255, 0.65);
-  --border: rgba(255, 255, 255, 0.3);
-  --bg: rgba(0, 0, 0, 0.28);
-  --btn-bg: rgba(0, 0, 0, 0.35);
-  --btn-text: #ffffff;
-  --card-bg: #1e1e1e;
-  --card-border: rgba(255, 255, 255, 0.15);
+  color:#ffffff;
+  --text:#ffffff;
+  --text-soft:rgba(255,255,255,0.82);
+  --text-light:rgba(255,255,255,0.65);
+  --border:rgba(255,255,255,0.3);
+  --bg:rgba(0,0,0,0.28);
+  --btn-bg:rgba(0,0,0,0.35);
+  --btn-text:#ffffff;
+  --card-bg:#1e1e1e;
+  --card-border:rgba(255,255,255,0.15);
 }
-
 body.has-wallpaper .modal-box{
-  --bg: #2a2a2a;
-  --border: #444;
-  --text: #eeeeee;
-  --text-soft: #bbbbbb;
-  --text-light: #777777;
-  --btn-bg: #383838;
-  --btn-text: #fff;
-  --card-bg: #1e1e1e;
-  --card-border: #333;
+  --bg:#2a2a2a;
+  --border:#444;
+  --text:#eeeeee;
+  --text-soft:#bbbbbb;
+  --text-light:#777777;
+  --btn-bg:#383838;
+  --btn-text:#fff;
+  --card-bg:#1e1e1e;
+  --card-border:#333;
 }
-
 body.has-wallpaper #query,
 body.has-wallpaper .search-wrap button,
 body.has-wallpaper .theme-toggle{
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
 }
-body.has-wallpaper #query::placeholder{
-  color: rgba(255, 255, 255, 0.55);
-}
-body.has-wallpaper #query:focus{
-  border-color: rgba(255, 255, 255, 0.6);
-}
+body.has-wallpaper #query::placeholder{ color:rgba(255,255,255,0.55); }
+body.has-wallpaper #query:focus{ border-color:rgba(255,255,255,0.6); }
 body.has-wallpaper .theme-toggle{
-  background: rgba(0, 0, 0, 0.35);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.25);
+  background:rgba(0,0,0,0.35);
+  color:#ffffff;
+  border-color:rgba(255,255,255,0.25);
 }
 body.has-wallpaper .search-wrap button{
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border:1px solid rgba(255,255,255,0.25);
 }
 
-/* ================ 以下为原有样式 ================ */
+/* ============ 主内容 ============ */
 .container{
   width:92%;
   max-width:580px;
   text-align:center;
+  position:relative;   /* 修复：提升到壁纸层之上 */
+  z-index:1;
 }
 .time-block{ margin-bottom:24px; }
 .time-date{
@@ -260,6 +268,7 @@ button:hover{ opacity:0.85; }
   text-align:center;
   font-size:0.85rem;
   color:var(--text-light);
+  z-index:1;         /* 修复：提升到壁纸层之上 */
 }
 
 #wallToggle{ right:76px; }
@@ -290,6 +299,13 @@ button:hover{ opacity:0.85; }
 </style>
 </head>
 <body>
+
+<!-- 壁纸层：img 强行嵌入 -->
+<div id="wallpaperLayer" aria-hidden="true">
+  <img id="wallpaperImg" alt="">
+  <div id="wallpaperOverlay"></div>
+</div>
+
 <button id="themeToggle" class="theme-toggle" aria-label="切换主题" title="切换主题">🌙</button>
 <button id="wallToggle" class="theme-toggle" aria-label="壁纸设置" title="壁纸设置">🖼️</button>
 
@@ -332,9 +348,8 @@ button:hover{ opacity:0.85; }
       <input id="wallValue" type="text" placeholder="图片直链，或随机壁纸 API" autocomplete="off">
     </div>
     <div class="wall-hint">
-      · 填图片直链：每次打开显示同一张；<br>
-      · 填随机壁纸 API：自动解析出图片地址，每次打开换一张；<br>
-      · 两种地址不用区分，填进去自动识别；<br>
+      · 填图片直链：每次打开重新加载图片；<br>
+      · 填随机壁纸 API：自动解析 JSON 里的图片地址；<br>
       · 留空则恢复纯色背景。
     </div>
     <div class="modal-footer">
@@ -345,7 +360,40 @@ button:hover{ opacity:0.85; }
 </div>
 
 <script>
-// ============ 搜索引擎 ============
+/* ============ 0. 安全存储封装 ============ */
+const Store = {
+  get(k, def = ''){
+    try{
+      const v = localStorage.getItem(k);
+      return v === null ? def : v;
+    }catch(e){ return def; }
+  },
+  getJSON(k, def){
+    try{
+      const v = localStorage.getItem(k);
+      return v === null ? def : JSON.parse(v);
+    }catch(e){ return def; }
+  },
+  set(k, v){
+    try{ localStorage.setItem(k, String(v)); }
+    catch(e){ console.warn('[存储] 写入失败:', k, e); }
+  },
+  setJSON(k, v){
+    try{ localStorage.setItem(k, JSON.stringify(v)); }
+    catch(e){ console.warn('[存储] 写入失败:', k, e); }
+  },
+  remove(k){
+    try{ localStorage.removeItem(k); }catch(e){}
+  }
+};
+
+const STORAGE_ENGINES = 'search_engine_list';
+const STORAGE_SELECT  = 'search_selected_idx';
+const STORAGE_THEME   = 'search_theme';
+const STORAGE_WALL_VALUE = 'search_wall_value';
+const STORAGE_WALL_CACHE = 'search_wall_cache';
+
+/* ============ 1. 搜索引擎 ============ */
 const defaultEngines = [
   { name:"百度",     url:"https://www.baidu.com/s?wd=%s" },
   { name:"Bing",     url:"https://cn.bing.com/search?q=%s" },
@@ -355,70 +403,26 @@ const defaultEngines = [
 
 let engineList = [];
 let selectedIndex = 0;
-const STORAGE_ENGINES = "search_engine_list";
-const STORAGE_SELECT  = "search_selected_idx";
-const STORAGE_THEME   = "search_theme";
 const modal = document.getElementById('modal');
 const queryInput = document.getElementById('query');
 const MAGIC_CODE = "20090927";
 const MAGIC_URL = "https://space.bilibili.com/3493294795393244";
 
-// ============ 主题 ============
-function setTheme(theme){
-  document.body.classList.toggle('theme-dark', theme === 'dark');
-  document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
-  localStorage.setItem(STORAGE_THEME, theme);
-}
-function initTheme(){
-  const saved = localStorage.getItem(STORAGE_THEME);
-  const initial = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  setTheme(initial);
-}
-document.getElementById('themeToggle').addEventListener('click', ()=>{
-  setTheme(document.body.classList.contains('theme-dark') ? 'light' : 'dark');
-});
-
-// ============ 时间 ============
-function updateTime() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth()+1).padStart(2,'0');
-  const day = String(now.getDate()).padStart(2,'0');
-
-  let hours = now.getHours();
-  const minute = String(now.getMinutes()).padStart(2,'0');
-  let ampm = "AM";
-  if(hours >= 12){
-    ampm = "PM";
-    if(hours > 12) hours -= 12;
-  }
-  if(hours === 0) hours = 12;
-
-  document.getElementById('timeDate').innerText = `${year}年${month}月${day}日`;
-  document.getElementById('timeAmpm').innerText = `${ampm} ${hours}点${minute}分`;
-}
-updateTime();
-setInterval(updateTime, 1000);
-
-// ============ 加载引擎 ============
 function loadData(){
-  const savedList = localStorage.getItem(STORAGE_ENGINES);
-  const savedSel = localStorage.getItem(STORAGE_SELECT);
-  if(savedList){
-    try{
-      engineList = JSON.parse(savedList).map(e => ({ name:e.name, url:e.url }));
-    }catch(err){
-      engineList = JSON.parse(JSON.stringify(defaultEngines));
-    }
+  const savedList = Store.getJSON(STORAGE_ENGINES, null);
+  const savedSel  = Store.get(STORAGE_SELECT, null);
+
+  if(Array.isArray(savedList) && savedList.length > 0){
+    engineList = savedList.map(e => ({ name:e.name, url:e.url }));
   }else{
     engineList = JSON.parse(JSON.stringify(defaultEngines));
+    Store.setJSON(STORAGE_ENGINES, engineList);
+    Store.set(STORAGE_SELECT, 0);
   }
-  if(!Array.isArray(engineList) || engineList.length === 0){
-    engineList = JSON.parse(JSON.stringify(defaultEngines));
-  }
+
   if(savedSel !== null){
-    selectedIndex = Number(savedSel);
-    if(!(selectedIndex >= 0 && selectedIndex < engineList.length)) selectedIndex = 0;
+    const n = Number(savedSel);
+    selectedIndex = (n >= 0 && n < engineList.length) ? n : 0;
   }else{
     selectedIndex = 0;
   }
@@ -495,8 +499,9 @@ function saveEngines(){
   if(sel) selectedIndex = Number(sel.value);
   if(!(selectedIndex >= 0 && selectedIndex < engineList.length)) selectedIndex = 0;
 
-  localStorage.setItem(STORAGE_ENGINES, JSON.stringify(engineList));
-  localStorage.setItem(STORAGE_SELECT, selectedIndex);
+  Store.setJSON(STORAGE_ENGINES, engineList);
+  Store.set(STORAGE_SELECT, selectedIndex);
+
   modal.classList.add('hidden');
   updateEngineText();
 }
@@ -511,7 +516,44 @@ function updateEngineText(){
   document.getElementById('engineName').textContent = engine ? engine.name : '';
 }
 
-// ============ 智能链接识别 ============
+/* ============ 2. 主题 ============ */
+function setTheme(theme){
+  document.body.classList.toggle('theme-dark', theme === 'dark');
+  document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
+  Store.set(STORAGE_THEME, theme);
+}
+function initTheme(){
+  const saved = Store.get(STORAGE_THEME, null);
+  const initial = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  setTheme(initial);
+}
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  setTheme(document.body.classList.contains('theme-dark') ? 'light' : 'dark');
+});
+
+/* ============ 3. 时间 ============ */
+function updateTime() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth()+1).padStart(2,'0');
+  const day = String(now.getDate()).padStart(2,'0');
+
+  let hours = now.getHours();
+  const minute = String(now.getMinutes()).padStart(2,'0');
+  let ampm = "AM";
+  if(hours >= 12){
+    ampm = "PM";
+    if(hours > 12) hours -= 12;
+  }
+  if(hours === 0) hours = 12;
+
+  document.getElementById('timeDate').innerText = `${year}年${month}月${day}日`;
+  document.getElementById('timeAmpm').innerText = `${ampm} ${hours}点${minute}分`;
+}
+updateTime();
+setInterval(updateTime, 1000);
+
+/* ============ 4. 智能链接识别 ============ */
 function detectDirectUrl(input){
   const s = input.trim();
   if(!s) return null;
@@ -530,16 +572,15 @@ function detectDirectUrl(input){
 function search(){
   const kw = queryInput.value.trim();
   if(!kw) return;
+
   if(kw === MAGIC_CODE){
-    localStorage.clear();
     window.location.href = MAGIC_URL;
     return;
   }
+
   const directUrl = detectDirectUrl(kw);
-  if(directUrl){
-    window.location.href = directUrl;
-    return;
-  }
+  if(directUrl){ window.location.href = directUrl; return; }
+
   const engine = engineList[selectedIndex];
   if(!engine) return;
   const target = engine.url.replace('%s', encodeURIComponent(kw));
@@ -554,80 +595,60 @@ modal.addEventListener('click', e=>{
   if(e.target === modal) modal.classList.add('hidden');
 });
 
-initTheme();
-loadData();
+/* ============ 5. 壁纸 ============ */
+const wallLayer = document.getElementById('wallpaperLayer');
+const wallImg   = document.getElementById('wallpaperImg');
 
-
-/* ============================================================
-   壁纸（localStorage 存储地址 + 每次打开自动重新获取）
-   ============================================================ */
-const STORAGE_WALL_VALUE = 'search_wall_value';
-const STORAGE_WALL_CACHE = 'search_wall_cache';   // 仅作为请求失败时的兜底
-const LEGACY_WALL_URL  = 'search_wall_url';
-const LEGACY_WALL_API  = 'search_wall_api';
-const LEGACY_WALL_MODE = 'search_wall_mode';
-
-let currentWall = '';
-
-// 读地址（自动迁移旧数据；首次为空，即不加载任何壁纸）
 function getWallValue(){
-  let v = localStorage.getItem(STORAGE_WALL_VALUE);
+  let v = Store.get(STORAGE_WALL_VALUE, null);
   if(v === null){
-    const oldU = localStorage.getItem(LEGACY_WALL_URL) || '';
-    const oldA = localStorage.getItem(LEGACY_WALL_API) || '';
+    const oldU = Store.get('search_wall_url', '');
+    const oldA = Store.get('search_wall_api', '');
     v = oldA || oldU || '';
-    localStorage.setItem(STORAGE_WALL_VALUE, v);
-    [LEGACY_WALL_URL, LEGACY_WALL_API, LEGACY_WALL_MODE].forEach(k => localStorage.removeItem(k));
+    Store.set(STORAGE_WALL_VALUE, v);
+    ['search_wall_url','search_wall_api','search_wall_mode'].forEach(k => Store.remove(k));
   }
   return v;
 }
 
-// 给 http/https 地址追加时间戳，强制浏览器重新拉取，避免命中旧缓存
 function withCacheBuster(url){
+  if(!url) return url;
   if(!/^https?:\/\//i.test(url)) return url;
-  const sep = url.includes('?') ? '&' : '?';
-  return url + sep + '_t=' + Date.now();
-}
-
-// 通过 CSS 变量 --wall-image 传递图片地址，交给 CSS 里的深蓝渐变遮罩层渲染
-function applyWallpaper(url){
-  currentWall = url || '';
-  if(!currentWall){
-    document.body.style.removeProperty('--wall-image');
-    document.body.classList.remove('has-wallpaper');
-    return;
+  if(/[?&]_t=/.test(url)) return url;
+  const hashIdx = url.indexOf('#');
+  let base = url, frag = '';
+  if(hashIdx >= 0){
+    base = url.slice(0, hashIdx);
+    frag = url.slice(hashIdx);
   }
-  // 每次应用都带时间戳，保证每次打开都是最新的图
-  const busted = withCacheBuster(currentWall);
-  const safe = String(busted)
-    .replace(/[\r\n\\]/g, '')
-    .replace(/"/g, '%22')
-    .replace(/'/g, '%27');
-  document.body.style.setProperty('--wall-image', `url("${safe}")`);
-  document.body.classList.add('has-wallpaper');
+  const sep = base.includes('?') ? '&' : '?';
+  return base + sep + '_t=' + Date.now() + frag;
 }
 
-// 探测 URL 能不能直接当图片加载（也带时间戳，避免命中旧缓存）
-function testImage(url){
-  return new Promise(resolve => {
-    const img = new Image();
-    let done = false;
-    const fin = ok => { if(!done){ done = true; resolve(ok); } };
-    img.onload  = () => fin(true);
-    img.onerror = () => fin(false);
-    img.src = withCacheBuster(url);
-    setTimeout(() => fin(false), 12000);
+function setImage(url){
+  return new Promise((resolve, reject) => {
+    wallImg.onload = () => resolve();
+    wallImg.onerror = () => reject(new Error('图片加载失败：' + url));
+    wallImg.src = url;
   });
 }
 
-// 智能解析：先当图片，不行就当 API。每次都重新请求，不用缓存结果
-async function resolveWallpaper(url){
-  if(await testImage(url)) return url;
+function showWallpaperLayer(show){
+  if(show){
+    wallLayer.classList.add('active');
+    document.body.classList.add('has-wallpaper');
+  }else{
+    wallLayer.classList.remove('active');
+    document.body.classList.remove('has-wallpaper');
+  }
+}
 
+async function parseApiUrl(url){
   try{
-    // no-store 确保每次打开都重新请求 API
     const res = await fetch(withCacheBuster(url), { cache:'no-store' });
     const ct = (res.headers.get('content-type') || '').toLowerCase();
+    console.log('[壁纸] API 响应 content-type：', ct);
+
     if(ct.includes('application/json')){
       const data = await res.json();
       let u = data.url || data.imgurl || data.image || data.img || data.raw || data.src;
@@ -639,11 +660,65 @@ async function resolveWallpaper(url){
         try{ u = new URL(u, url).href; }catch(e){}
         return u;
       }
+      console.warn('[壁纸] JSON 里没找到图片字段');
+    }else if(ct.startsWith('image/')){
+      return url;
     }
-    if(ct.startsWith('image/')) return url;
-  }catch(e){ /* 跨域/网络错误，静默失败 */ }
-
+  }catch(e){
+    console.warn('[壁纸] API 请求失败（可能是跨域）：', e && e.message);
+  }
   return null;
+}
+
+async function loadWallpaper(){
+  const value = getWallValue();
+  console.log('[壁纸] 当前地址：', value || '(未设置)');
+
+  if(!value){
+    showWallpaperLayer(false);
+    wallImg.removeAttribute('src');
+    return;
+  }
+
+  // 第一步：直接当图片加载
+  try{
+    await setImage(withCacheBuster(value));
+    showWallpaperLayer(true);
+    console.log('[壁纸] 直接加载成功，naturalWidth =', wallImg.naturalWidth);
+    return;
+  }catch(e){
+    console.warn('[壁纸] 直接加载失败，尝试作为 API 解析');
+  }
+
+  // 第二步：当作 JSON API 解析
+  const apiImgUrl = await parseApiUrl(value);
+  if(apiImgUrl){
+    try{
+      await setImage(withCacheBuster(apiImgUrl));
+      Store.set(STORAGE_WALL_CACHE, apiImgUrl);
+      showWallpaperLayer(true);
+      console.log('[壁纸] API 解析成功：', apiImgUrl);
+      return;
+    }catch(e){
+      console.warn('[壁纸] API 返回的图片地址也加载失败');
+    }
+  }
+
+  // 第三步：用上次成功的结果兜底
+  const cached = Store.get(STORAGE_WALL_CACHE, '');
+  if(cached && cached !== value){
+    try{
+      await setImage(withCacheBuster(cached));
+      showWallpaperLayer(true);
+      console.log('[壁纸] 使用缓存兜底：', cached);
+      return;
+    }catch(e){
+      console.warn('[壁纸] 缓存也加载失败');
+    }
+  }
+
+  showWallpaperLayer(false);
+  console.error('[壁纸] 所有加载方式均失败，请检查地址是否有效：', value);
 }
 
 function openWallModal(){
@@ -653,55 +728,40 @@ function openWallModal(){
 
 function saveWallpaper(){
   const v = document.getElementById('wallValue').value.trim();
-  localStorage.setItem(STORAGE_WALL_VALUE, v);
-  localStorage.removeItem(STORAGE_WALL_CACHE);   // 地址变了，旧兜底作废
+  Store.set(STORAGE_WALL_VALUE, v);
+  Store.remove(STORAGE_WALL_CACHE);
   document.getElementById('wallModal').classList.add('hidden');
+  console.log('[存储] 壁纸地址已保存：', v);
   loadWallpaper();
 }
 
 function clearWallpaper(){
-  localStorage.setItem(STORAGE_WALL_VALUE, '');
-  localStorage.removeItem(STORAGE_WALL_CACHE);
+  Store.set(STORAGE_WALL_VALUE, '');
+  Store.remove(STORAGE_WALL_CACHE);
   document.getElementById('wallValue').value = '';
   document.getElementById('wallModal').classList.add('hidden');
-  applyWallpaper('');
-}
-
-// 每次打开页面：重新解析地址，拿最新图
-async function loadWallpaper(){
-  const value = getWallValue();
-
-  if(!value){
-    applyWallpaper('');
-    return;
-  }
-
-  // 每次都重新请求，不用旧缓存
-  const resolved = await resolveWallpaper(value);
-
-  if(resolved){
-    // 把本次成功的结果存一份，仅用于下次请求失败时兜底
-    localStorage.setItem(STORAGE_WALL_CACHE, resolved);
-    applyWallpaper(resolved);
-  }else{
-    // 本次请求失败：用上次成功的结果兜底，没有就直接用原始地址试试
-    const cached = localStorage.getItem(STORAGE_WALL_CACHE) || '';
-    if(cached) applyWallpaper(cached);
-    else applyWallpaper(value);
-  }
+  wallImg.removeAttribute('src');
+  showWallpaperLayer(false);
 }
 
 document.getElementById('wallToggle').addEventListener('click', openWallModal);
 document.getElementById('wallModal').addEventListener('click', e=>{
-  if(e.target === document.getElementById('wallModal')){
-    document.getElementById('wallModal').classList.add('hidden');
+  if(e.target.id === 'wallModal'){
+    e.target.classList.add('hidden');
   }
 });
 
-/* ============================================================
-   初始化
-   ============================================================ */
+/* ============ 6. 初始化 ============ */
+initTheme();
+loadData();
 loadWallpaper();
+
+console.log('===== 当前本地存储 =====');
+console.log('主题：', Store.get(STORAGE_THEME, '(未设置)'));
+console.log('引擎：', Store.getJSON(STORAGE_ENGINES, '(未设置)'));
+console.log('选中索引：', Store.get(STORAGE_SELECT, '(未设置)'));
+console.log('壁纸地址：', Store.get(STORAGE_WALL_VALUE, '(未设置)'));
+console.log('=======================');
 </script>
 </body>
 </html>
