@@ -147,6 +147,10 @@ h1{
   font-weight:400;
   text-align:center;
   margin-bottom:32px;
+  /* 彩蛋优化：禁止选中文字、鼠标变手型 */
+  user-select:none;
+  -webkit-user-select:none;
+  cursor:pointer;
 }
 .search-wrap{ display:flex; gap:8px; }
 #query{
@@ -330,7 +334,8 @@ button:hover{ opacity:0.85; }
     <div class="time-date" id="timeDate"></div>
     <div class="time-ampm" id="timeAmpm"></div>
   </div>
-  <h1>Search</h1>
+  <!-- 为标题添加 id="mainTitle" -->
+  <h1 id="mainTitle">Search</h1>
   <div class="search-wrap">
     <input id="query" type="text" placeholder="输入搜索词、网址或 IP…" autocomplete="off">
     <button onclick="search()">搜索</button>
@@ -399,6 +404,7 @@ const STORAGE_ENGINES = 'search_engine_list';
 const STORAGE_SELECT  = 'search_selected_idx';
 const STORAGE_THEME   = 'search_theme';
 const STORAGE_WALL_VALUE = 'search_wall_value';
+const STORAGE_TITLE_TEXT = 'search_title_text'; // 新增：标题存储键名
 
 /* ============ 1. 搜索引擎 ============ */
 const defaultEngines = [
@@ -602,7 +608,7 @@ modal.addEventListener('click', e=>{
   if(e.target === modal) modal.classList.add('hidden');
 });
 
-/* ============ 5. 壁纸（无任何默认值） ============ */
+/* ============ 5. 壁纸 ============ */
 const wallImg = document.getElementById('wallpaperImg');
 const wallOverlay = document.getElementById('wallpaperOverlay');
 
@@ -660,13 +666,11 @@ async function parseApiUrl(url){
 async function loadWallpaper(){
   const value = getWallValue();
   
-  // 【绝对不加载默认壁纸】：没填地址直接显示纯色背景
   if(!value){
     showWall(false);
     return;
   }
 
-  // 第一步：直接当图片加载
   try{
     const info = await loadImage(value);
     showWall(true);
@@ -676,7 +680,6 @@ async function loadWallpaper(){
     console.warn('[壁纸] ❌ 直接加载失败，尝试作为 API 解析');
   }
 
-  // 第二步：当作 JSON API 解析
   const apiImgUrl = await parseApiUrl(value);
   if(apiImgUrl && apiImgUrl !== value){
     try{
@@ -689,7 +692,6 @@ async function loadWallpaper(){
     }
   }
 
-  // 全部失败
   showWall(false);
   alert('壁纸加载失败，请检查地址是否为有效的图片直链，或该网站是否禁止外链。\n\n地址：' + value);
 }
@@ -721,9 +723,27 @@ document.getElementById('wallModal').addEventListener('click', e=>{
   }
 });
 
-/* ============ 6. 初始化 ============ */
+/* ============ 6. 标题彩蛋（双击切换 + 本地存储） ============ */
+const titleEl = document.getElementById('mainTitle');
+
+// 初始化标题
+function initTitle(){
+  const savedTitle = Store.get(STORAGE_TITLE_TEXT, 'Search');
+  titleEl.textContent = savedTitle;
+}
+
+// 双击切换
+titleEl.addEventListener('dblclick', () => {
+  const current = titleEl.textContent;
+  const next = (current === 'Search') ? 'Hello World' : 'Search';
+  titleEl.textContent = next;
+  Store.set(STORAGE_TITLE_TEXT, next);
+});
+
+/* ============ 7. 初始化 ============ */
 initTheme();
 loadData();
+initTitle(); // 初始化标题
 loadWallpaper();
 </script>
 </body>
