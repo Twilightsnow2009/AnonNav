@@ -29,6 +29,7 @@ body.theme-dark{
   --btn-bg:#383838;
   --btn-text:#fff;
 }
+html{ min-height:100%; }
 body{
   min-height:100vh;
   display:flex;
@@ -37,17 +38,72 @@ body{
   justify-content:center;
   background:var(--bg);
   color:var(--text);
-  transition: background 0.3s, color 0.3s;
+  transition: color 0.3s;
+  background-size:cover;
+  background-position:center center;
+  background-attachment:fixed;
+  background-repeat:no-repeat;
 }
+
+/* ==============================================
+   有壁纸时：借鉴倒计时界面的深蓝渐变遮罩 + 毛玻璃白字
+   ============================================== */
+body.has-wallpaper{
+  background:
+    linear-gradient(135deg, rgba(15, 28, 48, 0.55), rgba(35, 55, 85, 0.45)),
+    var(--wall-image, none) center center / cover no-repeat fixed;
+  color: #ffffff;
+  --text: #ffffff;
+  --text-soft: rgba(255, 255, 255, 0.82);
+  --text-light: rgba(255, 255, 255, 0.65);
+  --border: rgba(255, 255, 255, 0.3);
+  --bg: rgba(0, 0, 0, 0.28);
+  --btn-bg: rgba(0, 0, 0, 0.35);
+  --btn-text: #ffffff;
+  --card-bg: #1e1e1e;
+  --card-border: rgba(255, 255, 255, 0.15);
+}
+
+body.has-wallpaper .modal-box{
+  --bg: #2a2a2a;
+  --border: #444;
+  --text: #eeeeee;
+  --text-soft: #bbbbbb;
+  --text-light: #777777;
+  --btn-bg: #383838;
+  --btn-text: #fff;
+  --card-bg: #1e1e1e;
+  --card-border: #333;
+}
+
+body.has-wallpaper #query,
+body.has-wallpaper .search-wrap button,
+body.has-wallpaper .theme-toggle{
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+body.has-wallpaper #query::placeholder{
+  color: rgba(255, 255, 255, 0.55);
+}
+body.has-wallpaper #query:focus{
+  border-color: rgba(255, 255, 255, 0.6);
+}
+body.has-wallpaper .theme-toggle{
+  background: rgba(0, 0, 0, 0.35);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+body.has-wallpaper .search-wrap button{
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* ================ 以下为原有样式 ================ */
 .container{
   width:92%;
   max-width:580px;
   text-align:center;
 }
-/*实时日期时间*/
-.time-block{
-  margin-bottom:24px;
-}
+.time-block{ margin-bottom:24px; }
 .time-date{
   font-size:1.5rem;
   color:var(--text-soft);
@@ -66,10 +122,7 @@ h1{
   text-align:center;
   margin-bottom:32px;
 }
-.search-wrap{
-  display:flex;
-  gap:8px;
-}
+.search-wrap{ display:flex; gap:8px; }
 #query{
   flex:1;
   padding:12px 18px;
@@ -80,7 +133,7 @@ h1{
   background:var(--bg);
   color:var(--text);
 }
-#query:focus{border-color:#555;}
+#query:focus{ border-color:#555; }
 button{
   padding:12px 22px;
   border:none;
@@ -90,16 +143,15 @@ button{
   cursor:pointer;
   font-size:1rem;
 }
-button:hover{opacity:0.85;}
+button:hover{ opacity:0.85; }
 .tip{
   text-align:center;
   margin-top:20px;
   font-size:0.9rem;
   color:var(--text-soft);
 }
-.tip a{color:var(--text);cursor:pointer;margin:0 4px;}
+.tip a{ color:var(--text); cursor:pointer; margin:0 4px; }
 
-/*右上角主题切换按钮*/
 .theme-toggle{
   position:fixed;
   top:20px;
@@ -117,10 +169,9 @@ button:hover{opacity:0.85;}
   color:var(--text);
   border:1px solid var(--border);
   z-index:50;
-  transition: background 0.3s, border-color 0.3s;
+  transition: background 0.3s, border-color 0.3s, color 0.3s;
 }
 
-/*弹窗样式*/
 .modal{
   position:fixed;
   inset:0;
@@ -131,7 +182,7 @@ button:hover{opacity:0.85;}
   z-index:99;
   padding:20px;
 }
-.modal.hidden{display:none;}
+.modal.hidden{ display:none; }
 .modal-box{
   background:var(--card-bg);
   border-radius:20px;
@@ -146,9 +197,7 @@ button:hover{opacity:0.85;}
   font-weight:500;
   margin-bottom:24px;
 }
-.engine-item{
-  margin-bottom:18px;
-}
+.engine-item{ margin-bottom:18px; }
 .engine-main{
   display:flex;
   align-items:flex-start;
@@ -162,9 +211,7 @@ button:hover{opacity:0.85;}
   accent-color:var(--text);
   flex-shrink:0;
 }
-.engine-name{
-  font-size:1.1rem;
-}
+.engine-name{ font-size:1.1rem; }
 .engine-edit-area{
   padding-left:31px;
   margin-top:8px;
@@ -172,7 +219,7 @@ button:hover{opacity:0.85;}
   gap:8px;
   flex-direction:column;
 }
-.engine-edit-area.show{display:flex;}
+.engine-edit-area.show{ display:flex; }
 .engine-edit-area input{
   width:100%;
   padding:7px 9px;
@@ -183,9 +230,7 @@ button:hover{opacity:0.85;}
   color:var(--text);
   outline:none;
 }
-.engine-edit-area input:focus{border-color:#555;}
-
-/*底部按钮*/
+.engine-edit-area input:focus{ border-color:#555; }
 .modal-footer{
   display:flex;
   justify-content:flex-end;
@@ -207,7 +252,6 @@ button:hover{opacity:0.85;}
   font-size:0.85rem;
   align-self:flex-start;
 }
-/*页脚*/
 .footer-text{
   position:fixed;
   bottom:24px;
@@ -217,14 +261,39 @@ button:hover{opacity:0.85;}
   font-size:0.85rem;
   color:var(--text-light);
 }
+
+#wallToggle{ right:76px; }
+.wall-field{ margin-bottom:16px; text-align:left; }
+.wall-field > label{
+  display:block;
+  font-size:0.85rem;
+  color:var(--text-soft);
+  margin-bottom:6px;
+}
+.wall-field input{
+  width:100%;
+  padding:9px 12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  font-size:0.9rem;
+  background:var(--bg);
+  color:var(--text);
+  outline:none;
+}
+.wall-field input:focus{ border-color:#555; }
+.wall-hint{
+  font-size:0.78rem;
+  color:var(--text-light);
+  line-height:1.6;
+  text-align:left;
+}
 </style>
 </head>
 <body>
-<!-- 右上角主题切换按钮 -->
 <button id="themeToggle" class="theme-toggle" aria-label="切换主题" title="切换主题">🌙</button>
+<button id="wallToggle" class="theme-toggle" aria-label="壁纸设置" title="壁纸设置">🖼️</button>
 
 <div class="container">
-  <!-- 实时日期时间 -->
   <div class="time-block">
     <div class="time-date" id="timeDate"></div>
     <div class="time-ampm" id="timeAmpm"></div>
@@ -240,10 +309,8 @@ button:hover{opacity:0.85;}
   </div>
 </div>
 
-<!-- 页脚文字 -->
 <div class="footer-text">本站点托管于GitHub Pages</div>
 
-<!-- 搜索引擎弹窗 -->
 <div id="modal" class="modal hidden">
   <div class="modal-box">
     <h3>请选择默认搜索引擎</h3>
@@ -257,8 +324,28 @@ button:hover{opacity:0.85;}
   </div>
 </div>
 
+<div id="wallModal" class="modal hidden">
+  <div class="modal-box">
+    <h3>壁纸设置</h3>
+    <div class="wall-field">
+      <label>壁纸地址</label>
+      <input id="wallValue" type="text" placeholder="图片直链，或随机壁纸 API" autocomplete="off">
+    </div>
+    <div class="wall-hint">
+      · 填图片直链：每次打开显示同一张；<br>
+      · 填随机壁纸 API：自动解析出图片地址，每次打开换一张；<br>
+      · 两种地址不用区分，填进去自动识别；<br>
+      · 留空则恢复纯色背景。
+    </div>
+    <div class="modal-footer">
+      <button class="del-btn" style="margin-right:auto;" onclick="clearWallpaper()">清除壁纸</button>
+      <button onclick="saveWallpaper()">确定</button>
+    </div>
+  </div>
+</div>
+
 <script>
-// 内置4套引擎（只有名称和URL）
+// ============ 搜索引擎 ============
 const defaultEngines = [
   { name:"百度",     url:"https://www.baidu.com/s?wd=%s" },
   { name:"Bing",     url:"https://cn.bing.com/search?q=%s" },
@@ -276,7 +363,7 @@ const queryInput = document.getElementById('query');
 const MAGIC_CODE = "20090927";
 const MAGIC_URL = "https://space.bilibili.com/3493294795393244";
 
-// ===== 主题系统 =====
+// ============ 主题 ============
 function setTheme(theme){
   document.body.classList.toggle('theme-dark', theme === 'dark');
   document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
@@ -291,7 +378,7 @@ document.getElementById('themeToggle').addEventListener('click', ()=>{
   setTheme(document.body.classList.contains('theme-dark') ? 'light' : 'dark');
 });
 
-// 时间更新函数
+// ============ 时间 ============
 function updateTime() {
   const now = new Date();
   const year = now.getFullYear();
@@ -313,7 +400,7 @@ function updateTime() {
 updateTime();
 setInterval(updateTime, 1000);
 
-// 加载本地存储
+// ============ 加载引擎 ============
 function loadData(){
   const savedList = localStorage.getItem(STORAGE_ENGINES);
   const savedSel = localStorage.getItem(STORAGE_SELECT);
@@ -338,14 +425,12 @@ function loadData(){
   updateEngineText();
 }
 
-// 简单 HTML 转义
 function esc(str){
   return String(str == null ? '' : str)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;');
 }
 
-// 渲染列表（只保留名称 + URL，全部折叠）
 function renderEngineList(){
   const wrapper = document.getElementById('engineList');
   wrapper.innerHTML = '';
@@ -367,59 +452,41 @@ function renderEngineList(){
   });
 }
 
-// 点击展开/收起：一次只展开一个，点另一个自动折叠之前的
 function toggleEdit(idx){
   const editEl = document.getElementById(`edit-${idx}`);
   const wasOpen = editEl.classList.contains('show');
-
-  // 先全部折叠
   document.querySelectorAll('.engine-edit-area').forEach(el=>el.classList.remove('show'));
-
-  // 选中该引擎
   const radio = document.querySelector(`input[name="eng"][value="${idx}"]`);
   if(radio) radio.checked = true;
-
-  // 如果之前是折叠状态，则展开
   if(!wasOpen) editEl.classList.add('show');
 }
 
-// 新增空白自定义引擎并自动展开
 function addBlankEngine(){
-  engineList.push({
-    name:"New Engine",
-    url:"https://example.com?q=%s"
-  });
+  engineList.push({ name:"New Engine", url:"https://example.com?q=%s" });
   renderEngineList();
   const lastIdx = engineList.length - 1;
   const editEl = document.getElementById(`edit-${lastIdx}`);
   if(editEl) editEl.classList.add('show');
 }
 
-// 删除引擎，至少保留一条
 function delEngine(idx){
   if(engineList.length <= 1){
     alert("至少保留一个搜索引擎！");
     return;
   }
   engineList.splice(idx,1);
-  if(selectedIndex === idx){
-    selectedIndex = 0;
-  }else if(selectedIndex > idx){
-    selectedIndex -= 1;
-  }
+  if(selectedIndex === idx){ selectedIndex = 0; }
+  else if(selectedIndex > idx){ selectedIndex -= 1; }
   renderEngineList();
 }
 
-// 保存：读取所有输入框的值，覆盖 engineList
 function saveEngines(){
   const items = document.querySelectorAll('.engine-item');
   const newList = [];
   items.forEach(el => {
     const name = el.querySelector('.inp-name').value.trim();
     const url  = el.querySelector('.inp-url').value.trim();
-    if(name && url){
-      newList.push({name, url});
-    }
+    if(name && url){ newList.push({name, url}); }
   });
   if(newList.length === 0) return;
   engineList = newList;
@@ -444,71 +511,197 @@ function updateEngineText(){
   document.getElementById('engineName').textContent = engine ? engine.name : '';
 }
 
-// ===== 智能识别链接 / 域名 / IP =====
+// ============ 智能链接识别 ============
 function detectDirectUrl(input){
   const s = input.trim();
   if(!s) return null;
-
-  // 1. 完整协议链接
   if(/^(https?|ftps?|file):\/\/.+/i.test(s)) return s;
-
-  // 2. localhost（可带端口/路径）
   if(/^localhost(:\d+)?([\/?#].*)?$/i.test(s)) return 'http://' + s;
-
-  // 3. IPv4（可带端口/路径）
   const ipMatch = s.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(:\d+)?([\/?#].*)?$/);
   if(ipMatch){
-    const ok = [ipMatch[1],ipMatch[2],ipMatch[3],ipMatch[4]]
-      .every(p => Number(p) <= 255);
+    const ok = [ipMatch[1],ipMatch[2],ipMatch[3],ipMatch[4]].every(p => Number(p) <= 255);
     if(ok) return 'http://' + s;
   }
-
-  // 4. 域名（可带端口/路径，支持中文域名）
   const domainRe = /^(([a-z0-9\u4e00-\u9fa5]([a-z0-9\u4e00-\u9fa5-]*[a-z0-9\u4e00-\u9fa5])?\.)+[a-z\u4e00-\u9fa5]{2,})(:\d+)?([\/?#].*)?$/i;
   if(domainRe.test(s)) return 'http://' + s;
-
   return null;
 }
 
-// 搜索
 function search(){
   const kw = queryInput.value.trim();
   if(!kw) return;
-
-  // 彩蛋
   if(kw === MAGIC_CODE){
     localStorage.clear();
     window.location.href = MAGIC_URL;
     return;
   }
-
-  // 优先判断是否为链接 / 域名 / IP
   const directUrl = detectDirectUrl(kw);
   if(directUrl){
     window.location.href = directUrl;
     return;
   }
-
-  // 否则用当前引擎搜索
   const engine = engineList[selectedIndex];
   if(!engine) return;
   const target = engine.url.replace('%s', encodeURIComponent(kw));
   window.location.href = target;
 }
 
-// 回车搜索
 queryInput.addEventListener('keydown', e=>{
   if(e.key === 'Enter') search();
 });
 
-// 点击遮罩关闭弹窗
 modal.addEventListener('click', e=>{
   if(e.target === modal) modal.classList.add('hidden');
 });
 
-// 初始化
 initTheme();
 loadData();
+
+
+/* ============================================================
+   壁纸（localStorage 存储地址 + 每次打开自动重新获取）
+   ============================================================ */
+const STORAGE_WALL_VALUE = 'search_wall_value';
+const STORAGE_WALL_CACHE = 'search_wall_cache';   // 仅作为请求失败时的兜底
+const LEGACY_WALL_URL  = 'search_wall_url';
+const LEGACY_WALL_API  = 'search_wall_api';
+const LEGACY_WALL_MODE = 'search_wall_mode';
+
+let currentWall = '';
+
+// 读地址（自动迁移旧数据；首次为空，即不加载任何壁纸）
+function getWallValue(){
+  let v = localStorage.getItem(STORAGE_WALL_VALUE);
+  if(v === null){
+    const oldU = localStorage.getItem(LEGACY_WALL_URL) || '';
+    const oldA = localStorage.getItem(LEGACY_WALL_API) || '';
+    v = oldA || oldU || '';
+    localStorage.setItem(STORAGE_WALL_VALUE, v);
+    [LEGACY_WALL_URL, LEGACY_WALL_API, LEGACY_WALL_MODE].forEach(k => localStorage.removeItem(k));
+  }
+  return v;
+}
+
+// 给 http/https 地址追加时间戳，强制浏览器重新拉取，避免命中旧缓存
+function withCacheBuster(url){
+  if(!/^https?:\/\//i.test(url)) return url;
+  const sep = url.includes('?') ? '&' : '?';
+  return url + sep + '_t=' + Date.now();
+}
+
+// 通过 CSS 变量 --wall-image 传递图片地址，交给 CSS 里的深蓝渐变遮罩层渲染
+function applyWallpaper(url){
+  currentWall = url || '';
+  if(!currentWall){
+    document.body.style.removeProperty('--wall-image');
+    document.body.classList.remove('has-wallpaper');
+    return;
+  }
+  // 每次应用都带时间戳，保证每次打开都是最新的图
+  const busted = withCacheBuster(currentWall);
+  const safe = String(busted)
+    .replace(/[\r\n\\]/g, '')
+    .replace(/"/g, '%22')
+    .replace(/'/g, '%27');
+  document.body.style.setProperty('--wall-image', `url("${safe}")`);
+  document.body.classList.add('has-wallpaper');
+}
+
+// 探测 URL 能不能直接当图片加载（也带时间戳，避免命中旧缓存）
+function testImage(url){
+  return new Promise(resolve => {
+    const img = new Image();
+    let done = false;
+    const fin = ok => { if(!done){ done = true; resolve(ok); } };
+    img.onload  = () => fin(true);
+    img.onerror = () => fin(false);
+    img.src = withCacheBuster(url);
+    setTimeout(() => fin(false), 12000);
+  });
+}
+
+// 智能解析：先当图片，不行就当 API。每次都重新请求，不用缓存结果
+async function resolveWallpaper(url){
+  if(await testImage(url)) return url;
+
+  try{
+    // no-store 确保每次打开都重新请求 API
+    const res = await fetch(withCacheBuster(url), { cache:'no-store' });
+    const ct = (res.headers.get('content-type') || '').toLowerCase();
+    if(ct.includes('application/json')){
+      const data = await res.json();
+      let u = data.url || data.imgurl || data.image || data.img || data.raw || data.src;
+      if(!u && data.data){
+        const d = data.data;
+        u = (typeof d === 'string') ? d : (d.url || d.image || d.imgurl || d.img);
+      }
+      if(typeof u === 'string' && u){
+        try{ u = new URL(u, url).href; }catch(e){}
+        return u;
+      }
+    }
+    if(ct.startsWith('image/')) return url;
+  }catch(e){ /* 跨域/网络错误，静默失败 */ }
+
+  return null;
+}
+
+function openWallModal(){
+  document.getElementById('wallValue').value = getWallValue();
+  document.getElementById('wallModal').classList.remove('hidden');
+}
+
+function saveWallpaper(){
+  const v = document.getElementById('wallValue').value.trim();
+  localStorage.setItem(STORAGE_WALL_VALUE, v);
+  localStorage.removeItem(STORAGE_WALL_CACHE);   // 地址变了，旧兜底作废
+  document.getElementById('wallModal').classList.add('hidden');
+  loadWallpaper();
+}
+
+function clearWallpaper(){
+  localStorage.setItem(STORAGE_WALL_VALUE, '');
+  localStorage.removeItem(STORAGE_WALL_CACHE);
+  document.getElementById('wallValue').value = '';
+  document.getElementById('wallModal').classList.add('hidden');
+  applyWallpaper('');
+}
+
+// 每次打开页面：重新解析地址，拿最新图
+async function loadWallpaper(){
+  const value = getWallValue();
+
+  if(!value){
+    applyWallpaper('');
+    return;
+  }
+
+  // 每次都重新请求，不用旧缓存
+  const resolved = await resolveWallpaper(value);
+
+  if(resolved){
+    // 把本次成功的结果存一份，仅用于下次请求失败时兜底
+    localStorage.setItem(STORAGE_WALL_CACHE, resolved);
+    applyWallpaper(resolved);
+  }else{
+    // 本次请求失败：用上次成功的结果兜底，没有就直接用原始地址试试
+    const cached = localStorage.getItem(STORAGE_WALL_CACHE) || '';
+    if(cached) applyWallpaper(cached);
+    else applyWallpaper(value);
+  }
+}
+
+document.getElementById('wallToggle').addEventListener('click', openWallModal);
+document.getElementById('wallModal').addEventListener('click', e=>{
+  if(e.target === document.getElementById('wallModal')){
+    document.getElementById('wallModal').classList.add('hidden');
+  }
+});
+
+/* ============================================================
+   初始化
+   ============================================================ */
+loadWallpaper();
 </script>
 </body>
 </html>
