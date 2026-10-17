@@ -41,42 +41,75 @@ body{
   transition: color 0.3s;
 }
 
-/* ==============================================
-   壁纸层：用 img 标签强行嵌入
-   ============================================== */
-#wallpaperLayer{
-  position:fixed;
-  inset:0;
-  z-index:-1;
-  display:none;
-  pointer-events:none;
-}
-#wallpaperLayer.active{ display:block; }
+/* ===== 壁纸层 ===== */
 #wallpaperImg{
-  display:block;
-  width:100%;
-  height:100%;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100vw;
+  height:100vh;
   object-fit:cover;
   object-position:center center;
+  z-index:0;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0.4s;
 }
+#wallpaperImg.active{ opacity:1; }
+
 #wallpaperOverlay{
-  position:absolute;
-  inset:0;
-  background:linear-gradient(135deg, rgba(15, 28, 48, 0.55), rgba(35, 55, 85, 0.45));
+  position:fixed;
+  top:0;
+  left:0;
+  width:100vw;
+  height:100vh;
+  z-index:0;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0.4s;
+  background:linear-gradient(135deg, rgba(15, 28, 48, 0.28), rgba(35, 55, 85, 0.22));
+}
+#wallpaperOverlay.active{ opacity:1; }
+
+.container,
+.footer-text{
+  position:relative;
+  z-index:1;
 }
 
-/* 有壁纸时：文字与控件变白 + 毛玻璃 */
 body.has-wallpaper{
-  color:#ffffff;
   --text:#ffffff;
-  --text-soft:rgba(255,255,255,0.82);
+  --text-soft:rgba(255,255,255,0.85);
   --text-light:rgba(255,255,255,0.65);
   --border:rgba(255,255,255,0.3);
-  --bg:rgba(0,0,0,0.28);
-  --btn-bg:rgba(0,0,0,0.35);
+  --bg:rgba(0,0,0,0.35);
+  --btn-bg:rgba(0,0,0,0.5);
   --btn-text:#ffffff;
   --card-bg:#1e1e1e;
   --card-border:rgba(255,255,255,0.15);
+}
+body.has-wallpaper .time-date,
+body.has-wallpaper .time-ampm,
+body.has-wallpaper h1,
+body.has-wallpaper .tip{
+  color:#ffffff;
+  text-shadow:0 2px 10px rgba(0,0,0,0.75), 0 0 2px rgba(0,0,0,0.9);
+}
+body.has-wallpaper #query,
+body.has-wallpaper .theme-toggle,
+body.has-wallpaper .search-wrap button{
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+body.has-wallpaper #query::placeholder{ color:rgba(255,255,255,0.6); }
+body.has-wallpaper #query:focus{ border-color:rgba(255,255,255,0.6); }
+body.has-wallpaper .theme-toggle{
+  background:rgba(0,0,0,0.45);
+  color:#fff;
+  border-color:rgba(255,255,255,0.25);
+}
+body.has-wallpaper .search-wrap button{
+  border:1px solid rgba(255,255,255,0.25);
 }
 body.has-wallpaper .modal-box{
   --bg:#2a2a2a;
@@ -89,28 +122,8 @@ body.has-wallpaper .modal-box{
   --card-bg:#1e1e1e;
   --card-border:#333;
 }
-body.has-wallpaper #query,
-body.has-wallpaper .search-wrap button,
-body.has-wallpaper .theme-toggle{
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-}
-body.has-wallpaper #query::placeholder{
-  color:rgba(255,255,255,0.55);
-}
-body.has-wallpaper #query:focus{
-  border-color:rgba(255,255,255,0.6);
-}
-body.has-wallpaper .theme-toggle{
-  background:rgba(0,0,0,0.35);
-  color:#ffffff;
-  border-color:rgba(255,255,255,0.25);
-}
-body.has-wallpaper .search-wrap button{
-  border:1px solid rgba(255,255,255,0.25);
-}
 
-/* ================ 其余原有样式 ================ */
+/* ===== 基础布局 ===== */
 .container{
   width:92%;
   max-width:580px;
@@ -273,6 +286,7 @@ button:hover{ opacity:0.85; }
   text-align:center;
   font-size:0.85rem;
   color:var(--text-light);
+  z-index:1;
 }
 
 #wallToggle{ right:76px; }
@@ -304,13 +318,9 @@ button:hover{ opacity:0.85; }
 </head>
 <body>
 
-<!-- ==============================================
-     壁纸层：直接 img 嵌入，成功才显示
-     ============================================== -->
-<div id="wallpaperLayer" aria-hidden="true">
-  <img id="wallpaperImg" alt="">
-  <div id="wallpaperOverlay"></div>
-</div>
+<!-- 壁纸：带 no-referrer 破解防盗链 -->
+<img id="wallpaperImg" alt="" referrerpolicy="no-referrer">
+<div id="wallpaperOverlay"></div>
 
 <button id="themeToggle" class="theme-toggle" aria-label="切换主题" title="切换主题">🌙</button>
 <button id="wallToggle" class="theme-toggle" aria-label="壁纸设置" title="壁纸设置">🖼️</button>
@@ -354,9 +364,9 @@ button:hover{ opacity:0.85; }
       <input id="wallValue" type="text" placeholder="图片直链，或随机壁纸 API" autocomplete="off">
     </div>
     <div class="wall-hint">
-      · 填图片直链：每次打开重新加载图片；<br>
-      · 填随机壁纸 API：自动解析 JSON 里的图片地址，每次打开换一张；<br>
-      · 留空则恢复纯色背景。
+      · 填图片直链：每次打开重新加载；<br>
+      · 填 API：自动解析 JSON 里的图片地址；<br>
+      · 留空并保存，即可恢复纯色背景。
     </div>
     <div class="modal-footer">
       <button class="del-btn" style="margin-right:auto;" onclick="clearWallpaper()">清除壁纸</button>
@@ -366,7 +376,31 @@ button:hover{ opacity:0.85; }
 </div>
 
 <script>
-// ============ 搜索引擎 ============
+/* ============ 0. 安全存储 ============ */
+const Store = {
+  get(k, def = ''){
+    try{ const v = localStorage.getItem(k); return v === null ? def : v; }
+    catch(e){ return def; }
+  },
+  getJSON(k, def){
+    try{ const v = localStorage.getItem(k); return v === null ? def : JSON.parse(v); }
+    catch(e){ return def; }
+  },
+  set(k, v){
+    try{ localStorage.setItem(k, String(v)); }catch(e){}
+  },
+  setJSON(k, v){
+    try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){}
+  },
+  remove(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+
+const STORAGE_ENGINES = 'search_engine_list';
+const STORAGE_SELECT  = 'search_selected_idx';
+const STORAGE_THEME   = 'search_theme';
+const STORAGE_WALL_VALUE = 'search_wall_value';
+
+/* ============ 1. 搜索引擎 ============ */
 const defaultEngines = [
   { name:"百度",     url:"https://www.baidu.com/s?wd=%s" },
   { name:"Bing",     url:"https://cn.bing.com/search?q=%s" },
@@ -376,70 +410,26 @@ const defaultEngines = [
 
 let engineList = [];
 let selectedIndex = 0;
-const STORAGE_ENGINES = "search_engine_list";
-const STORAGE_SELECT  = "search_selected_idx";
-const STORAGE_THEME   = "search_theme";
 const modal = document.getElementById('modal');
 const queryInput = document.getElementById('query');
 const MAGIC_CODE = "20090927";
 const MAGIC_URL = "https://space.bilibili.com/3493294795393244";
 
-// ============ 主题 ============
-function setTheme(theme){
-  document.body.classList.toggle('theme-dark', theme === 'dark');
-  document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
-  localStorage.setItem(STORAGE_THEME, theme);
-}
-function initTheme(){
-  const saved = localStorage.getItem(STORAGE_THEME);
-  const initial = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  setTheme(initial);
-}
-document.getElementById('themeToggle').addEventListener('click', ()=>{
-  setTheme(document.body.classList.contains('theme-dark') ? 'light' : 'dark');
-});
-
-// ============ 时间 ============
-function updateTime() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth()+1).padStart(2,'0');
-  const day = String(now.getDate()).padStart(2,'0');
-
-  let hours = now.getHours();
-  const minute = String(now.getMinutes()).padStart(2,'0');
-  let ampm = "AM";
-  if(hours >= 12){
-    ampm = "PM";
-    if(hours > 12) hours -= 12;
-  }
-  if(hours === 0) hours = 12;
-
-  document.getElementById('timeDate').innerText = `${year}年${month}月${day}日`;
-  document.getElementById('timeAmpm').innerText = `${ampm} ${hours}点${minute}分`;
-}
-updateTime();
-setInterval(updateTime, 1000);
-
-// ============ 加载引擎 ============
 function loadData(){
-  const savedList = localStorage.getItem(STORAGE_ENGINES);
-  const savedSel = localStorage.getItem(STORAGE_SELECT);
-  if(savedList){
-    try{
-      engineList = JSON.parse(savedList).map(e => ({ name:e.name, url:e.url }));
-    }catch(err){
-      engineList = JSON.parse(JSON.stringify(defaultEngines));
-    }
+  const savedList = Store.getJSON(STORAGE_ENGINES, null);
+  const savedSel  = Store.get(STORAGE_SELECT, null);
+
+  if(Array.isArray(savedList) && savedList.length > 0){
+    engineList = savedList.map(e => ({ name:e.name, url:e.url }));
   }else{
     engineList = JSON.parse(JSON.stringify(defaultEngines));
+    Store.setJSON(STORAGE_ENGINES, engineList);
+    Store.set(STORAGE_SELECT, 0);
   }
-  if(!Array.isArray(engineList) || engineList.length === 0){
-    engineList = JSON.parse(JSON.stringify(defaultEngines));
-  }
+
   if(savedSel !== null){
-    selectedIndex = Number(savedSel);
-    if(!(selectedIndex >= 0 && selectedIndex < engineList.length)) selectedIndex = 0;
+    const n = Number(savedSel);
+    selectedIndex = (n >= 0 && n < engineList.length) ? n : 0;
   }else{
     selectedIndex = 0;
   }
@@ -516,8 +506,9 @@ function saveEngines(){
   if(sel) selectedIndex = Number(sel.value);
   if(!(selectedIndex >= 0 && selectedIndex < engineList.length)) selectedIndex = 0;
 
-  localStorage.setItem(STORAGE_ENGINES, JSON.stringify(engineList));
-  localStorage.setItem(STORAGE_SELECT, selectedIndex);
+  Store.setJSON(STORAGE_ENGINES, engineList);
+  Store.set(STORAGE_SELECT, selectedIndex);
+
   modal.classList.add('hidden');
   updateEngineText();
 }
@@ -532,7 +523,44 @@ function updateEngineText(){
   document.getElementById('engineName').textContent = engine ? engine.name : '';
 }
 
-// ============ 智能链接识别 ============
+/* ============ 2. 主题 ============ */
+function setTheme(theme){
+  document.body.classList.toggle('theme-dark', theme === 'dark');
+  document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
+  Store.set(STORAGE_THEME, theme);
+}
+function initTheme(){
+  const saved = Store.get(STORAGE_THEME, null);
+  const initial = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  setTheme(initial);
+}
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  setTheme(document.body.classList.contains('theme-dark') ? 'light' : 'dark');
+});
+
+/* ============ 3. 时间 ============ */
+function updateTime() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth()+1).padStart(2,'0');
+  const day = String(now.getDate()).padStart(2,'0');
+
+  let hours = now.getHours();
+  const minute = String(now.getMinutes()).padStart(2,'0');
+  let ampm = "AM";
+  if(hours >= 12){
+    ampm = "PM";
+    if(hours > 12) hours -= 12;
+  }
+  if(hours === 0) hours = 12;
+
+  document.getElementById('timeDate').innerText = `${year}年${month}月${day}日`;
+  document.getElementById('timeAmpm').innerText = `${ampm} ${hours}点${minute}分`;
+}
+updateTime();
+setInterval(updateTime, 1000);
+
+/* ============ 4. 智能链接识别 ============ */
 function detectDirectUrl(input){
   const s = input.trim();
   if(!s) return null;
@@ -551,16 +579,15 @@ function detectDirectUrl(input){
 function search(){
   const kw = queryInput.value.trim();
   if(!kw) return;
+
   if(kw === MAGIC_CODE){
-    localStorage.clear();
     window.location.href = MAGIC_URL;
     return;
   }
+
   const directUrl = detectDirectUrl(kw);
-  if(directUrl){
-    window.location.href = directUrl;
-    return;
-  }
+  if(directUrl){ window.location.href = directUrl; return; }
+
   const engine = engineList[selectedIndex];
   if(!engine) return;
   const target = engine.url.replace('%s', encodeURIComponent(kw));
@@ -575,74 +602,39 @@ modal.addEventListener('click', e=>{
   if(e.target === modal) modal.classList.add('hidden');
 });
 
-initTheme();
-loadData();
-
-
-/* ============================================================
-   壁纸：img 标签强行嵌入
-   ============================================================ */
-const STORAGE_WALL_VALUE = 'search_wall_value';
-const STORAGE_WALL_CACHE = 'search_wall_cache';
-const LEGACY_WALL_URL  = 'search_wall_url';
-const LEGACY_WALL_API  = 'search_wall_api';
-const LEGACY_WALL_MODE = 'search_wall_mode';
-
-const wallLayer = document.getElementById('wallpaperLayer');
-const wallImg   = document.getElementById('wallpaperImg');
+/* ============ 5. 壁纸（无任何默认值） ============ */
+const wallImg = document.getElementById('wallpaperImg');
+const wallOverlay = document.getElementById('wallpaperOverlay');
 
 function getWallValue(){
-  let v = localStorage.getItem(STORAGE_WALL_VALUE);
-  if(v === null){
-    const oldU = localStorage.getItem(LEGACY_WALL_URL) || '';
-    const oldA = localStorage.getItem(LEGACY_WALL_API) || '';
-    v = oldA || oldU || '';
-    localStorage.setItem(STORAGE_WALL_VALUE, v);
-    [LEGACY_WALL_URL, LEGACY_WALL_API, LEGACY_WALL_MODE].forEach(k => localStorage.removeItem(k));
-  }
-  return v;
+  return Store.get(STORAGE_WALL_VALUE, '');
 }
 
-// 给 URL 加时间戳，保证每次打开都重新下载
-function withCacheBuster(url){
-  if(!url) return url;
-  if(!/^https?:\/\//i.test(url)) return url;
-  if(/[?&]_t=/.test(url)) return url;
-  const hashIdx = url.indexOf('#');
-  let base = url, frag = '';
-  if(hashIdx >= 0){
-    base = url.slice(0, hashIdx);
-    frag = url.slice(hashIdx);
-  }
-  const sep = base.includes('?') ? '&' : '?';
-  return base + sep + '_t=' + Date.now() + frag;
-}
-
-// 用 img.onload / img.onerror 设置图片，成功返回 resolve，失败 reject
-function setImage(url){
+function loadImage(url){
   return new Promise((resolve, reject) => {
-    wallImg.onload = () => resolve();
-    wallImg.onerror = () => reject(new Error('图片加载失败：' + url));
+    wallImg.onload = () => resolve({ w: wallImg.naturalWidth, h: wallImg.naturalHeight });
+    wallImg.onerror = () => reject(new Error('图片加载失败'));
     wallImg.src = url;
   });
 }
 
-function showWallpaperLayer(show){
+function showWall(show){
   if(show){
-    wallLayer.classList.add('active');
+    wallImg.classList.add('active');
+    wallOverlay.classList.add('active');
     document.body.classList.add('has-wallpaper');
   }else{
-    wallLayer.classList.remove('active');
+    wallImg.classList.remove('active');
+    wallOverlay.classList.remove('active');
     document.body.classList.remove('has-wallpaper');
   }
 }
 
-// 尝试把 URL 当 JSON API 解析，拿到真正的图片地址
 async function parseApiUrl(url){
   try{
-    const res = await fetch(withCacheBuster(url), { cache:'no-store' });
+    const res = await fetch(url, { cache:'no-store' });
     const ct = (res.headers.get('content-type') || '').toLowerCase();
-    console.log('[壁纸] API 响应 content-type：', ct);
+    console.log('[壁纸] API content-type：', ct);
 
     if(ct.includes('application/json')){
       const data = await res.json();
@@ -655,66 +647,51 @@ async function parseApiUrl(url){
         try{ u = new URL(u, url).href; }catch(e){}
         return u;
       }
-      console.warn('[壁纸] JSON 里没找到图片字段');
-    }else if(ct.startsWith('image/')){
-      // 直接返回图片流的 API
+    }
+    if(ct.startsWith('image/')){
       return url;
     }
   }catch(e){
-    console.warn('[壁纸] API 请求失败（可能是跨域）：', e && e.message);
+    console.warn('[壁纸] API 请求失败：', e && e.message);
   }
   return null;
 }
 
 async function loadWallpaper(){
   const value = getWallValue();
-
+  
+  // 【绝对不加载默认壁纸】：没填地址直接显示纯色背景
   if(!value){
-    showWallpaperLayer(false);
-    wallImg.removeAttribute('src');
+    showWall(false);
     return;
   }
 
   // 第一步：直接当图片加载
   try{
-    await setImage(withCacheBuster(value));
-    showWallpaperLayer(true);
-    console.log('[壁纸] 直接加载成功：', value);
+    const info = await loadImage(value);
+    showWall(true);
+    console.log('[壁纸] ✅ 直接加载成功：', info);
     return;
   }catch(e){
-    console.warn('[壁纸] 直接加载失败，尝试作为 API 解析');
+    console.warn('[壁纸] ❌ 直接加载失败，尝试作为 API 解析');
   }
 
   // 第二步：当作 JSON API 解析
   const apiImgUrl = await parseApiUrl(value);
-  if(apiImgUrl){
+  if(apiImgUrl && apiImgUrl !== value){
     try{
-      await setImage(withCacheBuster(apiImgUrl));
-      localStorage.setItem(STORAGE_WALL_CACHE, apiImgUrl);
-      showWallpaperLayer(true);
-      console.log('[壁纸] API 解析成功：', apiImgUrl);
+      const info = await loadImage(apiImgUrl);
+      showWall(true);
+      console.log('[壁纸] ✅ API 解析成功：', apiImgUrl, info);
       return;
     }catch(e){
-      console.warn('[壁纸] API 返回的图片地址也加载失败');
-    }
-  }
-
-  // 第三步：用上次成功的结果兜底
-  const cached = localStorage.getItem(STORAGE_WALL_CACHE) || '';
-  if(cached && cached !== value){
-    try{
-      await setImage(withCacheBuster(cached));
-      showWallpaperLayer(true);
-      console.log('[壁纸] 使用缓存兜底：', cached);
-      return;
-    }catch(e){
-      console.warn('[壁纸] 缓存也加载失败');
+      console.warn('[壁纸] ❌ API 返回的图片也加载失败');
     }
   }
 
   // 全部失败
-  showWallpaperLayer(false);
-  console.error('[壁纸] 所有加载方式均失败，请检查地址是否有效：', value);
+  showWall(false);
+  alert('壁纸加载失败，请检查地址是否为有效的图片直链，或该网站是否禁止外链。\n\n地址：' + value);
 }
 
 function openWallModal(){
@@ -724,31 +701,29 @@ function openWallModal(){
 
 function saveWallpaper(){
   const v = document.getElementById('wallValue').value.trim();
-  localStorage.setItem(STORAGE_WALL_VALUE, v);
-  localStorage.removeItem(STORAGE_WALL_CACHE);
+  Store.set(STORAGE_WALL_VALUE, v);
   document.getElementById('wallModal').classList.add('hidden');
   loadWallpaper();
 }
 
 function clearWallpaper(){
-  localStorage.setItem(STORAGE_WALL_VALUE, '');
-  localStorage.removeItem(STORAGE_WALL_CACHE);
+  Store.set(STORAGE_WALL_VALUE, '');
   document.getElementById('wallValue').value = '';
   document.getElementById('wallModal').classList.add('hidden');
   wallImg.removeAttribute('src');
-  showWallpaperLayer(false);
+  showWall(false);
 }
 
 document.getElementById('wallToggle').addEventListener('click', openWallModal);
 document.getElementById('wallModal').addEventListener('click', e=>{
-  if(e.target === document.getElementById('wallModal')){
-    document.getElementById('wallModal').classList.add('hidden');
+  if(e.target.id === 'wallModal'){
+    e.target.classList.add('hidden');
   }
 });
 
-/* ============================================================
-   初始化
-   ============================================================ */
+/* ============ 6. 初始化 ============ */
+initTheme();
+loadData();
 loadWallpaper();
 </script>
 </body>
