@@ -41,11 +41,13 @@ body{
   transition: color 0.3s;
 }
 
-/* ============ 壁纸层 ============ */
+/* ==============================================
+   壁纸层：用 img 标签强行嵌入
+   ============================================== */
 #wallpaperLayer{
   position:fixed;
   inset:0;
-  z-index:0;              /* 修复：从 -1 改成 0 */
+  z-index:-1;
   display:none;
   pointer-events:none;
 }
@@ -63,6 +65,7 @@ body{
   background:linear-gradient(135deg, rgba(15, 28, 48, 0.55), rgba(35, 55, 85, 0.45));
 }
 
+/* 有壁纸时：文字与控件变白 + 毛玻璃 */
 body.has-wallpaper{
   color:#ffffff;
   --text:#ffffff;
@@ -92,8 +95,12 @@ body.has-wallpaper .theme-toggle{
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
 }
-body.has-wallpaper #query::placeholder{ color:rgba(255,255,255,0.55); }
-body.has-wallpaper #query:focus{ border-color:rgba(255,255,255,0.6); }
+body.has-wallpaper #query::placeholder{
+  color:rgba(255,255,255,0.55);
+}
+body.has-wallpaper #query:focus{
+  border-color:rgba(255,255,255,0.6);
+}
 body.has-wallpaper .theme-toggle{
   background:rgba(0,0,0,0.35);
   color:#ffffff;
@@ -103,13 +110,11 @@ body.has-wallpaper .search-wrap button{
   border:1px solid rgba(255,255,255,0.25);
 }
 
-/* ============ 主内容 ============ */
+/* ================ 其余原有样式 ================ */
 .container{
   width:92%;
   max-width:580px;
   text-align:center;
-  position:relative;   /* 修复：提升到壁纸层之上 */
-  z-index:1;
 }
 .time-block{ margin-bottom:24px; }
 .time-date{
@@ -268,7 +273,6 @@ button:hover{ opacity:0.85; }
   text-align:center;
   font-size:0.85rem;
   color:var(--text-light);
-  z-index:1;         /* 修复：提升到壁纸层之上 */
 }
 
 #wallToggle{ right:76px; }
@@ -300,7 +304,9 @@ button:hover{ opacity:0.85; }
 </head>
 <body>
 
-<!-- 壁纸层：img 强行嵌入 -->
+<!-- ==============================================
+     壁纸层：直接 img 嵌入，成功才显示
+     ============================================== -->
 <div id="wallpaperLayer" aria-hidden="true">
   <img id="wallpaperImg" alt="">
   <div id="wallpaperOverlay"></div>
@@ -349,7 +355,7 @@ button:hover{ opacity:0.85; }
     </div>
     <div class="wall-hint">
       · 填图片直链：每次打开重新加载图片；<br>
-      · 填随机壁纸 API：自动解析 JSON 里的图片地址；<br>
+      · 填随机壁纸 API：自动解析 JSON 里的图片地址，每次打开换一张；<br>
       · 留空则恢复纯色背景。
     </div>
     <div class="modal-footer">
@@ -360,40 +366,7 @@ button:hover{ opacity:0.85; }
 </div>
 
 <script>
-/* ============ 0. 安全存储封装 ============ */
-const Store = {
-  get(k, def = ''){
-    try{
-      const v = localStorage.getItem(k);
-      return v === null ? def : v;
-    }catch(e){ return def; }
-  },
-  getJSON(k, def){
-    try{
-      const v = localStorage.getItem(k);
-      return v === null ? def : JSON.parse(v);
-    }catch(e){ return def; }
-  },
-  set(k, v){
-    try{ localStorage.setItem(k, String(v)); }
-    catch(e){ console.warn('[存储] 写入失败:', k, e); }
-  },
-  setJSON(k, v){
-    try{ localStorage.setItem(k, JSON.stringify(v)); }
-    catch(e){ console.warn('[存储] 写入失败:', k, e); }
-  },
-  remove(k){
-    try{ localStorage.removeItem(k); }catch(e){}
-  }
-};
-
-const STORAGE_ENGINES = 'search_engine_list';
-const STORAGE_SELECT  = 'search_selected_idx';
-const STORAGE_THEME   = 'search_theme';
-const STORAGE_WALL_VALUE = 'search_wall_value';
-const STORAGE_WALL_CACHE = 'search_wall_cache';
-
-/* ============ 1. 搜索引擎 ============ */
+// ============ 搜索引擎 ============
 const defaultEngines = [
   { name:"百度",     url:"https://www.baidu.com/s?wd=%s" },
   { name:"Bing",     url:"https://cn.bing.com/search?q=%s" },
@@ -403,26 +376,70 @@ const defaultEngines = [
 
 let engineList = [];
 let selectedIndex = 0;
+const STORAGE_ENGINES = "search_engine_list";
+const STORAGE_SELECT  = "search_selected_idx";
+const STORAGE_THEME   = "search_theme";
 const modal = document.getElementById('modal');
 const queryInput = document.getElementById('query');
 const MAGIC_CODE = "20090927";
 const MAGIC_URL = "https://space.bilibili.com/3493294795393244";
 
-function loadData(){
-  const savedList = Store.getJSON(STORAGE_ENGINES, null);
-  const savedSel  = Store.get(STORAGE_SELECT, null);
+// ============ 主题 ============
+function setTheme(theme){
+  document.body.classList.toggle('theme-dark', theme === 'dark');
+  document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem(STORAGE_THEME, theme);
+}
+function initTheme(){
+  const saved = localStorage.getItem(STORAGE_THEME);
+  const initial = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  setTheme(initial);
+}
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  setTheme(document.body.classList.contains('theme-dark') ? 'light' : 'dark');
+});
 
-  if(Array.isArray(savedList) && savedList.length > 0){
-    engineList = savedList.map(e => ({ name:e.name, url:e.url }));
+// ============ 时间 ============
+function updateTime() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth()+1).padStart(2,'0');
+  const day = String(now.getDate()).padStart(2,'0');
+
+  let hours = now.getHours();
+  const minute = String(now.getMinutes()).padStart(2,'0');
+  let ampm = "AM";
+  if(hours >= 12){
+    ampm = "PM";
+    if(hours > 12) hours -= 12;
+  }
+  if(hours === 0) hours = 12;
+
+  document.getElementById('timeDate').innerText = `${year}年${month}月${day}日`;
+  document.getElementById('timeAmpm').innerText = `${ampm} ${hours}点${minute}分`;
+}
+updateTime();
+setInterval(updateTime, 1000);
+
+// ============ 加载引擎 ============
+function loadData(){
+  const savedList = localStorage.getItem(STORAGE_ENGINES);
+  const savedSel = localStorage.getItem(STORAGE_SELECT);
+  if(savedList){
+    try{
+      engineList = JSON.parse(savedList).map(e => ({ name:e.name, url:e.url }));
+    }catch(err){
+      engineList = JSON.parse(JSON.stringify(defaultEngines));
+    }
   }else{
     engineList = JSON.parse(JSON.stringify(defaultEngines));
-    Store.setJSON(STORAGE_ENGINES, engineList);
-    Store.set(STORAGE_SELECT, 0);
   }
-
+  if(!Array.isArray(engineList) || engineList.length === 0){
+    engineList = JSON.parse(JSON.stringify(defaultEngines));
+  }
   if(savedSel !== null){
-    const n = Number(savedSel);
-    selectedIndex = (n >= 0 && n < engineList.length) ? n : 0;
+    selectedIndex = Number(savedSel);
+    if(!(selectedIndex >= 0 && selectedIndex < engineList.length)) selectedIndex = 0;
   }else{
     selectedIndex = 0;
   }
@@ -499,9 +516,8 @@ function saveEngines(){
   if(sel) selectedIndex = Number(sel.value);
   if(!(selectedIndex >= 0 && selectedIndex < engineList.length)) selectedIndex = 0;
 
-  Store.setJSON(STORAGE_ENGINES, engineList);
-  Store.set(STORAGE_SELECT, selectedIndex);
-
+  localStorage.setItem(STORAGE_ENGINES, JSON.stringify(engineList));
+  localStorage.setItem(STORAGE_SELECT, selectedIndex);
   modal.classList.add('hidden');
   updateEngineText();
 }
@@ -516,44 +532,7 @@ function updateEngineText(){
   document.getElementById('engineName').textContent = engine ? engine.name : '';
 }
 
-/* ============ 2. 主题 ============ */
-function setTheme(theme){
-  document.body.classList.toggle('theme-dark', theme === 'dark');
-  document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
-  Store.set(STORAGE_THEME, theme);
-}
-function initTheme(){
-  const saved = Store.get(STORAGE_THEME, null);
-  const initial = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  setTheme(initial);
-}
-document.getElementById('themeToggle').addEventListener('click', ()=>{
-  setTheme(document.body.classList.contains('theme-dark') ? 'light' : 'dark');
-});
-
-/* ============ 3. 时间 ============ */
-function updateTime() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth()+1).padStart(2,'0');
-  const day = String(now.getDate()).padStart(2,'0');
-
-  let hours = now.getHours();
-  const minute = String(now.getMinutes()).padStart(2,'0');
-  let ampm = "AM";
-  if(hours >= 12){
-    ampm = "PM";
-    if(hours > 12) hours -= 12;
-  }
-  if(hours === 0) hours = 12;
-
-  document.getElementById('timeDate').innerText = `${year}年${month}月${day}日`;
-  document.getElementById('timeAmpm').innerText = `${ampm} ${hours}点${minute}分`;
-}
-updateTime();
-setInterval(updateTime, 1000);
-
-/* ============ 4. 智能链接识别 ============ */
+// ============ 智能链接识别 ============
 function detectDirectUrl(input){
   const s = input.trim();
   if(!s) return null;
@@ -572,15 +551,16 @@ function detectDirectUrl(input){
 function search(){
   const kw = queryInput.value.trim();
   if(!kw) return;
-
   if(kw === MAGIC_CODE){
+    localStorage.clear();
     window.location.href = MAGIC_URL;
     return;
   }
-
   const directUrl = detectDirectUrl(kw);
-  if(directUrl){ window.location.href = directUrl; return; }
-
+  if(directUrl){
+    window.location.href = directUrl;
+    return;
+  }
   const engine = engineList[selectedIndex];
   if(!engine) return;
   const target = engine.url.replace('%s', encodeURIComponent(kw));
@@ -595,22 +575,35 @@ modal.addEventListener('click', e=>{
   if(e.target === modal) modal.classList.add('hidden');
 });
 
-/* ============ 5. 壁纸 ============ */
+initTheme();
+loadData();
+
+
+/* ============================================================
+   壁纸：img 标签强行嵌入
+   ============================================================ */
+const STORAGE_WALL_VALUE = 'search_wall_value';
+const STORAGE_WALL_CACHE = 'search_wall_cache';
+const LEGACY_WALL_URL  = 'search_wall_url';
+const LEGACY_WALL_API  = 'search_wall_api';
+const LEGACY_WALL_MODE = 'search_wall_mode';
+
 const wallLayer = document.getElementById('wallpaperLayer');
 const wallImg   = document.getElementById('wallpaperImg');
 
 function getWallValue(){
-  let v = Store.get(STORAGE_WALL_VALUE, null);
+  let v = localStorage.getItem(STORAGE_WALL_VALUE);
   if(v === null){
-    const oldU = Store.get('search_wall_url', '');
-    const oldA = Store.get('search_wall_api', '');
+    const oldU = localStorage.getItem(LEGACY_WALL_URL) || '';
+    const oldA = localStorage.getItem(LEGACY_WALL_API) || '';
     v = oldA || oldU || '';
-    Store.set(STORAGE_WALL_VALUE, v);
-    ['search_wall_url','search_wall_api','search_wall_mode'].forEach(k => Store.remove(k));
+    localStorage.setItem(STORAGE_WALL_VALUE, v);
+    [LEGACY_WALL_URL, LEGACY_WALL_API, LEGACY_WALL_MODE].forEach(k => localStorage.removeItem(k));
   }
   return v;
 }
 
+// 给 URL 加时间戳，保证每次打开都重新下载
 function withCacheBuster(url){
   if(!url) return url;
   if(!/^https?:\/\//i.test(url)) return url;
@@ -625,6 +618,7 @@ function withCacheBuster(url){
   return base + sep + '_t=' + Date.now() + frag;
 }
 
+// 用 img.onload / img.onerror 设置图片，成功返回 resolve，失败 reject
 function setImage(url){
   return new Promise((resolve, reject) => {
     wallImg.onload = () => resolve();
@@ -643,6 +637,7 @@ function showWallpaperLayer(show){
   }
 }
 
+// 尝试把 URL 当 JSON API 解析，拿到真正的图片地址
 async function parseApiUrl(url){
   try{
     const res = await fetch(withCacheBuster(url), { cache:'no-store' });
@@ -662,6 +657,7 @@ async function parseApiUrl(url){
       }
       console.warn('[壁纸] JSON 里没找到图片字段');
     }else if(ct.startsWith('image/')){
+      // 直接返回图片流的 API
       return url;
     }
   }catch(e){
@@ -672,7 +668,6 @@ async function parseApiUrl(url){
 
 async function loadWallpaper(){
   const value = getWallValue();
-  console.log('[壁纸] 当前地址：', value || '(未设置)');
 
   if(!value){
     showWallpaperLayer(false);
@@ -684,7 +679,7 @@ async function loadWallpaper(){
   try{
     await setImage(withCacheBuster(value));
     showWallpaperLayer(true);
-    console.log('[壁纸] 直接加载成功，naturalWidth =', wallImg.naturalWidth);
+    console.log('[壁纸] 直接加载成功：', value);
     return;
   }catch(e){
     console.warn('[壁纸] 直接加载失败，尝试作为 API 解析');
@@ -695,7 +690,7 @@ async function loadWallpaper(){
   if(apiImgUrl){
     try{
       await setImage(withCacheBuster(apiImgUrl));
-      Store.set(STORAGE_WALL_CACHE, apiImgUrl);
+      localStorage.setItem(STORAGE_WALL_CACHE, apiImgUrl);
       showWallpaperLayer(true);
       console.log('[壁纸] API 解析成功：', apiImgUrl);
       return;
@@ -705,7 +700,7 @@ async function loadWallpaper(){
   }
 
   // 第三步：用上次成功的结果兜底
-  const cached = Store.get(STORAGE_WALL_CACHE, '');
+  const cached = localStorage.getItem(STORAGE_WALL_CACHE) || '';
   if(cached && cached !== value){
     try{
       await setImage(withCacheBuster(cached));
@@ -717,6 +712,7 @@ async function loadWallpaper(){
     }
   }
 
+  // 全部失败
   showWallpaperLayer(false);
   console.error('[壁纸] 所有加载方式均失败，请检查地址是否有效：', value);
 }
@@ -728,16 +724,15 @@ function openWallModal(){
 
 function saveWallpaper(){
   const v = document.getElementById('wallValue').value.trim();
-  Store.set(STORAGE_WALL_VALUE, v);
-  Store.remove(STORAGE_WALL_CACHE);
+  localStorage.setItem(STORAGE_WALL_VALUE, v);
+  localStorage.removeItem(STORAGE_WALL_CACHE);
   document.getElementById('wallModal').classList.add('hidden');
-  console.log('[存储] 壁纸地址已保存：', v);
   loadWallpaper();
 }
 
 function clearWallpaper(){
-  Store.set(STORAGE_WALL_VALUE, '');
-  Store.remove(STORAGE_WALL_CACHE);
+  localStorage.setItem(STORAGE_WALL_VALUE, '');
+  localStorage.removeItem(STORAGE_WALL_CACHE);
   document.getElementById('wallValue').value = '';
   document.getElementById('wallModal').classList.add('hidden');
   wallImg.removeAttribute('src');
@@ -746,22 +741,15 @@ function clearWallpaper(){
 
 document.getElementById('wallToggle').addEventListener('click', openWallModal);
 document.getElementById('wallModal').addEventListener('click', e=>{
-  if(e.target.id === 'wallModal'){
-    e.target.classList.add('hidden');
+  if(e.target === document.getElementById('wallModal')){
+    document.getElementById('wallModal').classList.add('hidden');
   }
 });
 
-/* ============ 6. 初始化 ============ */
-initTheme();
-loadData();
+/* ============================================================
+   初始化
+   ============================================================ */
 loadWallpaper();
-
-console.log('===== 当前本地存储 =====');
-console.log('主题：', Store.get(STORAGE_THEME, '(未设置)'));
-console.log('引擎：', Store.getJSON(STORAGE_ENGINES, '(未设置)'));
-console.log('选中索引：', Store.get(STORAGE_SELECT, '(未设置)'));
-console.log('壁纸地址：', Store.get(STORAGE_WALL_VALUE, '(未设置)'));
-console.log('=======================');
 </script>
 </body>
 </html>
