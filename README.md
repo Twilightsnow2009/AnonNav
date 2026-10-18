@@ -1,17 +1,4 @@
-AnonNav
- 
-License: MIT
-
-https://img.shields.io/badge/License-MIT-yellow.svg
-https://img.shields.io/github/stars/Twilightsnow2009/AnonNav?style=social
-https://img.shields.io/github/forks/Twilightsnow2009/AnonNav?style=social
-
 🔍 AnonNav - 极简浏览器起始页与搜索导航
-
-https://img.shields.io/badge/Demo-GitHub%20Pages-blue
-https://img.shields.io/badge/License-MIT-green.svg
-https://img.shields.io/badge/Build-Single%20HTML-orange
-
  
 AnonNav 是一个极简、高度可定制的浏览器起始页（新标签页）。无需任何后端服务器，仅依靠单文件 HTML 与纯前端技术，就能打造干净高效、可深度改造的搜索控制台。
  
@@ -39,7 +26,7 @@ AnonNav 是一个极简、高度可定制的浏览器起始页（新标签页）
  
 默认引擎未能满足需求？项目附带了整理好的额外搜索引擎列表，涵盖搜索、社交、视频、电商、学习等多个分类。
  
-如需添加可查看 更多.md 文件，复制对应链接粘贴到自定义引擎即可。
+如需添加可查看 更多.md（https://github.com/Twilightsnow2009/AnonNav/blob/main/%E6%9B%B4%E5%A4%9A.md） 文件，复制对应链接粘贴到自定义引擎即可。
  
  
  
@@ -88,12 +75,14 @@ AnonNav 是一个极简、高度可定制的浏览器起始页（新标签页）
  
 示例脚本
  
-javascript  
+javascript
+  
 // 1. 读取当前搜索引擎数量
 alert("当前搜索引擎数量：" + engineList.length);
  
  
-javascript  
+javascript
+  
 // 2. 新增一条搜索引擎（演示双向绑定）
 engineList.push({
   name: "必应",
@@ -101,12 +90,14 @@ engineList.push({
 });
  
  
-javascript  
+javascript
+  
 // 3. 一键切换深色主题
 setTheme('dark');
  
  
-javascript  
+javascript
+  
 // 4. 劫持搜索函数，打印搜索词
 const originalSearch = search;
 search = function(keyword) {
@@ -132,7 +123,8 @@ search = function(keyword) {
  
 📂 目录结构
  
-text  
+text
+  
 AnonNav/
 ├── index.html       # 核心代码，包含 HTML/CSS/JS
 ├── README.md        # 项目自述文件
