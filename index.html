@@ -565,7 +565,7 @@ button:hover{ opacity:0.85; }
   </div>
 </div>
 
-<!-- 壁纸设置弹窗（已加本地图片上传） -->
+<!-- 壁纸设置弹窗 -->
 <div id="wallModal" class="modal hidden">
   <div class="modal-box">
     <h3>壁纸设置</h3>
@@ -604,7 +604,8 @@ button:hover{ opacity:0.85; }
     <h3>脚本管理</h3>
     <div class="script-warn">
       ⚠️ 添加的脚本会以完整权限在本页运行，请只运行你信任的来源。<br>
-      停用 / 删除脚本后需刷新页面才能完全生效。
+      停用 / 删除脚本后需刷新页面才能完全生效。<br>
+      <b>💡 提示：</b>可通过全局对象 <code>App</code> 操纵页面，如 <code>App.queryInput.value = "测试"</code>、<code>App.setTheme('dark')</code>、<code>App.renderEngineList()</code>。
     </div>
 
     <div id="scriptList"></div>
@@ -633,7 +634,7 @@ button:hover{ opacity:0.85; }
 </div>
 
 <script>
-/* ============ 0. 存储层：IndexedDB（带 localStorage 迁移与降级） ============ */
+/* ============ 0. 存储层：IndexedDB ============ */
 const Store = (function(){
   const DB_NAME = 'search_app_db';
   const DB_VERSION = 1;
@@ -647,15 +648,13 @@ const Store = (function(){
 
   function openDB(){
     return new Promise((resolve, reject) => {
-      if(!window.indexedDB){ reject(new Error('浏览器不支持 IndexedDB')); return; }
+      if(!window.indexedDB){ reject(new Error('不支持 IndexedDB')); return; }
       let req;
       try{ req = indexedDB.open(DB_NAME, DB_VERSION); }
       catch(e){ reject(e); return; }
       req.onupgradeneeded = e => {
         const d = e.target.result;
-        if(!d.objectStoreNames.contains(STORE_NAME)){
-          d.createObjectStore(STORE_NAME);
-        }
+        if(!d.objectStoreNames.contains(STORE_NAME)) d.createObjectStore(STORE_NAME);
       };
       req.onsuccess = e => resolve(e.target.result);
       req.onerror = () => reject(req.error || new Error('IndexedDB 打开失败'));
@@ -704,9 +703,7 @@ const Store = (function(){
     }catch(e){ return []; }
   }
 
-  function lsGet(k){
-    try{ return localStorage.getItem(k); }catch(e){ return null; }
-  }
+  function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
 
   function migrateFromLS(existing){
     const migrated = [];
@@ -729,25 +726,12 @@ const Store = (function(){
           db = await openDB();
           const all = await dbReadAll();
           Object.keys(all).forEach(k => cache.set(k, all[k]));
-
           const migrated = migrateFromLS(all);
           if(migrated.length){
             console.log('[Store] 从 localStorage 迁移 ' + migrated.length + ' 项到 IndexedDB');
             await Promise.all(migrated.map(k => dbPut(k, cache.get(k))));
           }
           console.log('[Store] IndexedDB 就绪，共 ' + cache.size + ' 条记录');
-
-          if(navigator.storage && navigator.storage.persist){
-            navigator.storage.persist().then(ok => {
-              console.log('[Store] 持久化存储：' + (ok ? '已获得' : '被拒绝'));
-            }).catch(()=>{});
-          }
-          if(navigator.storage && navigator.storage.estimate){
-            navigator.storage.estimate().then(({usage, quota}) => {
-              console.log('[Store] 用量 ' + (usage/1024).toFixed(1) + ' KB / 上限 ' +
-                          (quota/1024/1024).toFixed(1) + ' MB');
-            }).catch(()=>{});
-          }
         }catch(err){
           useIDB = false;
           console.warn('[Store] IndexedDB 不可用，降级到 localStorage：', err && err.message);
@@ -760,42 +744,28 @@ const Store = (function(){
       })();
       return initPromise;
     },
-
-    get(k, def = ''){
-      return cache.has(k) ? cache.get(k) : def;
-    },
-
+    get(k, def = ''){ return cache.has(k) ? cache.get(k) : def; },
     getJSON(k, def){
       if(!cache.has(k)) return def;
       try{ return JSON.parse(cache.get(k)); }catch(e){ return def; }
     },
-
     set(k, v){
       const s = String(v);
       cache.set(k, s);
-      if(useIDB && db){
-        dbPut(k, s).catch(err => console.warn('[Store] 写入失败 ' + k + '：', err));
-      }else{
-        try{ localStorage.setItem(k, s); }
-        catch(e){ console.warn('[Store] localStorage 写入失败（可能已满）'); }
-      }
+      if(useIDB && db){ dbPut(k, s).catch(err => console.warn(err)); }
+      else { try{ localStorage.setItem(k, s); }catch(e){} }
     },
-
     setJSON(k, v){ api.set(k, JSON.stringify(v)); },
-
     remove(k){
       cache.delete(k);
-      if(useIDB && db){
-        dbDelete(k).catch(()=>{});
-      }else{
-        try{ localStorage.removeItem(k); }catch(e){}
-      }
+      if(useIDB && db){ dbDelete(k).catch(()=>{}); }
+      else { try{ localStorage.removeItem(k); }catch(e){} }
     }
   };
-
   return api;
 })();
 
+/* ============ 1. 核心状态 ============ */
 const STORAGE_ENGINES = 'search_engine_list';
 const STORAGE_SELECT  = 'search_selected_idx';
 const STORAGE_THEME   = 'search_theme';
@@ -803,7 +773,6 @@ const STORAGE_WALL_VALUE = 'search_wall_value';
 const STORAGE_TITLE_TEXT = 'search_title_text';
 const STORAGE_SCRIPTS = 'search_user_scripts';
 
-/* ============ 1. 搜索引擎 ============ */
 const defaultEngines = [
   { name:"百度",     url:"https://www.baidu.com/s?wd=%s" },
   { name:"Bing",     url:"https://cn.bing.com/search?q=%s" },
@@ -941,7 +910,7 @@ document.getElementById('themeToggle').addEventListener('click', ()=>{
   setTheme(document.body.classList.contains('theme-dark') ? 'light' : 'dark');
 });
 
-/* ============ 3. 时间 (已修改为精确到秒) ============ */
+/* ============ 3. 时间 ============ */
 function updateTime() {
   const now = new Date();
   const year = now.getFullYear();
@@ -952,17 +921,11 @@ function updateTime() {
   const minute = String(now.getMinutes()).padStart(2, '0');
   const second = String(now.getSeconds()).padStart(2, '0');
 
-  // 判断上午/下午
   const ampm = hours < 12 ? '上午' : '下午';
-
-  // 转换为 12 小时制
   if (hours > 12) hours -= 12;
   if (hours === 0) hours = 12;
-
-  // 小时补零
   const hourStr = String(hours).padStart(2, '0');
 
-  // 更新 DOM
   document.getElementById('timeDate').innerText = `${year}年${month}月${day}日`;
   document.getElementById('timeAmpm').innerText = `${ampm}：${hourStr}:${minute}:${second}`;
 }
@@ -1015,9 +978,7 @@ modal.addEventListener('click', e=>{
 const wallImg = document.getElementById('wallpaperImg');
 const wallOverlay = document.getElementById('wallpaperOverlay');
 
-function getWallValue(){
-  return Store.get(STORAGE_WALL_VALUE, '');
-}
+function getWallValue(){ return Store.get(STORAGE_WALL_VALUE, ''); }
 
 function loadImage(url){
   return new Promise((resolve, reject) => {
@@ -1043,8 +1004,6 @@ async function parseApiUrl(url){
   try{
     const res = await fetch(url, { cache:'no-store' });
     const ct = (res.headers.get('content-type') || '').toLowerCase();
-    console.log('[壁纸] API content-type：', ct);
-
     if(ct.includes('application/json')){
       const data = await res.json();
       let u = data.url || data.imgurl || data.image || data.img || data.raw || data.src;
@@ -1057,68 +1016,31 @@ async function parseApiUrl(url){
         return u;
       }
     }
-    if(ct.startsWith('image/')){
-      return url;
-    }
-  }catch(e){
-    console.warn('[壁纸] API 请求失败：', e && e.message);
-  }
+    if(ct.startsWith('image/')) return url;
+  }catch(e){}
   return null;
 }
 
 async function loadWallpaper(){
   const value = getWallValue();
+  if(!value){ showWall(false); return; }
 
-  if(!value){
-    showWall(false);
-    return;
-  }
-
-  // 如果是以 data:image/ 开头的，说明是本地上传的 Base64 图片
   if(value.startsWith('data:image/')){
-    try{
-      const info = await loadImage(value);
-      showWall(true);
-      console.log('[壁纸] ✅ 本地图片加载成功：', info);
-      return;
-    }catch(e){
-      console.warn('[壁纸] ❌ 本地图片损坏或无法加载');
-      showWall(false);
-      return;
-    }
+    try{ await loadImage(value); showWall(true); return; }catch(e){ showWall(false); return; }
   }
 
-  // 尝试作为网络直链加载
-  try{
-    const info = await loadImage(value);
-    showWall(true);
-    console.log('[壁纸] ✅ 网络直链加载成功：', info);
-    return;
-  }catch(e){
-    console.warn('[壁纸] ❌ 直链加载失败，尝试作为 API 解析');
-  }
+  try{ await loadImage(value); showWall(true); return; }catch(e){}
 
-  // 尝试作为 API 解析
   const apiImgUrl = await parseApiUrl(value);
   if(apiImgUrl && apiImgUrl !== value){
-    try{
-      const info = await loadImage(apiImgUrl);
-      showWall(true);
-      console.log('[壁纸] ✅ API 解析成功：', apiImgUrl, info);
-      return;
-    }catch(e){
-      console.warn('[壁纸] ❌ API 返回的图片也加载失败');
-    }
+    try{ await loadImage(apiImgUrl); showWall(true); return; }catch(e){}
   }
-
   showWall(false);
-  alert('壁纸加载失败，请检查地址是否为有效的图片直链，或该网站是否禁止外链。\n\n地址：' + value);
+  alert('壁纸加载失败，请检查地址是否为有效的图片直链。\n\n地址：' + value);
 }
 
 function openWallModal(){
   const val = getWallValue();
-  
-  // 刷新 UI 状态，如果是 Base64 则清空 URL 输入框并提示
   if(val.startsWith('data:image/')){
     document.getElementById('wallValue').value = '';
     document.getElementById('localWallHint').style.display = 'block';
@@ -1126,20 +1048,16 @@ function openWallModal(){
     document.getElementById('wallValue').value = val;
     document.getElementById('localWallHint').style.display = 'none';
   }
-  
   document.getElementById('wallModal').classList.remove('hidden');
 }
 
 function saveWallpaper(){
   const v = document.getElementById('wallValue').value.trim();
   const currentVal = getWallValue();
-  
-  // 如果用户没输入新的 URL，且当前是本地图片，则保持本地图片不变
   if(v === '' && currentVal.startsWith('data:image/')){
     document.getElementById('wallModal').classList.add('hidden');
     return;
   }
-  
   Store.set(STORAGE_WALL_VALUE, v);
   document.getElementById('wallModal').classList.add('hidden');
   loadWallpaper();
@@ -1154,42 +1072,20 @@ function clearWallpaper(){
   showWall(false);
 }
 
-// 监听本地图片文件上传
 document.getElementById('wallFileInput').addEventListener('change', function(e){
   const file = e.target.files && e.target.files[0];
   if(!file) return;
-
-  if(!file.type.startsWith('image/')){
-    alert('请选择图片文件！');
-    e.target.value = '';
-    return;
+  if(!file.type.startsWith('image/')){ alert('请选择图片文件！'); e.target.value=''; return; }
+  if(file.size > 5 * 1024 * 1024 && !confirm('图片较大，可能会占用较多存储空间，是否继续？')){
+    e.target.value=''; return;
   }
-
-  // 限制大小（5MB）
-  if(file.size > 5 * 1024 * 1024){
-    if(!confirm('图片较大（' + (file.size / 1024 / 1024).toFixed(2) + ' MB），可能会占用较多本地存储空间，是否继续？')){
-      e.target.value = '';
-      return;
-    }
-  }
-
   const reader = new FileReader();
   reader.onload = function(evt){
-    const base64 = evt.target.result;
-    
-    // 将 Base64 存入 IndexedDB
-    Store.set(STORAGE_WALL_VALUE, base64);
-    
-    // UI 更新并直接生效
+    Store.set(STORAGE_WALL_VALUE, evt.target.result);
     document.getElementById('wallValue').value = '';
     document.getElementById('localWallHint').style.display = 'block';
     document.getElementById('wallModal').classList.add('hidden');
     loadWallpaper();
-    
-    e.target.value = ''; // 清空，允许下次选同一张图
-  };
-  reader.onerror = function(){
-    alert('文件读取失败，请重试。');
     e.target.value = '';
   };
   reader.readAsDataURL(file);
@@ -1197,9 +1093,7 @@ document.getElementById('wallFileInput').addEventListener('change', function(e){
 
 document.getElementById('wallToggle').addEventListener('click', openWallModal);
 document.getElementById('wallModal').addEventListener('click', e=>{
-  if(e.target.id === 'wallModal'){
-    e.target.classList.add('hidden');
-  }
+  if(e.target.id === 'wallModal') e.target.classList.add('hidden');
 });
 
 /* ============ 6. 标题彩蛋 ============ */
@@ -1225,9 +1119,7 @@ let scriptList = [];
 let editingScriptId = null;
 const executedSignatures = new Map();
 
-function genScriptId(){
-  return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
+function genScriptId(){ return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
 function loadScriptList(){
   const arr = Store.getJSON(STORAGE_SCRIPTS, []);
@@ -1240,9 +1132,7 @@ function loadScriptList(){
   })) : [];
 }
 
-function saveScriptList(){
-  Store.setJSON(STORAGE_SCRIPTS, scriptList);
-}
+function saveScriptList(){ Store.setJSON(STORAGE_SCRIPTS, scriptList); }
 
 function injectScript(item){
   try{
@@ -1251,15 +1141,12 @@ function injectScript(item){
       s.src = item.content;
       s.async = false;
       s.referrerPolicy = 'no-referrer';
-      s.onerror = () => console.warn('[用户脚本] ❌ 加载失败：', item.content);
     }else{
       s.textContent = item.content + '\n//# sourceURL=user-script-' + encodeURIComponent(item.name) + '.js';
     }
     s.setAttribute('data-user-script', item.name || item.id);
     document.body.appendChild(s);
-  }catch(err){
-    console.error('[用户脚本] 注入失败：', item, err);
-  }
+  }catch(err){ console.error('[用户脚本] 注入失败：', item, err); }
 }
 
 function runPendingScripts(){
@@ -1276,37 +1163,28 @@ function runPendingScripts(){
 function renderScriptList(){
   const wrap = document.getElementById('scriptList');
   wrap.innerHTML = '';
-
   if(scriptList.length === 0){
     wrap.innerHTML = '<div class="script-empty">还没有脚本，可在下方添加</div>';
     return;
   }
-
   scriptList.forEach(item => {
     const isUrl = item.type === 'url';
     const div = document.createElement('div');
     div.className = 'script-item';
     div.dataset.id = item.id;
-
-    const meta = isUrl
-      ? ('外链 · ' + item.content)
-      : (TYPE_LABEL[item.type] + ' · ' + item.content.length + ' 字符');
-
     div.innerHTML = `
       <div class="script-row">
         <input type="checkbox" class="script-enabled" ${item.enabled ? 'checked' : ''}>
         <div class="script-info">
           <div class="script-name">${esc(item.name)}</div>
-          <div class="script-meta">${esc(meta)}</div>
+          <div class="script-meta">${esc(isUrl ? '外链 · ' + item.content : TYPE_LABEL[item.type] + ' · ' + item.content.length + ' 字符')}</div>
         </div>
         <button class="mini-btn" onclick="toggleScriptEdit('${item.id}')">编辑</button>
         <button class="del-btn" onclick="delScript('${item.id}')">删除</button>
       </div>
       <div class="script-edit${editingScriptId === item.id ? '' : ' hidden'}">
         <input class="script-name-input" placeholder="脚本名称" value="${esc(item.name)}">
-        ${isUrl
-          ? `<input class="script-content-input" placeholder="https://example.com/script.js" value="${esc(item.content)}">`
-          : `<textarea class="script-content-input" rows="9" spellcheck="false" placeholder="// 在这里写 JavaScript 代码">${esc(item.content)}</textarea>`}
+        ${isUrl ? `<input class="script-content-input" value="${esc(item.content)}">` : `<textarea class="script-content-input" rows="9" spellcheck="false">${esc(item.content)}</textarea>`}
         <button class="mini-btn" style="align-self:flex-start;" onclick="saveScriptEdit('${item.id}')">保存</button>
       </div>
     `;
@@ -1319,178 +1197,134 @@ function collectScriptsFromDom(){
     const id = el.dataset.id;
     const item = scriptList.find(s => s.id === id);
     if(!item) return;
-
     const cb = el.querySelector('.script-enabled');
     if(cb) item.enabled = cb.checked;
-
     const nameInp = el.querySelector('.script-name-input');
     if(nameInp) item.name = nameInp.value.trim() || '未命名脚本';
-
     const contentInp = el.querySelector('.script-content-input');
     if(contentInp) item.content = contentInp.value;
   });
 }
 
-function persistAndRender(){
-  saveScriptList();
-  renderScriptList();
-}
-
-function openScriptModal(){
-  editingScriptId = null;
-  renderScriptList();
-  document.getElementById('scriptModal').classList.remove('hidden');
-}
-
+function persistAndRender(){ saveScriptList(); renderScriptList(); }
+function openScriptModal(){ editingScriptId = null; renderScriptList(); document.getElementById('scriptModal').classList.remove('hidden'); }
 function closeScriptModal(){
-  collectScriptsFromDom();
-  editingScriptId = null;
-  saveScriptList();
-  document.getElementById('scriptModal').classList.add('hidden');
-  runPendingScripts();
+  collectScriptsFromDom(); editingScriptId = null; saveScriptList();
+  document.getElementById('scriptModal').classList.add('hidden'); runPendingScripts();
 }
-
-function toggleScriptEdit(id){
-  collectScriptsFromDom();
-  editingScriptId = (editingScriptId === id) ? null : id;
-  persistAndRender();
-}
-
-function saveScriptEdit(id){
-  collectScriptsFromDom();
-  editingScriptId = null;
-  persistAndRender();
-  runPendingScripts();
-}
-
+function toggleScriptEdit(id){ collectScriptsFromDom(); editingScriptId = (editingScriptId === id) ? null : id; persistAndRender(); }
+function saveScriptEdit(id){ collectScriptsFromDom(); editingScriptId = null; persistAndRender(); runPendingScripts(); }
 function delScript(id){
   collectScriptsFromDom();
   const item = scriptList.find(s => s.id === id);
-  if(!item) return;
-  if(!confirm('确定删除脚本「' + item.name + '」吗？\n（删除后需刷新页面才会完全停止运行）')) return;
+  if(!item || !confirm('确定删除脚本「' + item.name + '」吗？')) return;
   scriptList = scriptList.filter(s => s.id !== id);
   if(editingScriptId === id) editingScriptId = null;
   persistAndRender();
 }
 
 function guessScriptName(url){
-  try{
-    const u = new URL(url);
-    const parts = u.pathname.split('/').filter(Boolean);
-    return parts.length ? parts[parts.length - 1] : u.hostname;
-  }catch(e){
-    return '外链脚本';
-  }
+  try{ const u = new URL(url); const parts = u.pathname.split('/').filter(Boolean); return parts.length ? parts[parts.length-1] : u.hostname; }
+  catch(e){ return '外链脚本'; }
 }
 
 function addUrlScript(){
   collectScriptsFromDom();
   const inp = document.getElementById('scriptUrlInput');
   const url = inp.value.trim();
-  if(!url) return;
-  if(!/^https?:\/\//i.test(url)){
-    alert('请输入以 http:// 或 https:// 开头的脚本地址');
-    return;
-  }
-  scriptList.push({
-    id: genScriptId(),
-    name: guessScriptName(url),
-    type: 'url',
-    content: url,
-    enabled: true
-  });
-  inp.value = '';
-  persistAndRender();
-  runPendingScripts();
+  if(!url || !/^https?:\/\//i.test(url)){ alert('请输入正确的 http/https 脚本地址'); return; }
+  scriptList.push({ id: genScriptId(), name: guessScriptName(url), type: 'url', content: url, enabled: true });
+  inp.value = ''; persistAndRender(); runPendingScripts();
 }
 
-function pickScriptFile(){
-  document.getElementById('scriptFileInput').click();
-}
+function pickScriptFile(){ document.getElementById('scriptFileInput').click(); }
 
 document.getElementById('scriptFileInput').addEventListener('change', function(e){
   const file = e.target.files && e.target.files[0];
   if(!file) return;
-
-  if(file.size > MAX_FILE_SIZE){
-    if(!confirm('文件较大（' + (file.size / 1024 / 1024).toFixed(2) +
-      ' MB），可能超出存储上限，是否继续？')) {
-      e.target.value = '';
-      return;
-    }
-  }
-
+  if(file.size > MAX_FILE_SIZE && !confirm('文件较大，是否继续？')){ e.target.value=''; return; }
   const reader = new FileReader();
   reader.onload = () => {
     collectScriptsFromDom();
-    scriptList.push({
-      id: genScriptId(),
-      name: file.name,
-      type: 'file',
-      content: String(reader.result || ''),
-      enabled: true
-    });
-    persistAndRender();
-    runPendingScripts();
-    e.target.value = '';
+    scriptList.push({ id: genScriptId(), name: file.name, type: 'file', content: String(reader.result||''), enabled: true });
+    persistAndRender(); runPendingScripts(); e.target.value = '';
   };
-  reader.onerror = () => {
-    alert('文件读取失败');
-    e.target.value = '';
-  };
+  reader.onerror = () => { alert('文件读取失败'); e.target.value = ''; };
   reader.readAsText(file);
 });
 
 function addCodeScript(){
   collectScriptsFromDom();
-  const item = {
-    id: genScriptId(),
-    name: '自定义脚本',
-    type: 'code',
-    content: '// 在这里写你的代码\nconsole.log("Hello from user script!");\n',
-    enabled: true
-  };
-  scriptList.push(item);
-  editingScriptId = item.id;
-  persistAndRender();
+  const item = { id: genScriptId(), name: '自定义脚本', type: 'code', content: '// 在这里写你的代码\n', enabled: true };
+  scriptList.push(item); editingScriptId = item.id; persistAndRender();
 }
 
 document.getElementById('scriptList').addEventListener('change', e => {
   if(e.target.classList.contains('script-enabled')){
-    collectScriptsFromDom();
-    saveScriptList();
-    runPendingScripts();
-    renderScriptList();
+    collectScriptsFromDom(); saveScriptList(); runPendingScripts(); renderScriptList();
   }
 });
 
 document.getElementById('scriptToggle').addEventListener('click', openScriptModal);
-document.getElementById('scriptModal').addEventListener('click', e => {
-  if(e.target.id === 'scriptModal') closeScriptModal();
+document.getElementById('scriptModal').addEventListener('click', e => { if(e.target.id === 'scriptModal') closeScriptModal(); });
+
+/* ============ 8. ⭐️ 全局暴露区 (最先执行) ============ */
+window.App = {
+  // 状态
+  get engineList() { return engineList; },
+  set engineList(v) { engineList = v; updateEngineText(); },
+  get selectedIndex() { return selectedIndex; },
+  set selectedIndex(v) { selectedIndex = v; updateEngineText(); },
+  get scriptList() { return scriptList; },
+  
+  // 核心对象与函数
+  Store, queryInput, titleEl, modal, wallImg, wallOverlay,
+  
+  // 动作函数
+  loadData, renderEngineList, toggleEdit, addBlankEngine, delEngine, saveEngines, showModal, updateEngineText,
+  setTheme, initTheme, updateTime,
+  detectDirectUrl, search,
+  getWallValue, loadImage, showWall, parseApiUrl, loadWallpaper, openWallModal, saveWallpaper, clearWallpaper,
+  initTitle,
+  loadScriptList, saveScriptList, injectScript, runPendingScripts, renderScriptList, openScriptModal, closeScriptModal,
+  pickScriptFile, addUrlScript, addCodeScript, delScript
+};
+
+// 兜底：把一些常用函数直接挂到 window 上，防止用户没写 App.
+window.queryInput = queryInput;
+window.search = search;
+window.setTheme = setTheme;
+window.titleEl = titleEl;
+window.showModal = showModal;
+window.renderEngineList = renderEngineList;
+
+// 对 let 声明的变量使用 window 代理，确保用户可以直接读写
+Object.defineProperty(window, 'engineList', {
+  get: () => engineList,
+  set: (val) => { engineList = val; updateEngineText(); }
+});
+Object.defineProperty(window, 'selectedIndex', {
+  get: () => selectedIndex,
+  set: (val) => { selectedIndex = val; updateEngineText(); }
 });
 
-/* ============ 8. 启动 ============ */
+/* ============ 9. 启动 ============ */
 (async function boot(){
-  try{
-    await Store.init();
-  }catch(e){
-    console.warn('[boot] Store 初始化异常，继续使用默认配置', e);
-  }
+  try{ await Store.init(); }catch(e){ console.warn('Store 初始化异常', e); }
 
   initTheme();
   loadData();
   initTitle();
   loadWallpaper();
   loadScriptList();
+
+  // ⭐️ 此时 window.App 早已就绪，数据库也加载完毕，执行用户脚本
   runPendingScripts();
 
-  // 支持 ?q=关键词 直接填充搜索框
+  // 支持 ?q=关键词
   try{
     const q = new URLSearchParams(location.search).get('q');
-    if(q){
-      queryInput.value = q;
-      queryInput.focus();
-    }
+    if(q){ queryInput.value = q; queryInput.focus(); }
   }catch(e){}
 })();
 </script>
