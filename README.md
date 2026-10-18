@@ -77,36 +77,26 @@ AnonNav 是一个极简、高度可定制的浏览器起始页（新标签页）
  
 示例脚本
  
-javascript
-  
-// 1. 读取当前搜索引擎数量
-alert("当前搜索引擎数量：" + engineList.length);
- 
- 
-javascript
-  
-// 2. 新增一条搜索引擎（演示双向绑定）
-engineList.push({
-  name: "必应",
-  url: "https://cn.bing.com/search?q=%s"
-});
- 
- 
-javascript
-  
-// 3. 一键切换深色主题
-setTheme('dark');
- 
- 
-javascript
-  
-// 4. 劫持搜索函数，打印搜索词
+1.脚本弹窗测试
+
+// 测试脚本，仅用来验证AnonNav自定义脚本可以正常执行
+alert("🎉 脚本运行成功！你的AnonNav脚本系统可用");
+console.log("✅ 测试脚本执行完毕，engineList当前数量：", engineList.length);
+
+2.搜索劫持
+
+// 保存原始search函数，方便恢复
 const originalSearch = search;
+
+// 劫持搜索，无论当前选哪个引擎，强制跳必应中国搜索
 search = function(keyword) {
-  console.log("搜索内容：", keyword);
-  originalSearch(keyword);
+  const url = `https://cn.bing.com/search?q=${encodeURIComponent(keyword)}`;
+  window.open(url, "_self");
 }
- 
+
+alert("✅ 劫持已生效！所有搜索都会强制跳转必应。删除脚本刷新页面恢复原样");
+
+
  
 ⚠️ 安全提示
  
