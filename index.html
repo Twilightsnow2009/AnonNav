@@ -8,8 +8,8 @@
 <meta name="msvalidate.01" content="FCCB324DC27E060EF648ACA7A6675844" />
 
 <!-- ===== 基础 SEO ===== -->
-<title>AnonNav · 极简浏览器起始页与搜索页</title>
-<meta name="description" content="AnonNav 是一个极简的浏览器起始页与搜索页：支持百度、Bing、360、搜狗等多引擎一键切换、自定义搜索引擎、智能识别网址与 IP、壁纸自定义，并可运行自定义 JS 脚本，数据存于 IndexedDB 本地不丢失。">
+<title>AnonNav - 极简浏览器起始页与搜索页 | 自定义多引擎与壁纸</title>
+<meta name="description" content="AnonNav 是一个极简的浏览器起始页与搜索导航页。支持百度、Bing、360、搜狗等多引擎一键切换，提供自定义搜索引擎、智能识别网址与 IP 直达、本地图片壁纸设置，并可运行自定义 JS 脚本。所有数据存于本地 IndexedDB，安全不丢失。">
 <meta name="keywords" content="浏览器起始页,搜索页,新标签页,极简主页,自定义搜索引擎,起始页,搜索聚合,网址导航,壁纸起始页,自定义脚本,AnonNav">
 <meta name="author" content="Twilightsnow2009">
 <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
@@ -27,19 +27,15 @@
 <!-- ===== Open Graph ===== -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="AnonNav">
-<meta property="og:title" content="AnonNav · 极简浏览器起始页与搜索页">
-<meta property="og:description" content="极简浏览器起始页与搜索页：多引擎切换、自定义搜索引擎、智能识别网址与 IP、可自定义壁纸与 JS 脚本，数据本地存储。">
+<meta property="og:title" content="AnonNav - 极简浏览器起始页与搜索页">
+<meta property="og:description" content="极简浏览器起始页：多引擎切换、自定义搜索引擎、智能识别网址与 IP、可自定义壁纸与 JS 脚本，数据本地存储。">
 <meta property="og:url" content="https://twilightsnow2009.github.io/AnonNav/">
-<meta property="og:image" content="https://twilightsnow2009.github.io/AnonNav/preview.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
 <meta property="og:locale" content="zh_CN">
 
 <!-- ===== Twitter Card ===== -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="AnonNav · 极简浏览器起始页与搜索页">
-<meta name="twitter:description" content="极简浏览器起始页与搜索页：多引擎切换、自定义搜索引擎、智能识别网址与 IP、可自定义壁纸与 JS 脚本，数据本地存储。">
-<meta name="twitter:image" content="https://twilightsnow2009.github.io/AnonNav/preview.png">
+<meta name="twitter:title" content="AnonNav - 极简浏览器起始页与搜索页">
+<meta name="twitter:description" content="极简浏览器起始页：多引擎切换、自定义搜索引擎、智能识别网址与 IP、可自定义壁纸与 JS 脚本，数据本地存储。">
 
 <!-- ===== 图标 ===== -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
@@ -500,6 +496,27 @@ button:hover{ opacity:0.85; }
   padding:9px 16px;
   white-space:nowrap;
 }
+
+/* ===== 本地上传壁纸按钮 ===== */
+.local-wall-btn{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  background:var(--bg);
+  color:var(--text);
+  border:1px dashed var(--border);
+  font-size:0.9rem;
+  text-align:center;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.local-wall-btn:hover{ background:var(--card-border); border-style:solid; }
+.local-wall-hint{
+  font-size:0.78rem;
+  color:var(--text-light);
+  margin-top:6px;
+  display:none;
+}
 </style>
 </head>
 <body>
@@ -548,11 +565,26 @@ button:hover{ opacity:0.85; }
   </div>
 </div>
 
+<!-- 壁纸设置弹窗（已加本地图片上传） -->
 <div id="wallModal" class="modal hidden">
   <div class="modal-box">
     <h3>壁纸设置</h3>
+    
+    <!-- 本地图片上传区 -->
     <div class="wall-field">
-      <label>壁纸地址</label>
+      <label>本地上传图片</label>
+      <input type="file" id="wallFileInput" accept="image/*" hidden>
+      <button type="button" class="local-wall-btn" onclick="document.getElementById('wallFileInput').click()">
+        📁 选择本地图片...
+      </button>
+      <div class="local-wall-hint" id="localWallHint">当前已使用本地图片作为壁纸</div>
+    </div>
+
+    <div style="text-align:center;margin:16px 0;color:var(--text-light);font-size:0.8rem;">— 或 —</div>
+
+    <!-- 网络 URL 输入区 -->
+    <div class="wall-field">
+      <label>网络壁纸地址</label>
       <input id="wallValue" type="text" placeholder="图片直链，或随机壁纸 API" autocomplete="off">
     </div>
     <div class="wall-hint">
@@ -1036,15 +1068,31 @@ async function loadWallpaper(){
     return;
   }
 
+  // 如果是以 data:image/ 开头的，说明是本地上传的 Base64 图片
+  if(value.startsWith('data:image/')){
+    try{
+      const info = await loadImage(value);
+      showWall(true);
+      console.log('[壁纸] ✅ 本地图片加载成功：', info);
+      return;
+    }catch(e){
+      console.warn('[壁纸] ❌ 本地图片损坏或无法加载');
+      showWall(false);
+      return;
+    }
+  }
+
+  // 尝试作为网络直链加载
   try{
     const info = await loadImage(value);
     showWall(true);
-    console.log('[壁纸] ✅ 直接加载成功：', info);
+    console.log('[壁纸] ✅ 网络直链加载成功：', info);
     return;
   }catch(e){
-    console.warn('[壁纸] ❌ 直接加载失败，尝试作为 API 解析');
+    console.warn('[壁纸] ❌ 直链加载失败，尝试作为 API 解析');
   }
 
+  // 尝试作为 API 解析
   const apiImgUrl = await parseApiUrl(value);
   if(apiImgUrl && apiImgUrl !== value){
     try{
@@ -1062,12 +1110,30 @@ async function loadWallpaper(){
 }
 
 function openWallModal(){
-  document.getElementById('wallValue').value = getWallValue();
+  const val = getWallValue();
+  
+  // 刷新 UI 状态，如果是 Base64 则清空 URL 输入框并提示
+  if(val.startsWith('data:image/')){
+    document.getElementById('wallValue').value = '';
+    document.getElementById('localWallHint').style.display = 'block';
+  } else {
+    document.getElementById('wallValue').value = val;
+    document.getElementById('localWallHint').style.display = 'none';
+  }
+  
   document.getElementById('wallModal').classList.remove('hidden');
 }
 
 function saveWallpaper(){
   const v = document.getElementById('wallValue').value.trim();
+  const currentVal = getWallValue();
+  
+  // 如果用户没输入新的 URL，且当前是本地图片，则保持本地图片不变
+  if(v === '' && currentVal.startsWith('data:image/')){
+    document.getElementById('wallModal').classList.add('hidden');
+    return;
+  }
+  
   Store.set(STORAGE_WALL_VALUE, v);
   document.getElementById('wallModal').classList.add('hidden');
   loadWallpaper();
@@ -1076,10 +1142,52 @@ function saveWallpaper(){
 function clearWallpaper(){
   Store.set(STORAGE_WALL_VALUE, '');
   document.getElementById('wallValue').value = '';
+  document.getElementById('localWallHint').style.display = 'none';
   document.getElementById('wallModal').classList.add('hidden');
   wallImg.removeAttribute('src');
   showWall(false);
 }
+
+// 监听本地图片文件上传
+document.getElementById('wallFileInput').addEventListener('change', function(e){
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+
+  if(!file.type.startsWith('image/')){
+    alert('请选择图片文件！');
+    e.target.value = '';
+    return;
+  }
+
+  // 限制大小（5MB）
+  if(file.size > 5 * 1024 * 1024){
+    if(!confirm('图片较大（' + (file.size / 1024 / 1024).toFixed(2) + ' MB），可能会占用较多本地存储空间，是否继续？')){
+      e.target.value = '';
+      return;
+    }
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    const base64 = evt.target.result;
+    
+    // 将 Base64 存入 IndexedDB
+    Store.set(STORAGE_WALL_VALUE, base64);
+    
+    // UI 更新并直接生效
+    document.getElementById('wallValue').value = '';
+    document.getElementById('localWallHint').style.display = 'block';
+    document.getElementById('wallModal').classList.add('hidden');
+    loadWallpaper();
+    
+    e.target.value = ''; // 清空，允许下次选同一张图
+  };
+  reader.onerror = function(){
+    alert('文件读取失败，请重试。');
+    e.target.value = '';
+  };
+  reader.readAsDataURL(file);
+});
 
 document.getElementById('wallToggle').addEventListener('click', openWallModal);
 document.getElementById('wallModal').addEventListener('click', e=>{
@@ -1370,7 +1478,7 @@ document.getElementById('scriptModal').addEventListener('click', e => {
   loadScriptList();
   runPendingScripts();
 
-  // 支持 ?q=关键词 直接填充搜索框（配合 JSON-LD 的 SearchAction）
+  // 支持 ?q=关键词 直接填充搜索框
   try{
     const q = new URLSearchParams(location.search).get('q');
     if(q){
