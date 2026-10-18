@@ -26,7 +26,7 @@ AnonNav 是一个极简、高度可定制的浏览器起始页（新标签页）
  
 默认引擎未能满足需求？项目附带了整理好的额外搜索引擎列表，涵盖搜索、社交、视频、电商、学习等多个分类。
  
-如需添加可查看 更多.md（https://github.com/Twilightsnow2009/AnonNav/blob/main/%E6%9B%B4%E5%A4%9A.md） 文件，复制对应链接粘贴到自定义引擎即可。
+如需添加可查看 更多.md（ https://github.com/Twilightsnow2009/AnonNav/blob/main/%E6%9B%B4%E5%A4%9A.md ） 文件，复制对应链接粘贴到自定义引擎即可。
  
  
  
