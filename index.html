@@ -3,541 +3,140 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- ===== 搜索引擎验证 ===== -->
 <meta name="msvalidate.01" content="FCCB324DC27E060EF648ACA7A6675844" />
-
-<!-- ===== 基础 SEO ===== -->
-<title>AnonNav - 极简浏览器起始页与搜索页 | 自定义多引擎与壁纸</title>
-<meta name="description" content="AnonNav 是一个极简的浏览器起始页与搜索导航页。支持百度、Bing、360、搜狗等多引擎一键切换，提供自定义搜索引擎、智能识别网址与 IP 直达、本地图片壁纸设置，并可运行自定义 JS 脚本。所有数据存于本地 IndexedDB，安全不丢失。">
-<meta name="keywords" content="浏览器起始页,搜索页,新标签页,极简主页,自定义搜索引擎,起始页,搜索聚合,网址导航,壁纸起始页,自定义脚本,AnonNav">
-<meta name="author" content="Twilightsnow2009">
-<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
-<meta name="format-detection" content="telephone=no">
-<link rel="canonical" href="https://twilightsnow2009.github.io/AnonNav/">
-
-<!-- ===== 主题色 / 移动端 ===== -->
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
-<meta name="color-scheme" content="light dark">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="AnonNav">
-<meta name="application-name" content="AnonNav">
-
-<!-- ===== Open Graph ===== -->
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="AnonNav">
-<meta property="og:title" content="AnonNav - 极简浏览器起始页与搜索页">
-<meta property="og:description" content="极简浏览器起始页：多引擎切换、自定义搜索引擎、智能识别网址与 IP、可自定义壁纸与 JS 脚本，数据本地存储。">
-<meta property="og:url" content="https://twilightsnow2009.github.io/AnonNav/">
-<meta property="og:locale" content="zh_CN">
-
-<!-- ===== Twitter Card ===== -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="AnonNav - 极简浏览器起始页与搜索页">
-<meta name="twitter:description" content="极简浏览器起始页：多引擎切换、自定义搜索引擎、智能识别网址与 IP、可自定义壁纸与 JS 脚本，数据本地存储。">
-
-<!-- ===== 图标 ===== -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
-
-<!-- ===== 结构化数据 ===== -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "AnonNav",
-  "alternateName": ["浏览器起始页", "搜索页"],
-  "url": "https://twilightsnow2009.github.io/AnonNav/",
-  "description": "极简浏览器起始页与搜索页，支持多引擎切换、自定义搜索引擎、智能识别网址与 IP、自定义壁纸与 JS 脚本。",
-  "inLanguage": "zh-CN",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": {
-      "@type": "EntryPoint",
-      "urlTemplate": "https://twilightsnow2009.github.io/AnonNav/?q={search_term_string}"
-    },
-    "query-input": "required name=search_term_string"
-  }
-}
-</script>
+<title>AnonNav - 极简浏览器起始页与搜索页</title>
+<meta name="description" content="AnonNav 是一个极简的浏览器起始页与搜索导航页。支持多引擎一键切换、自定义搜索引擎、智能识别网址、本地图片壁纸设置，并内置高权限自定义 JS 脚本引擎。">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
 :root{
-  --bg:#ffffff;
-  --text:#222222;
-  --text-soft:#666666;
-  --text-light:#999999;
-  --border:#dddddd;
-  --card-bg:#ffffff;
-  --card-border:#eee;
-  --btn-bg:#222;
-  --btn-text:#fff;
-  --btn-danger:#bb3333;
+  --bg:#ffffff; --text:#222222; --text-soft:#666666; --text-light:#999999;
+  --border:#dddddd; --card-bg:#ffffff; --card-border:#eee; --btn-bg:#222; --btn-text:#fff; --btn-danger:#bb3333;
 }
 body.theme-dark{
-  --bg:#121212;
-  --text:#eeeeee;
-  --text-soft:#bbbbbb;
-  --text-light:#777777;
-  --border:#333333;
-  --card-bg:#1e1e1e;
-  --card-border:#333;
-  --btn-bg:#383838;
-  --btn-text:#fff;
+  --bg:#121212; --text:#eeeeee; --text-soft:#bbbbbb; --text-light:#777777;
+  --border:#333333; --card-bg:#1e1e1e; --card-border:#333; --btn-bg:#383838; --btn-text:#fff;
 }
 html{ min-height:100%; }
 body{
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  background:var(--bg);
-  color:var(--text);
-  transition: color 0.3s;
+  min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:var(--bg); color:var(--text); transition: color 0.3s;
 }
-
-/* ===== 壁纸层 ===== */
 #wallpaperImg{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100vw;
-  height:100vh;
-  object-fit:cover;
-  object-position:center center;
-  z-index:0;
-  pointer-events:none;
-  opacity:0;
-  transition:opacity 0.4s;
+  position:fixed; top:0; left:0; width:100vw; height:100vh; object-fit:cover; object-position:center;
+  z-index:0; pointer-events:none; opacity:0; transition:opacity 0.4s;
 }
 #wallpaperImg.active{ opacity:1; }
-
 #wallpaperOverlay{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100vw;
-  height:100vh;
-  z-index:0;
-  pointer-events:none;
-  opacity:0;
-  transition:opacity 0.4s;
-  background:linear-gradient(135deg, rgba(15, 28, 48, 0.28), rgba(35, 55, 85, 0.22));
+  position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:0; pointer-events:none;
+  opacity:0; transition:opacity 0.4s; background:linear-gradient(135deg, rgba(15, 28, 48, 0.28), rgba(35, 55, 85, 0.22));
 }
 #wallpaperOverlay.active{ opacity:1; }
-
-.container,
-.footer-text{
-  position:relative;
-  z-index:1;
-}
-
+.container, .footer-text{ position:relative; z-index:1; }
 body.has-wallpaper{
-  --text:#ffffff;
-  --text-soft:rgba(255,255,255,0.85);
-  --text-light:rgba(255,255,255,0.65);
-  --border:rgba(255,255,255,0.3);
-  --bg:rgba(0,0,0,0.35);
-  --btn-bg:rgba(0,0,0,0.5);
-  --btn-text:#ffffff;
-  --card-bg:#1e1e1e;
-  --card-border:rgba(255,255,255,0.15);
+  --text:#ffffff; --text-soft:rgba(255,255,255,0.85); --text-light:rgba(255,255,255,0.65);
+  --border:rgba(255,255,255,0.3); --bg:rgba(0,0,0,0.35); --btn-bg:rgba(0,0,0,0.5); --btn-text:#ffffff;
+  --card-bg:#1e1e1e; --card-border:rgba(255,255,255,0.15);
 }
-body.has-wallpaper .time-date,
-body.has-wallpaper .time-ampm,
-body.has-wallpaper h1,
-body.has-wallpaper .tip{
-  color:#ffffff;
-  text-shadow:0 2px 10px rgba(0,0,0,0.75), 0 0 2px rgba(0,0,0,0.9);
+body.has-wallpaper .time-date, body.has-wallpaper .time-ampm, body.has-wallpaper h1, body.has-wallpaper .tip{
+  color:#ffffff; text-shadow:0 2px 10px rgba(0,0,0,0.75), 0 0 2px rgba(0,0,0,0.9);
 }
-body.has-wallpaper #query,
-body.has-wallpaper .theme-toggle,
-body.has-wallpaper .search-wrap button{
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
+body.has-wallpaper #query, body.has-wallpaper .theme-toggle, body.has-wallpaper .search-wrap button{
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
 }
 body.has-wallpaper #query::placeholder{ color:rgba(255,255,255,0.6); }
 body.has-wallpaper #query:focus{ border-color:rgba(255,255,255,0.6); }
-body.has-wallpaper .theme-toggle{
-  background:rgba(0,0,0,0.45);
-  color:#fff;
-  border-color:rgba(255,255,255,0.25);
-}
-body.has-wallpaper .search-wrap button{
-  border:1px solid rgba(255,255,255,0.25);
-}
+body.has-wallpaper .theme-toggle{ background:rgba(0,0,0,0.45); color:#fff; border-color:rgba(255,255,255,0.25); }
+body.has-wallpaper .search-wrap button{ border:1px solid rgba(255,255,255,0.25); }
 body.has-wallpaper .modal-box{
-  --bg:#2a2a2a;
-  --border:#444;
-  --text:#eeeeee;
-  --text-soft:#bbbbbb;
-  --text-light:#777777;
-  --btn-bg:#383838;
-  --btn-text:#fff;
-  --card-bg:#1e1e1e;
-  --card-border:#333;
+  --bg:#2a2a2a; --border:#444; --text:#eeeeee; --text-soft:#bbbbbb; --text-light:#777777;
+  --btn-bg:#383838; --btn-text:#fff; --card-bg:#1e1e1e; --card-border:#333;
 }
-
-/* ===== 基础布局 ===== */
-.container{
-  width:92%;
-  max-width:580px;
-  text-align:center;
-}
+.container{ width:92%; max-width:580px; text-align:center; }
 .time-block{ margin-bottom:24px; }
-.time-date{
-  font-size:1.5rem;
-  color:var(--text-soft);
-  font-weight:300;
-  letter-spacing:1px;
-}
-.time-ampm{
-  font-size:1.2rem;
-  color:var(--text-soft);
-  font-weight:300;
-  margin-top:4px;
-}
-h1{
-  font-size:2.2rem;
-  font-weight:400;
-  text-align:center;
-  margin-bottom:32px;
-  user-select:none;
-  -webkit-user-select:none;
-  cursor:pointer;
-}
+.time-date{ font-size:1.5rem; color:var(--text-soft); font-weight:300; letter-spacing:1px; }
+.time-ampm{ font-size:1.2rem; color:var(--text-soft); font-weight:300; margin-top:4px; }
+h1{ font-size:2.2rem; font-weight:400; text-align:center; margin-bottom:32px; user-select:none; cursor:pointer; }
 .search-wrap{ display:flex; gap:8px; }
 #query{
-  flex:1;
-  padding:12px 18px;
-  border:1px solid var(--border);
-  border-radius:999px;
-  outline:none;
-  font-size:1rem;
-  background:var(--bg);
-  color:var(--text);
+  flex:1; padding:12px 18px; border:1px solid var(--border); border-radius:999px;
+  outline:none; font-size:1rem; background:var(--bg); color:var(--text);
 }
 #query:focus{ border-color:#555; }
-button{
-  padding:12px 22px;
-  border:none;
-  border-radius:999px;
-  background:var(--btn-bg);
-  color:var(--btn-text);
-  cursor:pointer;
-  font-size:1rem;
-}
+button{ padding:12px 22px; border:none; border-radius:999px; background:var(--btn-bg); color:var(--btn-text); cursor:pointer; font-size:1rem; }
 button:hover{ opacity:0.85; }
-.tip{
-  text-align:center;
-  margin-top:20px;
-  font-size:0.9rem;
-  color:var(--text-soft);
-}
+.tip{ text-align:center; margin-top:20px; font-size:0.9rem; color:var(--text-soft); }
 .tip a{ color:var(--text); cursor:pointer; margin:0 4px; }
-
 .theme-toggle{
-  position:fixed;
-  top:20px;
-  right:20px;
-  width:44px;
-  height:44px;
-  padding:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:1.15rem;
-  line-height:1;
-  border-radius:50%;
-  background:var(--card-bg);
-  color:var(--text);
-  border:1px solid var(--border);
-  z-index:50;
+  position:fixed; top:20px; right:20px; width:44px; height:44px; padding:0; display:flex;
+  align-items:center; justify-content:center; font-size:1.15rem; line-height:1; border-radius:50%;
+  background:var(--card-bg); color:var(--text); border:1px solid var(--border); z-index:50;
   transition: background 0.3s, border-color 0.3s, color 0.3s;
 }
-
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.45);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:99;
-  padding:20px;
-}
+.modal{ position:fixed; inset:0; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:99; padding:20px; }
 .modal.hidden{ display:none; }
-.modal-box{
-  background:var(--card-bg);
-  border-radius:20px;
-  width:100%;
-  max-width:520px;
-  padding:28px;
-  max-height:85vh;
-  overflow-y:auto;
-}
-.modal-box h3{
-  font-size:1.5rem;
-  font-weight:500;
-  margin-bottom:24px;
-}
+.modal-box{ background:var(--card-bg); border-radius:20px; width:100%; max-width:520px; padding:28px; max-height:85vh; overflow-y:auto; }
+.modal-box h3{ font-size:1.5rem; font-weight:500; margin-bottom:24px; }
 .engine-item{ margin-bottom:18px; }
-.engine-main{
-  display:flex;
-  align-items:flex-start;
-  gap:12px;
-  cursor:pointer;
-}
-.engine-main input[type="radio"]{
-  margin-top:3px;
-  width:19px;
-  height:19px;
-  accent-color:var(--text);
-  flex-shrink:0;
-}
+.engine-main{ display:flex; align-items:flex-start; gap:12px; cursor:pointer; }
+.engine-main input[type="radio"]{ margin-top:3px; width:19px; height:19px; accent-color:var(--text); flex-shrink:0; }
 .engine-name{ font-size:1.1rem; }
-.engine-edit-area{
-  padding-left:31px;
-  margin-top:8px;
-  display:none;
-  gap:8px;
-  flex-direction:column;
-}
+.engine-edit-area{ padding-left:31px; margin-top:8px; display:none; gap:8px; flex-direction:column; }
 .engine-edit-area.show{ display:flex; }
-.engine-edit-area input{
-  width:100%;
-  padding:7px 9px;
-  border:1px solid var(--border);
-  border-radius:7px;
-  font-size:0.9rem;
-  background:var(--bg);
-  color:var(--text);
-  outline:none;
-}
+.engine-edit-area input{ width:100%; padding:7px 9px; border:1px solid var(--border); border-radius:7px; font-size:0.9rem; background:var(--bg); color:var(--text); outline:none; }
 .engine-edit-area input:focus{ border-color:#555; }
-.modal-footer{
-  display:flex;
-  justify-content:flex-end;
-  margin-top:30px;
-}
-.add-btn-wrap{
-  margin-top:24px;
-  padding-top:16px;
-  border-top:1px solid var(--card-border);
-}
-.add-btn-wrap button{
-  background:#555;
-  font-size:0.9rem;
-  padding:8px 16px;
-}
-.del-btn{
-  background:var(--btn-danger);
-  padding:6px 12px;
-  font-size:0.85rem;
-  align-self:flex-start;
-}
-.footer-text{
-  position:fixed;
-  bottom:24px;
-  left:0;
-  width:100%;
-  text-align:center;
-  font-size:0.85rem;
-  color:var(--text-light);
-  z-index:1;
-}
+.modal-footer{ display:flex; justify-content:flex-end; margin-top:30px; }
+.add-btn-wrap{ margin-top:24px; padding-top:16px; border-top:1px solid var(--card-border); }
+.add-btn-wrap button{ background:#555; font-size:0.9rem; padding:8px 16px; }
+.del-btn{ background:var(--btn-danger); padding:6px 12px; font-size:0.85rem; align-self:flex-start; }
+.footer-text{ position:fixed; bottom:24px; left:0; width:100%; text-align:center; font-size:0.85rem; color:var(--text-light); z-index:1; }
 .footer-text a{ color:inherit; }
-
-#wallToggle{ right:76px; }
-#scriptToggle{ right:132px; }
-
+#wallToggle{ right:76px; } #scriptToggle{ right:132px; }
 .wall-field{ margin-bottom:16px; text-align:left; }
-.wall-field > label{
-  display:block;
-  font-size:0.85rem;
-  color:var(--text-soft);
-  margin-bottom:6px;
-}
-.wall-field input{
-  width:100%;
-  padding:9px 12px;
-  border:1px solid var(--border);
-  border-radius:8px;
-  font-size:0.9rem;
-  background:var(--bg);
-  color:var(--text);
-  outline:none;
-}
+.wall-field > label{ display:block; font-size:0.85rem; color:var(--text-soft); margin-bottom:6px; }
+.wall-field input{ width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; background:var(--bg); color:var(--text); outline:none; }
 .wall-field input:focus{ border-color:#555; }
-.wall-hint{
-  font-size:0.78rem;
-  color:var(--text-light);
-  line-height:1.6;
-  text-align:left;
-}
-
-/* ===== 脚本管理 ===== */
-.script-warn{
-  font-size:0.78rem;
-  line-height:1.6;
-  text-align:left;
-  color:var(--text-soft);
-  background:rgba(210,160,20,0.12);
-  border:1px solid rgba(210,160,20,0.35);
-  border-radius:10px;
-  padding:9px 12px;
-  margin-bottom:16px;
-}
-.script-empty{
-  font-size:0.85rem;
-  color:var(--text-light);
-  padding:8px 0 12px;
-  text-align:center;
-}
-.script-item{
-  border:1px solid var(--card-border);
-  border-radius:12px;
-  padding:10px 12px;
-  margin-bottom:10px;
-  background:rgba(128,128,128,0.04);
-}
-.script-row{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-.script-enabled{
-  width:17px;
-  height:17px;
-  accent-color:var(--text);
-  flex-shrink:0;
-  cursor:pointer;
-}
+.wall-hint{ font-size:0.78rem; color:var(--text-light); line-height:1.6; text-align:left; }
+.script-warn{ font-size:0.78rem; line-height:1.6; text-align:left; color:var(--text-soft); background:rgba(210,160,20,0.12); border:1px solid rgba(210,160,20,0.35); border-radius:10px; padding:9px 12px; margin-bottom:16px; }
+.script-empty{ font-size:0.85rem; color:var(--text-light); padding:8px 0 12px; text-align:center; }
+.script-item{ border:1px solid var(--card-border); border-radius:12px; padding:10px 12px; margin-bottom:10px; background:rgba(128,128,128,0.04); }
+.script-row{ display:flex; align-items:center; gap:10px; }
+.script-enabled{ width:17px; height:17px; accent-color:var(--text); flex-shrink:0; cursor:pointer; }
 .script-info{ flex:1; min-width:0; text-align:left; }
-.script-name{
-  font-size:0.95rem;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.script-meta{
-  font-size:0.74rem;
-  color:var(--text-light);
-  margin-top:3px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.mini-btn{
-  padding:5px 12px;
-  font-size:0.8rem;
-  border-radius:999px;
-  background:var(--btn-bg);
-  color:var(--btn-text);
-  flex-shrink:0;
-}
-.script-edit{
-  margin-top:10px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
+.script-name{ font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.script-meta{ font-size:0.74rem; color:var(--text-light); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mini-btn{ padding:5px 12px; font-size:0.8rem; border-radius:999px; background:var(--btn-bg); color:var(--btn-text); flex-shrink:0; }
+.script-edit{ margin-top:10px; display:flex; flex-direction:column; gap:8px; }
 .script-edit.hidden{ display:none; }
-.script-edit input,
-.script-edit textarea{
-  width:100%;
-  padding:8px 10px;
-  border:1px solid var(--border);
-  border-radius:8px;
-  font-size:0.82rem;
-  line-height:1.5;
-  background:var(--bg);
-  color:var(--text);
-  outline:none;
-  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  resize:vertical;
-}
-.script-edit input:focus,
-.script-edit textarea:focus{ border-color:#555; }
-.script-add{
-  margin-top:18px;
-  padding-top:14px;
-  border-top:1px solid var(--card-border);
-}
-.script-add-label{
-  display:block;
-  font-size:0.8rem;
-  color:var(--text-soft);
-  margin-bottom:8px;
-  text-align:left;
-}
-.script-add-row{
-  display:flex;
-  gap:8px;
-  align-items:center;
-}
-.script-add-row input[type="text"]{
-  flex:1;
-  min-width:0;
-  padding:9px 12px;
-  border:1px solid var(--border);
-  border-radius:8px;
-  font-size:0.85rem;
-  background:var(--bg);
-  color:var(--text);
-  outline:none;
-}
+.script-edit input, .script-edit textarea{ width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:0.82rem; line-height:1.5; background:var(--bg); color:var(--text); outline:none; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; resize:vertical; }
+.script-edit input:focus, .script-edit textarea:focus{ border-color:#555; }
+.script-add{ margin-top:18px; padding-top:14px; border-top:1px solid var(--card-border); }
+.script-add-label{ display:block; font-size:0.8rem; color:var(--text-soft); margin-bottom:8px; text-align:left; }
+.script-add-row{ display:flex; gap:8px; align-items:center; }
+.script-add-row input[type="text"]{ flex:1; min-width:0; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.85rem; background:var(--bg); color:var(--text); outline:none; }
 .script-add-row input[type="text"]:focus{ border-color:#555; }
-.script-add-row button{
-  font-size:0.85rem;
-  padding:9px 16px;
-  white-space:nowrap;
-}
-
-/* ===== 本地上传壁纸按钮 ===== */
-.local-wall-btn{
-  width:100%;
-  padding:10px;
-  border-radius:8px;
-  background:var(--bg);
-  color:var(--text);
-  border:1px dashed var(--border);
-  font-size:0.9rem;
-  text-align:center;
-  cursor:pointer;
-  transition:all 0.2s;
-}
+.script-add-row button{ font-size:0.85rem; padding:9px 16px; white-space:nowrap; }
+.local-wall-btn{ width:100%; padding:10px; border-radius:8px; background:var(--bg); color:var(--text); border:1px dashed var(--border); font-size:0.9rem; text-align:center; cursor:pointer; transition:all 0.2s; }
 .local-wall-btn:hover{ background:var(--card-border); border-style:solid; }
-.local-wall-hint{
-  font-size:0.78rem;
-  color:var(--text-light);
-  margin-top:6px;
-  display:none;
-}
+.local-wall-hint{ font-size:0.78rem; color:var(--text-light); margin-top:6px; display:none; }
 </style>
 </head>
 <body>
 
 <img id="wallpaperImg" alt="" referrerpolicy="no-referrer">
 <div id="wallpaperOverlay"></div>
-
-<button id="themeToggle" class="theme-toggle" aria-label="切换主题" title="切换主题">🌙</button>
-<button id="wallToggle" class="theme-toggle" aria-label="壁纸设置" title="壁纸设置">🖼️</button>
-<button id="scriptToggle" class="theme-toggle" aria-label="脚本管理" title="脚本管理">📜</button>
+<button id="themeToggle" class="theme-toggle" title="切换主题">🌙</button>
+<button id="wallToggle" class="theme-toggle" title="壁纸设置">🖼️</button>
+<button id="scriptToggle" class="theme-toggle" title="脚本管理">📜</button>
 
 <div class="container">
   <div class="time-block">
     <div class="time-date" id="timeDate"></div>
     <div class="time-ampm" id="timeAmpm"></div>
   </div>
-  <h1 id="mainTitle" aria-label="AnonNav 极简浏览器起始页与搜索页">Search</h1>
+  <h1 id="mainTitle">Search</h1>
   <div class="search-wrap">
-    <input id="query" type="text" name="q" role="searchbox"
-           placeholder="输入搜索词、网址或 IP…" autocomplete="off"
-           aria-label="搜索框">
+    <input id="query" type="text" name="q" placeholder="输入搜索词、网址或 IP…" autocomplete="off">
     <button onclick="search()">搜索</button>
   </div>
   <div class="tip">
@@ -565,12 +164,9 @@ button:hover{ opacity:0.85; }
   </div>
 </div>
 
-<!-- 壁纸设置弹窗 -->
 <div id="wallModal" class="modal hidden">
   <div class="modal-box">
     <h3>壁纸设置</h3>
-    
-    <!-- 本地图片上传区 -->
     <div class="wall-field">
       <label>本地上传图片</label>
       <input type="file" id="wallFileInput" accept="image/*" hidden>
@@ -579,10 +175,7 @@ button:hover{ opacity:0.85; }
       </button>
       <div class="local-wall-hint" id="localWallHint">当前已使用本地图片作为壁纸</div>
     </div>
-
     <div style="text-align:center;margin:16px 0;color:var(--text-light);font-size:0.8rem;">— 或 —</div>
-
-    <!-- 网络 URL 输入区 -->
     <div class="wall-field">
       <label>网络壁纸地址</label>
       <input id="wallValue" type="text" placeholder="图片直链，或随机壁纸 API" autocomplete="off">
@@ -603,13 +196,10 @@ button:hover{ opacity:0.85; }
   <div class="modal-box">
     <h3>脚本管理</h3>
     <div class="script-warn">
-      ⚠️ 添加的脚本会以完整权限在本页运行，请只运行你信任的来源。<br>
-      停用 / 删除脚本后需刷新页面才能完全生效。<br>
-      <b>💡 提示：</b>可通过全局对象 <code>App</code> 操纵页面，如 <code>App.queryInput.value = "测试"</code>、<code>App.setTheme('dark')</code>、<code>App.renderEngineList()</code>。
+      ⚠️ 脚本会以完整权限在本页运行，请只运行你信任的来源。<br>
+      <b>💡 终极开放：</b>直接使用 <code>queryInput</code>、<code>engineList</code>、<code>search()</code>、<code>setTheme()</code> 即可，无需前缀！
     </div>
-
     <div id="scriptList"></div>
-
     <div class="script-add">
       <label class="script-add-label">添加外链脚本（.js 直链）</label>
       <div class="script-add-row">
@@ -617,16 +207,14 @@ button:hover{ opacity:0.85; }
         <button onclick="addUrlScript()">添加</button>
       </div>
     </div>
-
     <div class="script-add">
       <label class="script-add-label">本地脚本</label>
       <div class="script-add-row">
-        <input type="file" id="scriptFileInput" accept=".js,.mjs,text/javascript,application/javascript" hidden>
+        <input type="file" id="scriptFileInput" accept=".js,.mjs" hidden>
         <button onclick="pickScriptFile()">上传 JS 文件</button>
         <button onclick="addCodeScript()">编写代码</button>
       </div>
     </div>
-
     <div class="modal-footer">
       <button onclick="closeScriptModal()">完成</button>
     </div>
@@ -634,192 +222,53 @@ button:hover{ opacity:0.85; }
 </div>
 
 <script>
-/* ============ 0. 存储层：IndexedDB ============ */
-const Store = (function(){
-  const DB_NAME = 'search_app_db';
-  const DB_VERSION = 1;
-  const STORE_NAME = 'kv';
-  const LS_PREFIX = 'search_';
+// 【彻底剥离作用域限制，所有变量绝对全开放】
+var STORAGE_ENGINES = 'search_engine_list', STORAGE_SELECT = 'search_selected_idx', STORAGE_THEME = 'search_theme', STORAGE_WALL_VALUE = 'search_wall_value', STORAGE_TITLE_TEXT = 'search_title_text', STORAGE_SCRIPTS = 'search_user_scripts';
+var defaultEngines = [
+  { name:"百度", url:"https://www.baidu.com/s?wd=%s" },
+  { name:"Bing", url:"https://cn.bing.com/search?q=%s" },
+  { name:"360搜索", url:"https://www.so.com/s?q=%s" },
+  { name:"搜狗搜索", url:"https://www.sogou.com/web?query=%s" }
+];
+var engineList = [], selectedIndex = 0, scriptList = [], editingScriptId = null, executedSignatures = new Map();
+var modal = document.getElementById('modal'), queryInput = document.getElementById('query'), titleEl = document.getElementById('mainTitle');
+var wallImg = document.getElementById('wallpaperImg'), wallOverlay = document.getElementById('wallpaperOverlay');
+var MAGIC_CODE = "20090927", MAGIC_URL = "https://space.bilibili.com/3493294795393244", MAX_FILE_SIZE = 2 * 1024 * 1024;
+var TYPE_LABEL = { url:'外链', file:'本地文件', code:'代码' };
 
-  let db = null;
-  let useIDB = true;
-  const cache = new Map();
-  let initPromise = null;
-
-  function openDB(){
-    return new Promise((resolve, reject) => {
-      if(!window.indexedDB){ reject(new Error('不支持 IndexedDB')); return; }
-      let req;
-      try{ req = indexedDB.open(DB_NAME, DB_VERSION); }
-      catch(e){ reject(e); return; }
-      req.onupgradeneeded = e => {
-        const d = e.target.result;
-        if(!d.objectStoreNames.contains(STORE_NAME)) d.createObjectStore(STORE_NAME);
-      };
-      req.onsuccess = e => resolve(e.target.result);
-      req.onerror = () => reject(req.error || new Error('IndexedDB 打开失败'));
-      req.onblocked = () => reject(new Error('IndexedDB 被其他标签页阻塞'));
-    });
-  }
-
-  function dbReadAll(){
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const req = tx.objectStore(STORE_NAME).openCursor();
-      const out = {};
-      req.onsuccess = e => {
-        const cur = e.target.result;
-        if(cur){ out[cur.key] = cur.value; cur.continue(); }
-        else resolve(out);
-      };
-      req.onerror = () => reject(req.error);
-    });
-  }
-
-  function dbPut(key, value){
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).put(value, key);
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-      tx.onabort = () => reject(tx.error || new Error('事务中止'));
-    });
-  }
-
-  function dbDelete(key){
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).delete(key);
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-    });
-  }
-
-  function lsKeys(){
-    try{
-      const arr = [];
-      for(let i = 0; i < localStorage.length; i++) arr.push(localStorage.key(i));
-      return arr;
-    }catch(e){ return []; }
-  }
-
-  function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
-
-  function migrateFromLS(existing){
-    const migrated = [];
-    lsKeys().forEach(k => {
-      if(!k || k.indexOf(LS_PREFIX) !== 0) return;
-      if(existing[k] !== undefined) return;
-      const v = lsGet(k);
-      if(v === null) return;
-      cache.set(k, v);
-      migrated.push(k);
-    });
-    return migrated;
-  }
-
-  const api = {
-    init(){
-      if(initPromise) return initPromise;
-      initPromise = (async () => {
-        try{
-          db = await openDB();
-          const all = await dbReadAll();
-          Object.keys(all).forEach(k => cache.set(k, all[k]));
-          const migrated = migrateFromLS(all);
-          if(migrated.length){
-            console.log('[Store] 从 localStorage 迁移 ' + migrated.length + ' 项到 IndexedDB');
-            await Promise.all(migrated.map(k => dbPut(k, cache.get(k))));
-          }
-          console.log('[Store] IndexedDB 就绪，共 ' + cache.size + ' 条记录');
-        }catch(err){
-          useIDB = false;
-          console.warn('[Store] IndexedDB 不可用，降级到 localStorage：', err && err.message);
-          lsKeys().forEach(k => {
-            const v = lsGet(k);
-            if(v !== null) cache.set(k, v);
-          });
-        }
-        return true;
-      })();
-      return initPromise;
-    },
+var Store = (function(){
+  var DB_NAME = 'search_app_db', DB_VERSION = 1, STORE_NAME = 'kv', LS_PREFIX = 'search_';
+  var db = null, useIDB = true, cache = new Map(), initPromise = null;
+  
+  function openDB(){ return new Promise((resolve, reject) => { let req = indexedDB.open(DB_NAME, DB_VERSION); req.onupgradeneeded = e => { if(!e.target.result.objectStoreNames.contains(STORE_NAME)) e.target.result.createObjectStore(STORE_NAME); }; req.onsuccess = e => resolve(e.target.result); req.onerror = () => reject(req.error); }); }
+  function dbReadAll(){ return new Promise((resolve, reject) => { var req = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).openCursor(); var out = {}; req.onsuccess = e => { var cur = e.target.result; if(cur){ out[cur.key] = cur.value; cur.continue(); } else resolve(out); }; req.onerror = () => reject(req.error); }); }
+  function dbPut(key, value){ return new Promise((resolve, reject) => { var tx = db.transaction(STORE_NAME, 'readwrite'); tx.objectStore(STORE_NAME).put(value, key); tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error); }); }
+  function dbDelete(key){ return new Promise((resolve, reject) => { var tx = db.transaction(STORE_NAME, 'readwrite'); tx.objectStore(STORE_NAME).delete(key); tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error); }); }
+  
+  var api = {
+    init(){ if(initPromise) return initPromise; return initPromise = (async () => { try { db = await openDB(); var all = await dbReadAll(); Object.keys(all).forEach(k => cache.set(k, all[k])); } catch(e) { useIDB = false; } return true; })(); },
     get(k, def = ''){ return cache.has(k) ? cache.get(k) : def; },
-    getJSON(k, def){
-      if(!cache.has(k)) return def;
-      try{ return JSON.parse(cache.get(k)); }catch(e){ return def; }
-    },
-    set(k, v){
-      const s = String(v);
-      cache.set(k, s);
-      if(useIDB && db){ dbPut(k, s).catch(err => console.warn(err)); }
-      else { try{ localStorage.setItem(k, s); }catch(e){} }
-    },
+    getJSON(k, def){ if(!cache.has(k)) return def; try{ return JSON.parse(cache.get(k)); }catch(e){ return def; } },
+    set(k, v){ cache.set(k, String(v)); if(useIDB && db) dbPut(k, String(v)).catch(()=>{}); else try{ localStorage.setItem(k, String(v)); }catch(e){} },
     setJSON(k, v){ api.set(k, JSON.stringify(v)); },
-    remove(k){
-      cache.delete(k);
-      if(useIDB && db){ dbDelete(k).catch(()=>{}); }
-      else { try{ localStorage.removeItem(k); }catch(e){} }
-    }
+    remove(k){ cache.delete(k); if(useIDB && db) dbDelete(k).catch(()=>{}); else try{ localStorage.removeItem(k); }catch(e){} }
   };
   return api;
 })();
 
-/* ============ 1. 核心状态 ============ */
-const STORAGE_ENGINES = 'search_engine_list';
-const STORAGE_SELECT  = 'search_selected_idx';
-const STORAGE_THEME   = 'search_theme';
-const STORAGE_WALL_VALUE = 'search_wall_value';
-const STORAGE_TITLE_TEXT = 'search_title_text';
-const STORAGE_SCRIPTS = 'search_user_scripts';
-
-const defaultEngines = [
-  { name:"百度",     url:"https://www.baidu.com/s?wd=%s" },
-  { name:"Bing",     url:"https://cn.bing.com/search?q=%s" },
-  { name:"360搜索",  url:"https://www.so.com/s?q=%s" },
-  { name:"搜狗搜索", url:"https://www.sogou.com/web?query=%s" }
-];
-
-let engineList = [];
-let selectedIndex = 0;
-const modal = document.getElementById('modal');
-const queryInput = document.getElementById('query');
-const MAGIC_CODE = "20090927";
-const MAGIC_URL = "https://space.bilibili.com/3493294795393244";
-
+function esc(str){ return String(str == null ? '' : str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function loadData(){
-  const savedList = Store.getJSON(STORAGE_ENGINES, null);
-  const savedSel  = Store.get(STORAGE_SELECT, null);
-
-  if(Array.isArray(savedList) && savedList.length > 0){
-    engineList = savedList.map(e => ({ name:e.name, url:e.url }));
-  }else{
-    engineList = JSON.parse(JSON.stringify(defaultEngines));
-    Store.setJSON(STORAGE_ENGINES, engineList);
-    Store.set(STORAGE_SELECT, 0);
-  }
-
-  if(savedSel !== null){
-    const n = Number(savedSel);
-    selectedIndex = (n >= 0 && n < engineList.length) ? n : 0;
-  }else{
-    selectedIndex = 0;
-  }
+  var savedList = Store.getJSON(STORAGE_ENGINES, null), savedSel = Store.get(STORAGE_SELECT, null);
+  if(Array.isArray(savedList) && savedList.length > 0) engineList = savedList;
+  else { engineList = JSON.parse(JSON.stringify(defaultEngines)); Store.setJSON(STORAGE_ENGINES, engineList); Store.set(STORAGE_SELECT, 0); }
+  selectedIndex = (savedSel !== null && Number(savedSel) < engineList.length) ? Number(savedSel) : 0;
   updateEngineText();
 }
 
-function esc(str){
-  return String(str == null ? '' : str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
-}
-
 function renderEngineList(){
-  const wrapper = document.getElementById('engineList');
-  wrapper.innerHTML = '';
+  var wrapper = document.getElementById('engineList'); wrapper.innerHTML = '';
   engineList.forEach((item, idx)=>{
-    const div = document.createElement('div');
-    div.className = 'engine-item';
+    var div = document.createElement('div'); div.className = 'engine-item';
     div.innerHTML = `
       <div class="engine-main" onclick="toggleEdit(${idx})">
         <input type="radio" name="eng" value="${idx}" ${idx===selectedIndex?'checked':''}>
@@ -829,503 +278,152 @@ function renderEngineList(){
         <input placeholder="名称" value="${esc(item.name)}" class="inp-name">
         <input placeholder="URL（用 %s 代表关键词）" value="${esc(item.url)}" class="inp-url">
         <button class="del-btn" onclick="delEngine(${idx})">删除</button>
-      </div>
-    `;
+      </div>`;
     wrapper.appendChild(div);
   });
 }
-
-function toggleEdit(idx){
-  const editEl = document.getElementById(`edit-${idx}`);
-  const wasOpen = editEl.classList.contains('show');
-  document.querySelectorAll('.engine-edit-area').forEach(el=>el.classList.remove('show'));
-  const radio = document.querySelector(`input[name="eng"][value="${idx}"]`);
-  if(radio) radio.checked = true;
-  if(!wasOpen) editEl.classList.add('show');
-}
-
-function addBlankEngine(){
-  engineList.push({ name:"New Engine", url:"https://example.com?q=%s" });
-  renderEngineList();
-  const lastIdx = engineList.length - 1;
-  const editEl = document.getElementById(`edit-${lastIdx}`);
-  if(editEl) editEl.classList.add('show');
-}
-
-function delEngine(idx){
-  if(engineList.length <= 1){
-    alert("至少保留一个搜索引擎！");
-    return;
-  }
-  engineList.splice(idx,1);
-  if(selectedIndex === idx){ selectedIndex = 0; }
-  else if(selectedIndex > idx){ selectedIndex -= 1; }
-  renderEngineList();
-}
-
+function toggleEdit(idx){ var editEl = document.getElementById('edit-'+idx); var wasOpen = editEl.classList.contains('show'); document.querySelectorAll('.engine-edit-area').forEach(el=>el.classList.remove('show')); var radio = document.querySelector('input[name="eng"][value="'+idx+'"]'); if(radio) radio.checked = true; if(!wasOpen) editEl.classList.add('show'); }
+function addBlankEngine(){ engineList.push({ name:"New Engine", url:"https://example.com?q=%s" }); renderEngineList(); document.getElementById('edit-'+(engineList.length-1)).classList.add('show'); }
+function delEngine(idx){ if(engineList.length <= 1) return alert("至少保留一个！"); engineList.splice(idx,1); if(selectedIndex===idx) selectedIndex=0; else if(selectedIndex>idx) selectedIndex-=1; renderEngineList(); }
 function saveEngines(){
-  const items = document.querySelectorAll('.engine-item');
-  const newList = [];
-  items.forEach(el => {
-    const name = el.querySelector('.inp-name').value.trim();
-    const url  = el.querySelector('.inp-url').value.trim();
-    if(name && url){ newList.push({name, url}); }
-  });
-  if(newList.length === 0) return;
-  engineList = newList;
-
-  const sel = document.querySelector('input[name="eng"]:checked');
-  if(sel) selectedIndex = Number(sel.value);
-  if(!(selectedIndex >= 0 && selectedIndex < engineList.length)) selectedIndex = 0;
-
-  Store.setJSON(STORAGE_ENGINES, engineList);
-  Store.set(STORAGE_SELECT, selectedIndex);
-
-  modal.classList.add('hidden');
-  updateEngineText();
+  var items = document.querySelectorAll('.engine-item'), newList = [];
+  items.forEach(el => { var name = el.querySelector('.inp-name').value.trim(), url = el.querySelector('.inp-url').value.trim(); if(name && url) newList.push({name, url}); });
+  if(newList.length === 0) return; engineList = newList;
+  var sel = document.querySelector('input[name="eng"]:checked'); if(sel) selectedIndex = Number(sel.value);
+  if(selectedIndex >= engineList.length) selectedIndex = 0;
+  Store.setJSON(STORAGE_ENGINES, engineList); Store.set(STORAGE_SELECT, selectedIndex);
+  modal.classList.add('hidden'); updateEngineText();
 }
+function showModal(){ renderEngineList(); modal.classList.remove('hidden'); }
+function updateEngineText(){ document.getElementById('engineName').textContent = engineList[selectedIndex] ? engineList[selectedIndex].name : ''; }
 
-function showModal(){
-  renderEngineList();
-  modal.classList.remove('hidden');
+function setTheme(theme){ document.body.classList.toggle('theme-dark', theme === 'dark'); document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙'; Store.set(STORAGE_THEME, theme); }
+function initTheme(){ setTheme(Store.get(STORAGE_THEME, null) || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')); }
+document.getElementById('themeToggle').addEventListener('click', ()=> setTheme(document.body.classList.contains('theme-dark') ? 'light' : 'dark'));
+
+function updateTime(){
+  var now = new Date(), y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0'), d = String(now.getDate()).padStart(2,'0'), h = now.getHours(), min = String(now.getMinutes()).padStart(2,'0'), s = String(now.getSeconds()).padStart(2,'0');
+  var ampm = h < 12 ? '上午' : '下午'; if(h > 12) h -= 12; if(h === 0) h = 12; var hs = String(h).padStart(2,'0');
+  document.getElementById('timeDate').innerText = `${y}年${m}月${d}日`; document.getElementById('timeAmpm').innerText = `${ampm}：${hs}:${min}:${s}`;
 }
+updateTime(); setInterval(updateTime, 1000);
 
-function updateEngineText(){
-  const engine = engineList[selectedIndex];
-  document.getElementById('engineName').textContent = engine ? engine.name : '';
-}
-
-/* ============ 2. 主题 ============ */
-function setTheme(theme){
-  document.body.classList.toggle('theme-dark', theme === 'dark');
-  document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
-  Store.set(STORAGE_THEME, theme);
-}
-function initTheme(){
-  const saved = Store.get(STORAGE_THEME, null);
-  const initial = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  setTheme(initial);
-}
-document.getElementById('themeToggle').addEventListener('click', ()=>{
-  setTheme(document.body.classList.contains('theme-dark') ? 'light' : 'dark');
-});
-
-/* ============ 3. 时间 ============ */
-function updateTime() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-
-  let hours = now.getHours();
-  const minute = String(now.getMinutes()).padStart(2, '0');
-  const second = String(now.getSeconds()).padStart(2, '0');
-
-  const ampm = hours < 12 ? '上午' : '下午';
-  if (hours > 12) hours -= 12;
-  if (hours === 0) hours = 12;
-  const hourStr = String(hours).padStart(2, '0');
-
-  document.getElementById('timeDate').innerText = `${year}年${month}月${day}日`;
-  document.getElementById('timeAmpm').innerText = `${ampm}：${hourStr}:${minute}:${second}`;
-}
-updateTime();
-setInterval(updateTime, 1000);
-
-/* ============ 4. 智能链接识别 ============ */
-function detectDirectUrl(input){
-  const s = input.trim();
-  if(!s) return null;
-  if(/^(https?|ftps?|file):\/\/.+/i.test(s)) return s;
-  if(/^localhost(:\d+)?([\/?#].*)?$/i.test(s)) return 'http://' + s;
-  const ipMatch = s.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(:\d+)?([\/?#].*)?$/);
-  if(ipMatch){
-    const ok = [ipMatch[1],ipMatch[2],ipMatch[3],ipMatch[4]].every(p => Number(p) <= 255);
-    if(ok) return 'http://' + s;
-  }
-  const domainRe = /^(([a-z0-9\u4e00-\u9fa5]([a-z0-9\u4e00-\u9fa5-]*[a-z0-9\u4e00-\u9fa5])?\.)+[a-z\u4e00-\u9fa5]{2,})(:\d+)?([\/?#].*)?$/i;
-  if(domainRe.test(s)) return 'http://' + s;
-  return null;
-}
-
+function detectDirectUrl(input){ var s = input.trim(); if(!s) return null; if(/^(https?|ftps?|file):\/\/.+/i.test(s)) return s; if(/^localhost(:\d+)?([\/?#].*)?$/i.test(s)) return 'http://'+s; if(/^(\d{1,3}\.){3}\d{1,3}(:\d+)?([\/?#].*)?$/.test(s)) return 'http://'+s; if(/^(([a-z0-9\u4e00-\u9fa5]([a-z0-9\u4e00-\u9fa5-]*[a-z0-9\u4e00-\u9fa5])?\.)+[a-z\u4e00-\u9fa5]{2,})(:\d+)?([\/?#].*)?$/i.test(s)) return 'http://'+s; return null; }
 function search(){
-  const kw = queryInput.value.trim();
-  if(!kw) return;
-
-  if(kw === MAGIC_CODE){
-    window.location.href = MAGIC_URL;
-    return;
-  }
-
-  const directUrl = detectDirectUrl(kw);
-  if(directUrl){ window.location.href = directUrl; return; }
-
-  const engine = engineList[selectedIndex];
-  if(!engine) return;
-  const target = engine.url.replace('%s', encodeURIComponent(kw));
-  window.location.href = target;
+  var kw = queryInput.value.trim(); if(!kw) return;
+  if(kw === MAGIC_CODE) return window.location.href = MAGIC_URL;
+  var url = detectDirectUrl(kw); if(url) return window.location.href = url;
+  var eng = engineList[selectedIndex]; if(eng) window.location.href = eng.url.replace('%s', encodeURIComponent(kw));
 }
-
-queryInput.addEventListener('keydown', e=>{
-  if(e.key === 'Enter') search();
-});
-
-modal.addEventListener('click', e=>{
-  if(e.target === modal) modal.classList.add('hidden');
-});
-
-/* ============ 5. 壁纸 ============ */
-const wallImg = document.getElementById('wallpaperImg');
-const wallOverlay = document.getElementById('wallpaperOverlay');
+queryInput.addEventListener('keydown', e=>{ if(e.key === 'Enter') search(); });
+modal.addEventListener('click', e=>{ if(e.target === modal) modal.classList.add('hidden'); });
 
 function getWallValue(){ return Store.get(STORAGE_WALL_VALUE, ''); }
-
-function loadImage(url){
-  return new Promise((resolve, reject) => {
-    wallImg.onload = () => resolve({ w: wallImg.naturalWidth, h: wallImg.naturalHeight });
-    wallImg.onerror = () => reject(new Error('图片加载失败'));
-    wallImg.src = url;
-  });
-}
-
-function showWall(show){
-  if(show){
-    wallImg.classList.add('active');
-    wallOverlay.classList.add('active');
-    document.body.classList.add('has-wallpaper');
-  }else{
-    wallImg.classList.remove('active');
-    wallOverlay.classList.remove('active');
-    document.body.classList.remove('has-wallpaper');
-  }
-}
-
-async function parseApiUrl(url){
-  try{
-    const res = await fetch(url, { cache:'no-store' });
-    const ct = (res.headers.get('content-type') || '').toLowerCase();
-    if(ct.includes('application/json')){
-      const data = await res.json();
-      let u = data.url || data.imgurl || data.image || data.img || data.raw || data.src;
-      if(!u && data.data){
-        const d = data.data;
-        u = (typeof d === 'string') ? d : (d.url || d.image || d.imgurl || d.img);
-      }
-      if(typeof u === 'string' && u){
-        try{ u = new URL(u, url).href; }catch(e){}
-        return u;
-      }
-    }
-    if(ct.startsWith('image/')) return url;
-  }catch(e){}
-  return null;
-}
-
+function loadImage(url){ return new Promise((res, rej) => { wallImg.onload = () => res(); wallImg.onerror = () => rej(); wallImg.src = url; }); }
+function showWall(show){ wallImg.classList.toggle('active', show); wallOverlay.classList.toggle('active', show); document.body.classList.toggle('has-wallpaper', show); }
 async function loadWallpaper(){
-  const value = getWallValue();
-  if(!value){ showWall(false); return; }
-
-  if(value.startsWith('data:image/')){
-    try{ await loadImage(value); showWall(true); return; }catch(e){ showWall(false); return; }
-  }
-
-  try{ await loadImage(value); showWall(true); return; }catch(e){}
-
-  const apiImgUrl = await parseApiUrl(value);
-  if(apiImgUrl && apiImgUrl !== value){
-    try{ await loadImage(apiImgUrl); showWall(true); return; }catch(e){}
-  }
-  showWall(false);
-  alert('壁纸加载失败，请检查地址是否为有效的图片直链。\n\n地址：' + value);
+  var val = getWallValue(); if(!val) return showWall(false);
+  if(val.startsWith('data:image/')){ try{ await loadImage(val); showWall(true); return; }catch(e){ showWall(false); return; } }
+  try{ await loadImage(val); showWall(true); return; }catch(e){}
+  try{
+    var res = await fetch(val, { cache: 'no-store' }), ct = res.headers.get('content-type')||'';
+    if(ct.includes('json')){ var data = await res.json(); var u = data.url||data.imgurl||data.image||data.img||(data.data&&(data.data.url||data.data.image)); if(u){ await loadImage(u); showWall(true); return; } }
+    else if(ct.startsWith('image/')) return showWall(true);
+  }catch(e){}
+  showWall(false); alert('壁纸加载失败');
 }
-
 function openWallModal(){
-  const val = getWallValue();
-  if(val.startsWith('data:image/')){
-    document.getElementById('wallValue').value = '';
-    document.getElementById('localWallHint').style.display = 'block';
-  } else {
-    document.getElementById('wallValue').value = val;
-    document.getElementById('localWallHint').style.display = 'none';
-  }
+  var val = getWallValue();
+  if(val.startsWith('data:image/')){ document.getElementById('wallValue').value = ''; document.getElementById('localWallHint').style.display = 'block'; }
+  else { document.getElementById('wallValue').value = val; document.getElementById('localWallHint').style.display = 'none'; }
   document.getElementById('wallModal').classList.remove('hidden');
 }
-
 function saveWallpaper(){
-  const v = document.getElementById('wallValue').value.trim();
-  const currentVal = getWallValue();
-  if(v === '' && currentVal.startsWith('data:image/')){
-    document.getElementById('wallModal').classList.add('hidden');
-    return;
-  }
-  Store.set(STORAGE_WALL_VALUE, v);
-  document.getElementById('wallModal').classList.add('hidden');
-  loadWallpaper();
+  var v = document.getElementById('wallValue').value.trim();
+  if(v === '' && getWallValue().startsWith('data:image/')) return document.getElementById('wallModal').classList.add('hidden');
+  Store.set(STORAGE_WALL_VALUE, v); document.getElementById('wallModal').classList.add('hidden'); loadWallpaper();
 }
-
-function clearWallpaper(){
-  Store.set(STORAGE_WALL_VALUE, '');
-  document.getElementById('wallValue').value = '';
-  document.getElementById('localWallHint').style.display = 'none';
-  document.getElementById('wallModal').classList.add('hidden');
-  wallImg.removeAttribute('src');
-  showWall(false);
-}
-
+function clearWallpaper(){ Store.set(STORAGE_WALL_VALUE, ''); document.getElementById('wallValue').value = ''; document.getElementById('wallModal').classList.add('hidden'); wallImg.removeAttribute('src'); showWall(false); }
 document.getElementById('wallFileInput').addEventListener('change', function(e){
-  const file = e.target.files && e.target.files[0];
-  if(!file) return;
-  if(!file.type.startsWith('image/')){ alert('请选择图片文件！'); e.target.value=''; return; }
-  if(file.size > 5 * 1024 * 1024 && !confirm('图片较大，可能会占用较多存储空间，是否继续？')){
-    e.target.value=''; return;
-  }
-  const reader = new FileReader();
-  reader.onload = function(evt){
-    Store.set(STORAGE_WALL_VALUE, evt.target.result);
-    document.getElementById('wallValue').value = '';
-    document.getElementById('localWallHint').style.display = 'block';
-    document.getElementById('wallModal').classList.add('hidden');
-    loadWallpaper();
-    e.target.value = '';
-  };
-  reader.readAsDataURL(file);
+  var f = e.target.files && e.target.files[0]; if(!f) return;
+  var reader = new FileReader(); reader.onload = evt => { Store.set(STORAGE_WALL_VALUE, evt.target.result); document.getElementById('wallModal').classList.add('hidden'); loadWallpaper(); e.target.value=''; }; reader.readAsDataURL(f);
 });
-
 document.getElementById('wallToggle').addEventListener('click', openWallModal);
-document.getElementById('wallModal').addEventListener('click', e=>{
-  if(e.target.id === 'wallModal') e.target.classList.add('hidden');
-});
+document.getElementById('wallModal').addEventListener('click', e=>{ if(e.target.id === 'wallModal') e.target.classList.add('hidden'); });
 
-/* ============ 6. 标题彩蛋 ============ */
-const titleEl = document.getElementById('mainTitle');
+function initTitle(){ titleEl.textContent = Store.get(STORAGE_TITLE_TEXT, 'Search'); }
+titleEl.addEventListener('dblclick', ()=>{ var next = titleEl.textContent === 'Search' ? 'Hello World' : 'Search'; titleEl.textContent = next; Store.set(STORAGE_TITLE_TEXT, next); });
 
-function initTitle(){
-  const savedTitle = Store.get(STORAGE_TITLE_TEXT, 'Search');
-  titleEl.textContent = savedTitle;
-}
-
-titleEl.addEventListener('dblclick', () => {
-  const current = titleEl.textContent;
-  const next = (current === 'Search') ? 'Hello World' : 'Search';
-  titleEl.textContent = next;
-  Store.set(STORAGE_TITLE_TEXT, next);
-});
-
-/* ============ 7. 用户脚本管理 ============ */
-const TYPE_LABEL = { url:'外链', file:'本地文件', code:'代码' };
-const MAX_FILE_SIZE = 2 * 1024 * 1024;
-
-let scriptList = [];
-let editingScriptId = null;
-const executedSignatures = new Map();
-
-function genScriptId(){ return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-
+function genScriptId(){ return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 function loadScriptList(){
-  const arr = Store.getJSON(STORAGE_SCRIPTS, []);
-  scriptList = Array.isArray(arr) ? arr.map(s => ({
-    id: String(s && s.id ? s.id : genScriptId()),
-    name: String(s && s.name ? s.name : '未命名脚本'),
-    type: (s && (s.type === 'url' || s.type === 'file' || s.type === 'code')) ? s.type : 'code',
-    content: String(s && s.content != null ? s.content : ''),
-    enabled: !(s && s.enabled === false)
-  })) : [];
+  var arr = Store.getJSON(STORAGE_SCRIPTS, []);
+  scriptList = Array.isArray(arr) ? arr.map(s=>({ id: s.id||genScriptId(), name: s.name||'未命名', type: s.type||'code', content: s.content||'', enabled: s.enabled!==false })) : [];
 }
-
 function saveScriptList(){ Store.setJSON(STORAGE_SCRIPTS, scriptList); }
-
 function injectScript(item){
-  try{
-    const s = document.createElement('script');
-    if(item.type === 'url'){
-      s.src = item.content;
-      s.async = false;
-      s.referrerPolicy = 'no-referrer';
-    }else{
-      s.textContent = item.content + '\n//# sourceURL=user-script-' + encodeURIComponent(item.name) + '.js';
-    }
-    s.setAttribute('data-user-script', item.name || item.id);
-    document.body.appendChild(s);
-  }catch(err){ console.error('[用户脚本] 注入失败：', item, err); }
+  try{ var s = document.createElement('script'); if(item.type==='url'){ s.src = item.content; s.async = false; s.referrerPolicy = 'no-referrer'; } else { s.textContent = item.content + '\n//# sourceURL=' + encodeURIComponent(item.name) + '.js'; } document.body.appendChild(s); }catch(e){ console.error(e); }
 }
-
 function runPendingScripts(){
-  scriptList.forEach(item => {
-    if(!item.enabled) return;
-    if(!item.content || !item.content.trim()) return;
-    if(executedSignatures.get(item.id) === item.content) return;
-    executedSignatures.set(item.id, item.content);
-    injectScript(item);
-    console.log('[用户脚本] ▶ 已执行：', item.name);
-  });
+  scriptList.forEach(item => { if(!item.enabled || !item.content.trim() || executedSignatures.get(item.id) === item.content) return; executedSignatures.set(item.id, item.content); injectScript(item); console.log('[脚本执行]', item.name); });
 }
-
 function renderScriptList(){
-  const wrap = document.getElementById('scriptList');
-  wrap.innerHTML = '';
-  if(scriptList.length === 0){
-    wrap.innerHTML = '<div class="script-empty">还没有脚本，可在下方添加</div>';
-    return;
-  }
+  var wrap = document.getElementById('scriptList'); wrap.innerHTML = '';
+  if(scriptList.length === 0) return wrap.innerHTML = '<div class="script-empty">暂无脚本</div>';
   scriptList.forEach(item => {
-    const isUrl = item.type === 'url';
-    const div = document.createElement('div');
-    div.className = 'script-item';
-    div.dataset.id = item.id;
+    var isUrl = item.type === 'url', div = document.createElement('div'); div.className = 'script-item'; div.dataset.id = item.id;
     div.innerHTML = `
       <div class="script-row">
-        <input type="checkbox" class="script-enabled" ${item.enabled ? 'checked' : ''}>
+        <input type="checkbox" class="script-enabled" ${item.enabled?'checked':''}>
         <div class="script-info">
           <div class="script-name">${esc(item.name)}</div>
-          <div class="script-meta">${esc(isUrl ? '外链 · ' + item.content : TYPE_LABEL[item.type] + ' · ' + item.content.length + ' 字符')}</div>
+          <div class="script-meta">${esc(isUrl ? '外链 · '+item.content : TYPE_LABEL[item.type]+' · '+item.content.length+' 字符')}</div>
         </div>
         <button class="mini-btn" onclick="toggleScriptEdit('${item.id}')">编辑</button>
         <button class="del-btn" onclick="delScript('${item.id}')">删除</button>
       </div>
       <div class="script-edit${editingScriptId === item.id ? '' : ' hidden'}">
-        <input class="script-name-input" placeholder="脚本名称" value="${esc(item.name)}">
+        <input class="script-name-input" value="${esc(item.name)}">
         ${isUrl ? `<input class="script-content-input" value="${esc(item.content)}">` : `<textarea class="script-content-input" rows="9" spellcheck="false">${esc(item.content)}</textarea>`}
         <button class="mini-btn" style="align-self:flex-start;" onclick="saveScriptEdit('${item.id}')">保存</button>
-      </div>
-    `;
+      </div>`;
     wrap.appendChild(div);
   });
 }
-
 function collectScriptsFromDom(){
   document.querySelectorAll('#scriptList .script-item').forEach(el => {
-    const id = el.dataset.id;
-    const item = scriptList.find(s => s.id === id);
-    if(!item) return;
-    const cb = el.querySelector('.script-enabled');
-    if(cb) item.enabled = cb.checked;
-    const nameInp = el.querySelector('.script-name-input');
-    if(nameInp) item.name = nameInp.value.trim() || '未命名脚本';
-    const contentInp = el.querySelector('.script-content-input');
-    if(contentInp) item.content = contentInp.value;
+    var item = scriptList.find(s=>s.id===el.dataset.id); if(!item) return;
+    item.enabled = el.querySelector('.script-enabled').checked;
+    item.name = el.querySelector('.script-name-input').value.trim() || '未命名';
+    item.content = el.querySelector('.script-content-input').value;
   });
 }
-
-function persistAndRender(){ saveScriptList(); renderScriptList(); }
 function openScriptModal(){ editingScriptId = null; renderScriptList(); document.getElementById('scriptModal').classList.remove('hidden'); }
-function closeScriptModal(){
-  collectScriptsFromDom(); editingScriptId = null; saveScriptList();
-  document.getElementById('scriptModal').classList.add('hidden'); runPendingScripts();
-}
-function toggleScriptEdit(id){ collectScriptsFromDom(); editingScriptId = (editingScriptId === id) ? null : id; persistAndRender(); }
-function saveScriptEdit(id){ collectScriptsFromDom(); editingScriptId = null; persistAndRender(); runPendingScripts(); }
-function delScript(id){
-  collectScriptsFromDom();
-  const item = scriptList.find(s => s.id === id);
-  if(!item || !confirm('确定删除脚本「' + item.name + '」吗？')) return;
-  scriptList = scriptList.filter(s => s.id !== id);
-  if(editingScriptId === id) editingScriptId = null;
-  persistAndRender();
-}
-
-function guessScriptName(url){
-  try{ const u = new URL(url); const parts = u.pathname.split('/').filter(Boolean); return parts.length ? parts[parts.length-1] : u.hostname; }
-  catch(e){ return '外链脚本'; }
-}
-
+function closeScriptModal(){ collectScriptsFromDom(); editingScriptId = null; saveScriptList(); document.getElementById('scriptModal').classList.add('hidden'); runPendingScripts(); }
+function toggleScriptEdit(id){ collectScriptsFromDom(); editingScriptId = editingScriptId === id ? null : id; saveScriptList(); renderScriptList(); }
+function saveScriptEdit(id){ collectScriptsFromDom(); editingScriptId = null; saveScriptList(); renderScriptList(); runPendingScripts(); }
+function delScript(id){ collectScriptsFromDom(); if(!confirm('确定删除？')) return; scriptList = scriptList.filter(s=>s.id!==id); if(editingScriptId===id) editingScriptId=null; saveScriptList(); renderScriptList(); }
 function addUrlScript(){
-  collectScriptsFromDom();
-  const inp = document.getElementById('scriptUrlInput');
-  const url = inp.value.trim();
-  if(!url || !/^https?:\/\//i.test(url)){ alert('请输入正确的 http/https 脚本地址'); return; }
-  scriptList.push({ id: genScriptId(), name: guessScriptName(url), type: 'url', content: url, enabled: true });
-  inp.value = ''; persistAndRender(); runPendingScripts();
+  collectScriptsFromDom(); var inp = document.getElementById('scriptUrlInput'), url = inp.value.trim();
+  if(!/^https?:\/\//i.test(url)) return alert('请输入正确地址');
+  scriptList.push({ id: genScriptId(), name: url.split('/').pop() || '外链', type: 'url', content: url, enabled: true });
+  inp.value = ''; saveScriptList(); renderScriptList(); runPendingScripts();
 }
-
 function pickScriptFile(){ document.getElementById('scriptFileInput').click(); }
-
 document.getElementById('scriptFileInput').addEventListener('change', function(e){
-  const file = e.target.files && e.target.files[0];
-  if(!file) return;
-  if(file.size > MAX_FILE_SIZE && !confirm('文件较大，是否继续？')){ e.target.value=''; return; }
-  const reader = new FileReader();
-  reader.onload = () => {
-    collectScriptsFromDom();
-    scriptList.push({ id: genScriptId(), name: file.name, type: 'file', content: String(reader.result||''), enabled: true });
-    persistAndRender(); runPendingScripts(); e.target.value = '';
-  };
-  reader.onerror = () => { alert('文件读取失败'); e.target.value = ''; };
-  reader.readAsText(file);
+  var f = e.target.files && e.target.files[0]; if(!f) return;
+  var reader = new FileReader();
+  reader.onload = () => { collectScriptsFromDom(); scriptList.push({ id: genScriptId(), name: f.name, type: 'file', content: reader.result, enabled: true }); saveScriptList(); renderScriptList(); runPendingScripts(); e.target.value=''; };
+  reader.readAsText(f);
 });
-
-function addCodeScript(){
-  collectScriptsFromDom();
-  const item = { id: genScriptId(), name: '自定义脚本', type: 'code', content: '// 在这里写你的代码\n', enabled: true };
-  scriptList.push(item); editingScriptId = item.id; persistAndRender();
-}
-
-document.getElementById('scriptList').addEventListener('change', e => {
-  if(e.target.classList.contains('script-enabled')){
-    collectScriptsFromDom(); saveScriptList(); runPendingScripts(); renderScriptList();
-  }
-});
-
+function addCodeScript(){ collectScriptsFromDom(); var item = { id: genScriptId(), name: '自定义脚本', type: 'code', content: '// 直接在全局写代码，无需任何前缀\n', enabled: true }; scriptList.push(item); editingScriptId = item.id; saveScriptList(); renderScriptList(); }
+document.getElementById('scriptList').addEventListener('change', e => { if(e.target.classList.contains('script-enabled')){ collectScriptsFromDom(); saveScriptList(); renderScriptList(); runPendingScripts(); } });
 document.getElementById('scriptToggle').addEventListener('click', openScriptModal);
 document.getElementById('scriptModal').addEventListener('click', e => { if(e.target.id === 'scriptModal') closeScriptModal(); });
 
-/* ============ 8. ⭐️ 全局暴露区 (最先执行) ============ */
-window.App = {
-  // 状态
-  get engineList() { return engineList; },
-  set engineList(v) { engineList = v; updateEngineText(); },
-  get selectedIndex() { return selectedIndex; },
-  set selectedIndex(v) { selectedIndex = v; updateEngineText(); },
-  get scriptList() { return scriptList; },
-  
-  // 核心对象与函数
-  Store, queryInput, titleEl, modal, wallImg, wallOverlay,
-  
-  // 动作函数
-  loadData, renderEngineList, toggleEdit, addBlankEngine, delEngine, saveEngines, showModal, updateEngineText,
-  setTheme, initTheme, updateTime,
-  detectDirectUrl, search,
-  getWallValue, loadImage, showWall, parseApiUrl, loadWallpaper, openWallModal, saveWallpaper, clearWallpaper,
-  initTitle,
-  loadScriptList, saveScriptList, injectScript, runPendingScripts, renderScriptList, openScriptModal, closeScriptModal,
-  pickScriptFile, addUrlScript, addCodeScript, delScript
-};
-
-// 兜底：把一些常用函数直接挂到 window 上，防止用户没写 App.
-window.queryInput = queryInput;
-window.search = search;
-window.setTheme = setTheme;
-window.titleEl = titleEl;
-window.showModal = showModal;
-window.renderEngineList = renderEngineList;
-
-// 对 let 声明的变量使用 window 代理，确保用户可以直接读写
-Object.defineProperty(window, 'engineList', {
-  get: () => engineList,
-  set: (val) => { engineList = val; updateEngineText(); }
-});
-Object.defineProperty(window, 'selectedIndex', {
-  get: () => selectedIndex,
-  set: (val) => { selectedIndex = val; updateEngineText(); }
-});
-
-/* ============ 9. 启动 ============ */
 (async function boot(){
-  try{ await Store.init(); }catch(e){ console.warn('Store 初始化异常', e); }
-
-  initTheme();
-  loadData();
-  initTitle();
-  loadWallpaper();
-  loadScriptList();
-
-  // ⭐️ 此时 window.App 早已就绪，数据库也加载完毕，执行用户脚本
-  runPendingScripts();
-
-  // 支持 ?q=关键词
-  try{
-    const q = new URLSearchParams(location.search).get('q');
-    if(q){ queryInput.value = q; queryInput.focus(); }
-  }catch(e){}
+  try{ await Store.init(); }catch(e){}
+  initTheme(); loadData(); initTitle(); loadWallpaper(); loadScriptList(); runPendingScripts();
+  try{ var q = new URLSearchParams(location.search).get('q'); if(q){ queryInput.value = q; queryInput.focus(); } }catch(e){}
 })();
 </script>
 </body>
