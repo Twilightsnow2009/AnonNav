@@ -28,6 +28,8 @@ AnonNav 是一个极简、高度可定制的浏览器起始页（新标签页）
  
 如需添加可查看 更多.md（ https://github.com/Twilightsnow2009/AnonNav/blob/main/%E6%9B%B4%E5%A4%9A.md ） 文件，复制对应链接粘贴到自定义引擎即可。
  
+也可以访问https://raw.githubusercontent.com/Twilightsnow2009/AnonNav/main/%E6%9B%B4%E5%A4%9A.js
+复制并粘贴到JS中，直接一键导入。
  
  
 🚀 部署与使用
