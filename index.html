@@ -941,24 +941,30 @@ document.getElementById('themeToggle').addEventListener('click', ()=>{
   setTheme(document.body.classList.contains('theme-dark') ? 'light' : 'dark');
 });
 
-/* ============ 3. 时间 ============ */
+/* ============ 3. 时间 (已修改为精确到秒) ============ */
 function updateTime() {
   const now = new Date();
   const year = now.getFullYear();
-  const month = String(now.getMonth()+1).padStart(2,'0');
-  const day = String(now.getDate()).padStart(2,'0');
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
 
   let hours = now.getHours();
-  const minute = String(now.getMinutes()).padStart(2,'0');
-  let ampm = "AM";
-  if(hours >= 12){
-    ampm = "PM";
-    if(hours > 12) hours -= 12;
-  }
-  if(hours === 0) hours = 12;
+  const minute = String(now.getMinutes()).padStart(2, '0');
+  const second = String(now.getSeconds()).padStart(2, '0');
 
+  // 判断上午/下午
+  const ampm = hours < 12 ? '上午' : '下午';
+
+  // 转换为 12 小时制
+  if (hours > 12) hours -= 12;
+  if (hours === 0) hours = 12;
+
+  // 小时补零
+  const hourStr = String(hours).padStart(2, '0');
+
+  // 更新 DOM
   document.getElementById('timeDate').innerText = `${year}年${month}月${day}日`;
-  document.getElementById('timeAmpm').innerText = `${ampm} ${hours}点${minute}分`;
+  document.getElementById('timeAmpm').innerText = `${ampm}：${hourStr}:${minute}:${second}`;
 }
 updateTime();
 setInterval(updateTime, 1000);
