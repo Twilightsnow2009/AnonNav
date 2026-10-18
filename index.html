@@ -3,7 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Search</title>
+
+<!-- ===== 搜索引擎验证 ===== -->
+<meta name="msvalidate.01" content="FCCB324DC27E060EF648ACA7A6675844" />
+
+<!-- ===== 基础 SEO ===== -->
+<title>AnonNav · 极简浏览器起始页与搜索页</title>
+<meta name="description" content="AnonNav 是一个极简的浏览器起始页与搜索页：支持百度、Bing、360、搜狗等多引擎一键切换、自定义搜索引擎、智能识别网址与 IP、壁纸自定义，并可运行自定义 JS 脚本，数据存于 IndexedDB 本地不丢失。">
+<meta name="keywords" content="浏览器起始页,搜索页,新标签页,极简主页,自定义搜索引擎,起始页,搜索聚合,网址导航,壁纸起始页,自定义脚本,AnonNav">
+<meta name="author" content="Twilightsnow2009">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+<meta name="format-detection" content="telephone=no">
+<link rel="canonical" href="https://twilightsnow2009.github.io/AnonNav/">
+
+<!-- ===== 主题色 / 移动端 ===== -->
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AnonNav">
+<meta name="application-name" content="AnonNav">
+
+<!-- ===== Open Graph ===== -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="AnonNav">
+<meta property="og:title" content="AnonNav · 极简浏览器起始页与搜索页">
+<meta property="og:description" content="极简浏览器起始页与搜索页：多引擎切换、自定义搜索引擎、智能识别网址与 IP、可自定义壁纸与 JS 脚本，数据本地存储。">
+<meta property="og:url" content="https://twilightsnow2009.github.io/AnonNav/">
+<meta property="og:image" content="https://twilightsnow2009.github.io/AnonNav/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_CN">
+
+<!-- ===== Twitter Card ===== -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AnonNav · 极简浏览器起始页与搜索页">
+<meta name="twitter:description" content="极简浏览器起始页与搜索页：多引擎切换、自定义搜索引擎、智能识别网址与 IP、可自定义壁纸与 JS 脚本，数据本地存储。">
+<meta name="twitter:image" content="https://twilightsnow2009.github.io/AnonNav/preview.png">
+
+<!-- ===== 图标 ===== -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+
+<!-- ===== 结构化数据 ===== -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "AnonNav",
+  "alternateName": ["浏览器起始页", "搜索页"],
+  "url": "https://twilightsnow2009.github.io/AnonNav/",
+  "description": "极简浏览器起始页与搜索页，支持多引擎切换、自定义搜索引擎、智能识别网址与 IP、自定义壁纸与 JS 脚本。",
+  "inLanguage": "zh-CN",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://twilightsnow2009.github.io/AnonNav/?q={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
 :root{
@@ -147,7 +209,6 @@ h1{
   font-weight:400;
   text-align:center;
   margin-bottom:32px;
-  /* 彩蛋优化：禁止选中文字、鼠标变手型 */
   user-select:none;
   -webkit-user-select:none;
   cursor:pointer;
@@ -292,8 +353,11 @@ button:hover{ opacity:0.85; }
   color:var(--text-light);
   z-index:1;
 }
+.footer-text a{ color:inherit; }
 
 #wallToggle{ right:76px; }
+#scriptToggle{ right:132px; }
+
 .wall-field{ margin-bottom:16px; text-align:left; }
 .wall-field > label{
   display:block;
@@ -318,26 +382,145 @@ button:hover{ opacity:0.85; }
   line-height:1.6;
   text-align:left;
 }
+
+/* ===== 脚本管理 ===== */
+.script-warn{
+  font-size:0.78rem;
+  line-height:1.6;
+  text-align:left;
+  color:var(--text-soft);
+  background:rgba(210,160,20,0.12);
+  border:1px solid rgba(210,160,20,0.35);
+  border-radius:10px;
+  padding:9px 12px;
+  margin-bottom:16px;
+}
+.script-empty{
+  font-size:0.85rem;
+  color:var(--text-light);
+  padding:8px 0 12px;
+  text-align:center;
+}
+.script-item{
+  border:1px solid var(--card-border);
+  border-radius:12px;
+  padding:10px 12px;
+  margin-bottom:10px;
+  background:rgba(128,128,128,0.04);
+}
+.script-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.script-enabled{
+  width:17px;
+  height:17px;
+  accent-color:var(--text);
+  flex-shrink:0;
+  cursor:pointer;
+}
+.script-info{ flex:1; min-width:0; text-align:left; }
+.script-name{
+  font-size:0.95rem;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.script-meta{
+  font-size:0.74rem;
+  color:var(--text-light);
+  margin-top:3px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.mini-btn{
+  padding:5px 12px;
+  font-size:0.8rem;
+  border-radius:999px;
+  background:var(--btn-bg);
+  color:var(--btn-text);
+  flex-shrink:0;
+}
+.script-edit{
+  margin-top:10px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.script-edit.hidden{ display:none; }
+.script-edit input,
+.script-edit textarea{
+  width:100%;
+  padding:8px 10px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  font-size:0.82rem;
+  line-height:1.5;
+  background:var(--bg);
+  color:var(--text);
+  outline:none;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  resize:vertical;
+}
+.script-edit input:focus,
+.script-edit textarea:focus{ border-color:#555; }
+.script-add{
+  margin-top:18px;
+  padding-top:14px;
+  border-top:1px solid var(--card-border);
+}
+.script-add-label{
+  display:block;
+  font-size:0.8rem;
+  color:var(--text-soft);
+  margin-bottom:8px;
+  text-align:left;
+}
+.script-add-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.script-add-row input[type="text"]{
+  flex:1;
+  min-width:0;
+  padding:9px 12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  font-size:0.85rem;
+  background:var(--bg);
+  color:var(--text);
+  outline:none;
+}
+.script-add-row input[type="text"]:focus{ border-color:#555; }
+.script-add-row button{
+  font-size:0.85rem;
+  padding:9px 16px;
+  white-space:nowrap;
+}
 </style>
 </head>
 <body>
 
-<!-- 壁纸：带 no-referrer 破解防盗链 -->
 <img id="wallpaperImg" alt="" referrerpolicy="no-referrer">
 <div id="wallpaperOverlay"></div>
 
 <button id="themeToggle" class="theme-toggle" aria-label="切换主题" title="切换主题">🌙</button>
 <button id="wallToggle" class="theme-toggle" aria-label="壁纸设置" title="壁纸设置">🖼️</button>
+<button id="scriptToggle" class="theme-toggle" aria-label="脚本管理" title="脚本管理">📜</button>
 
 <div class="container">
   <div class="time-block">
     <div class="time-date" id="timeDate"></div>
     <div class="time-ampm" id="timeAmpm"></div>
   </div>
-  <!-- 为标题添加 id="mainTitle" -->
-  <h1 id="mainTitle">Search</h1>
+  <h1 id="mainTitle" aria-label="AnonNav 极简浏览器起始页与搜索页">Search</h1>
   <div class="search-wrap">
-    <input id="query" type="text" placeholder="输入搜索词、网址或 IP…" autocomplete="off">
+    <input id="query" type="text" name="q" role="searchbox"
+           placeholder="输入搜索词、网址或 IP…" autocomplete="off"
+           aria-label="搜索框">
     <button onclick="search()">搜索</button>
   </div>
   <div class="tip">
@@ -346,7 +529,11 @@ button:hover{ opacity:0.85; }
   </div>
 </div>
 
-<div class="footer-text">本站点托管于GitHub Pages</div>
+<div class="footer-text">
+  本站点托管于 <a href="https://pages.github.com/" target="_blank" rel="noopener">GitHub Pages</a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/Twilightsnow2009/AnonNav" target="_blank" rel="noopener">项目源码</a>
+</div>
 
 <div id="modal" class="modal hidden">
   <div class="modal-box">
@@ -380,31 +567,209 @@ button:hover{ opacity:0.85; }
   </div>
 </div>
 
+<div id="scriptModal" class="modal hidden">
+  <div class="modal-box">
+    <h3>脚本管理</h3>
+    <div class="script-warn">
+      ⚠️ 添加的脚本会以完整权限在本页运行，请只运行你信任的来源。<br>
+      停用 / 删除脚本后需刷新页面才能完全生效。
+    </div>
+
+    <div id="scriptList"></div>
+
+    <div class="script-add">
+      <label class="script-add-label">添加外链脚本（.js 直链）</label>
+      <div class="script-add-row">
+        <input id="scriptUrlInput" type="text" placeholder="https://example.com/script.js" autocomplete="off">
+        <button onclick="addUrlScript()">添加</button>
+      </div>
+    </div>
+
+    <div class="script-add">
+      <label class="script-add-label">本地脚本</label>
+      <div class="script-add-row">
+        <input type="file" id="scriptFileInput" accept=".js,.mjs,text/javascript,application/javascript" hidden>
+        <button onclick="pickScriptFile()">上传 JS 文件</button>
+        <button onclick="addCodeScript()">编写代码</button>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button onclick="closeScriptModal()">完成</button>
+    </div>
+  </div>
+</div>
+
 <script>
-/* ============ 0. 安全存储 ============ */
-const Store = {
-  get(k, def = ''){
-    try{ const v = localStorage.getItem(k); return v === null ? def : v; }
-    catch(e){ return def; }
-  },
-  getJSON(k, def){
-    try{ const v = localStorage.getItem(k); return v === null ? def : JSON.parse(v); }
-    catch(e){ return def; }
-  },
-  set(k, v){
-    try{ localStorage.setItem(k, String(v)); }catch(e){}
-  },
-  setJSON(k, v){
-    try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){}
-  },
-  remove(k){ try{ localStorage.removeItem(k); }catch(e){} }
-};
+/* ============ 0. 存储层：IndexedDB（带 localStorage 迁移与降级） ============ */
+const Store = (function(){
+  const DB_NAME = 'search_app_db';
+  const DB_VERSION = 1;
+  const STORE_NAME = 'kv';
+  const LS_PREFIX = 'search_';
+
+  let db = null;
+  let useIDB = true;
+  const cache = new Map();
+  let initPromise = null;
+
+  function openDB(){
+    return new Promise((resolve, reject) => {
+      if(!window.indexedDB){ reject(new Error('浏览器不支持 IndexedDB')); return; }
+      let req;
+      try{ req = indexedDB.open(DB_NAME, DB_VERSION); }
+      catch(e){ reject(e); return; }
+      req.onupgradeneeded = e => {
+        const d = e.target.result;
+        if(!d.objectStoreNames.contains(STORE_NAME)){
+          d.createObjectStore(STORE_NAME);
+        }
+      };
+      req.onsuccess = e => resolve(e.target.result);
+      req.onerror = () => reject(req.error || new Error('IndexedDB 打开失败'));
+      req.onblocked = () => reject(new Error('IndexedDB 被其他标签页阻塞'));
+    });
+  }
+
+  function dbReadAll(){
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const req = tx.objectStore(STORE_NAME).openCursor();
+      const out = {};
+      req.onsuccess = e => {
+        const cur = e.target.result;
+        if(cur){ out[cur.key] = cur.value; cur.continue(); }
+        else resolve(out);
+      };
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  function dbPut(key, value){
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).put(value, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error || new Error('事务中止'));
+    });
+  }
+
+  function dbDelete(key){
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).delete(key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  function lsKeys(){
+    try{
+      const arr = [];
+      for(let i = 0; i < localStorage.length; i++) arr.push(localStorage.key(i));
+      return arr;
+    }catch(e){ return []; }
+  }
+
+  function lsGet(k){
+    try{ return localStorage.getItem(k); }catch(e){ return null; }
+  }
+
+  function migrateFromLS(existing){
+    const migrated = [];
+    lsKeys().forEach(k => {
+      if(!k || k.indexOf(LS_PREFIX) !== 0) return;
+      if(existing[k] !== undefined) return;
+      const v = lsGet(k);
+      if(v === null) return;
+      cache.set(k, v);
+      migrated.push(k);
+    });
+    return migrated;
+  }
+
+  const api = {
+    init(){
+      if(initPromise) return initPromise;
+      initPromise = (async () => {
+        try{
+          db = await openDB();
+          const all = await dbReadAll();
+          Object.keys(all).forEach(k => cache.set(k, all[k]));
+
+          const migrated = migrateFromLS(all);
+          if(migrated.length){
+            console.log('[Store] 从 localStorage 迁移 ' + migrated.length + ' 项到 IndexedDB');
+            await Promise.all(migrated.map(k => dbPut(k, cache.get(k))));
+          }
+          console.log('[Store] IndexedDB 就绪，共 ' + cache.size + ' 条记录');
+
+          if(navigator.storage && navigator.storage.persist){
+            navigator.storage.persist().then(ok => {
+              console.log('[Store] 持久化存储：' + (ok ? '已获得' : '被拒绝'));
+            }).catch(()=>{});
+          }
+          if(navigator.storage && navigator.storage.estimate){
+            navigator.storage.estimate().then(({usage, quota}) => {
+              console.log('[Store] 用量 ' + (usage/1024).toFixed(1) + ' KB / 上限 ' +
+                          (quota/1024/1024).toFixed(1) + ' MB');
+            }).catch(()=>{});
+          }
+        }catch(err){
+          useIDB = false;
+          console.warn('[Store] IndexedDB 不可用，降级到 localStorage：', err && err.message);
+          lsKeys().forEach(k => {
+            const v = lsGet(k);
+            if(v !== null) cache.set(k, v);
+          });
+        }
+        return true;
+      })();
+      return initPromise;
+    },
+
+    get(k, def = ''){
+      return cache.has(k) ? cache.get(k) : def;
+    },
+
+    getJSON(k, def){
+      if(!cache.has(k)) return def;
+      try{ return JSON.parse(cache.get(k)); }catch(e){ return def; }
+    },
+
+    set(k, v){
+      const s = String(v);
+      cache.set(k, s);
+      if(useIDB && db){
+        dbPut(k, s).catch(err => console.warn('[Store] 写入失败 ' + k + '：', err));
+      }else{
+        try{ localStorage.setItem(k, s); }
+        catch(e){ console.warn('[Store] localStorage 写入失败（可能已满）'); }
+      }
+    },
+
+    setJSON(k, v){ api.set(k, JSON.stringify(v)); },
+
+    remove(k){
+      cache.delete(k);
+      if(useIDB && db){
+        dbDelete(k).catch(()=>{});
+      }else{
+        try{ localStorage.removeItem(k); }catch(e){}
+      }
+    }
+  };
+
+  return api;
+})();
 
 const STORAGE_ENGINES = 'search_engine_list';
 const STORAGE_SELECT  = 'search_selected_idx';
 const STORAGE_THEME   = 'search_theme';
 const STORAGE_WALL_VALUE = 'search_wall_value';
-const STORAGE_TITLE_TEXT = 'search_title_text'; // 新增：标题存储键名
+const STORAGE_TITLE_TEXT = 'search_title_text';
+const STORAGE_SCRIPTS = 'search_user_scripts';
 
 /* ============ 1. 搜索引擎 ============ */
 const defaultEngines = [
@@ -665,7 +1030,7 @@ async function parseApiUrl(url){
 
 async function loadWallpaper(){
   const value = getWallValue();
-  
+
   if(!value){
     showWall(false);
     return;
@@ -723,16 +1088,14 @@ document.getElementById('wallModal').addEventListener('click', e=>{
   }
 });
 
-/* ============ 6. 标题彩蛋（双击切换 + 本地存储） ============ */
+/* ============ 6. 标题彩蛋 ============ */
 const titleEl = document.getElementById('mainTitle');
 
-// 初始化标题
 function initTitle(){
   const savedTitle = Store.get(STORAGE_TITLE_TEXT, 'Search');
   titleEl.textContent = savedTitle;
 }
 
-// 双击切换
 titleEl.addEventListener('dblclick', () => {
   const current = titleEl.textContent;
   const next = (current === 'Search') ? 'Hello World' : 'Search';
@@ -740,11 +1103,282 @@ titleEl.addEventListener('dblclick', () => {
   Store.set(STORAGE_TITLE_TEXT, next);
 });
 
-/* ============ 7. 初始化 ============ */
-initTheme();
-loadData();
-initTitle(); // 初始化标题
-loadWallpaper();
+/* ============ 7. 用户脚本管理 ============ */
+const TYPE_LABEL = { url:'外链', file:'本地文件', code:'代码' };
+const MAX_FILE_SIZE = 2 * 1024 * 1024;
+
+let scriptList = [];
+let editingScriptId = null;
+const executedSignatures = new Map();
+
+function genScriptId(){
+  return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function loadScriptList(){
+  const arr = Store.getJSON(STORAGE_SCRIPTS, []);
+  scriptList = Array.isArray(arr) ? arr.map(s => ({
+    id: String(s && s.id ? s.id : genScriptId()),
+    name: String(s && s.name ? s.name : '未命名脚本'),
+    type: (s && (s.type === 'url' || s.type === 'file' || s.type === 'code')) ? s.type : 'code',
+    content: String(s && s.content != null ? s.content : ''),
+    enabled: !(s && s.enabled === false)
+  })) : [];
+}
+
+function saveScriptList(){
+  Store.setJSON(STORAGE_SCRIPTS, scriptList);
+}
+
+function injectScript(item){
+  try{
+    const s = document.createElement('script');
+    if(item.type === 'url'){
+      s.src = item.content;
+      s.async = false;
+      s.referrerPolicy = 'no-referrer';
+      s.onerror = () => console.warn('[用户脚本] ❌ 加载失败：', item.content);
+    }else{
+      s.textContent = item.content + '\n//# sourceURL=user-script-' + encodeURIComponent(item.name) + '.js';
+    }
+    s.setAttribute('data-user-script', item.name || item.id);
+    document.body.appendChild(s);
+  }catch(err){
+    console.error('[用户脚本] 注入失败：', item, err);
+  }
+}
+
+function runPendingScripts(){
+  scriptList.forEach(item => {
+    if(!item.enabled) return;
+    if(!item.content || !item.content.trim()) return;
+    if(executedSignatures.get(item.id) === item.content) return;
+    executedSignatures.set(item.id, item.content);
+    injectScript(item);
+    console.log('[用户脚本] ▶ 已执行：', item.name);
+  });
+}
+
+function renderScriptList(){
+  const wrap = document.getElementById('scriptList');
+  wrap.innerHTML = '';
+
+  if(scriptList.length === 0){
+    wrap.innerHTML = '<div class="script-empty">还没有脚本，可在下方添加</div>';
+    return;
+  }
+
+  scriptList.forEach(item => {
+    const isUrl = item.type === 'url';
+    const div = document.createElement('div');
+    div.className = 'script-item';
+    div.dataset.id = item.id;
+
+    const meta = isUrl
+      ? ('外链 · ' + item.content)
+      : (TYPE_LABEL[item.type] + ' · ' + item.content.length + ' 字符');
+
+    div.innerHTML = `
+      <div class="script-row">
+        <input type="checkbox" class="script-enabled" ${item.enabled ? 'checked' : ''}>
+        <div class="script-info">
+          <div class="script-name">${esc(item.name)}</div>
+          <div class="script-meta">${esc(meta)}</div>
+        </div>
+        <button class="mini-btn" onclick="toggleScriptEdit('${item.id}')">编辑</button>
+        <button class="del-btn" onclick="delScript('${item.id}')">删除</button>
+      </div>
+      <div class="script-edit${editingScriptId === item.id ? '' : ' hidden'}">
+        <input class="script-name-input" placeholder="脚本名称" value="${esc(item.name)}">
+        ${isUrl
+          ? `<input class="script-content-input" placeholder="https://example.com/script.js" value="${esc(item.content)}">`
+          : `<textarea class="script-content-input" rows="9" spellcheck="false" placeholder="// 在这里写 JavaScript 代码">${esc(item.content)}</textarea>`}
+        <button class="mini-btn" style="align-self:flex-start;" onclick="saveScriptEdit('${item.id}')">保存</button>
+      </div>
+    `;
+    wrap.appendChild(div);
+  });
+}
+
+function collectScriptsFromDom(){
+  document.querySelectorAll('#scriptList .script-item').forEach(el => {
+    const id = el.dataset.id;
+    const item = scriptList.find(s => s.id === id);
+    if(!item) return;
+
+    const cb = el.querySelector('.script-enabled');
+    if(cb) item.enabled = cb.checked;
+
+    const nameInp = el.querySelector('.script-name-input');
+    if(nameInp) item.name = nameInp.value.trim() || '未命名脚本';
+
+    const contentInp = el.querySelector('.script-content-input');
+    if(contentInp) item.content = contentInp.value;
+  });
+}
+
+function persistAndRender(){
+  saveScriptList();
+  renderScriptList();
+}
+
+function openScriptModal(){
+  editingScriptId = null;
+  renderScriptList();
+  document.getElementById('scriptModal').classList.remove('hidden');
+}
+
+function closeScriptModal(){
+  collectScriptsFromDom();
+  editingScriptId = null;
+  saveScriptList();
+  document.getElementById('scriptModal').classList.add('hidden');
+  runPendingScripts();
+}
+
+function toggleScriptEdit(id){
+  collectScriptsFromDom();
+  editingScriptId = (editingScriptId === id) ? null : id;
+  persistAndRender();
+}
+
+function saveScriptEdit(id){
+  collectScriptsFromDom();
+  editingScriptId = null;
+  persistAndRender();
+  runPendingScripts();
+}
+
+function delScript(id){
+  collectScriptsFromDom();
+  const item = scriptList.find(s => s.id === id);
+  if(!item) return;
+  if(!confirm('确定删除脚本「' + item.name + '」吗？\n（删除后需刷新页面才会完全停止运行）')) return;
+  scriptList = scriptList.filter(s => s.id !== id);
+  if(editingScriptId === id) editingScriptId = null;
+  persistAndRender();
+}
+
+function guessScriptName(url){
+  try{
+    const u = new URL(url);
+    const parts = u.pathname.split('/').filter(Boolean);
+    return parts.length ? parts[parts.length - 1] : u.hostname;
+  }catch(e){
+    return '外链脚本';
+  }
+}
+
+function addUrlScript(){
+  collectScriptsFromDom();
+  const inp = document.getElementById('scriptUrlInput');
+  const url = inp.value.trim();
+  if(!url) return;
+  if(!/^https?:\/\//i.test(url)){
+    alert('请输入以 http:// 或 https:// 开头的脚本地址');
+    return;
+  }
+  scriptList.push({
+    id: genScriptId(),
+    name: guessScriptName(url),
+    type: 'url',
+    content: url,
+    enabled: true
+  });
+  inp.value = '';
+  persistAndRender();
+  runPendingScripts();
+}
+
+function pickScriptFile(){
+  document.getElementById('scriptFileInput').click();
+}
+
+document.getElementById('scriptFileInput').addEventListener('change', function(e){
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+
+  if(file.size > MAX_FILE_SIZE){
+    if(!confirm('文件较大（' + (file.size / 1024 / 1024).toFixed(2) +
+      ' MB），可能超出存储上限，是否继续？')) {
+      e.target.value = '';
+      return;
+    }
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    collectScriptsFromDom();
+    scriptList.push({
+      id: genScriptId(),
+      name: file.name,
+      type: 'file',
+      content: String(reader.result || ''),
+      enabled: true
+    });
+    persistAndRender();
+    runPendingScripts();
+    e.target.value = '';
+  };
+  reader.onerror = () => {
+    alert('文件读取失败');
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+});
+
+function addCodeScript(){
+  collectScriptsFromDom();
+  const item = {
+    id: genScriptId(),
+    name: '自定义脚本',
+    type: 'code',
+    content: '// 在这里写你的代码\nconsole.log("Hello from user script!");\n',
+    enabled: true
+  };
+  scriptList.push(item);
+  editingScriptId = item.id;
+  persistAndRender();
+}
+
+document.getElementById('scriptList').addEventListener('change', e => {
+  if(e.target.classList.contains('script-enabled')){
+    collectScriptsFromDom();
+    saveScriptList();
+    runPendingScripts();
+    renderScriptList();
+  }
+});
+
+document.getElementById('scriptToggle').addEventListener('click', openScriptModal);
+document.getElementById('scriptModal').addEventListener('click', e => {
+  if(e.target.id === 'scriptModal') closeScriptModal();
+});
+
+/* ============ 8. 启动 ============ */
+(async function boot(){
+  try{
+    await Store.init();
+  }catch(e){
+    console.warn('[boot] Store 初始化异常，继续使用默认配置', e);
+  }
+
+  initTheme();
+  loadData();
+  initTitle();
+  loadWallpaper();
+  loadScriptList();
+  runPendingScripts();
+
+  // 支持 ?q=关键词 直接填充搜索框（配合 JSON-LD 的 SearchAction）
+  try{
+    const q = new URLSearchParams(location.search).get('q');
+    if(q){
+      queryInput.value = q;
+      queryInput.focus();
+    }
+  }catch(e){}
+})();
 </script>
 </body>
 </html>
