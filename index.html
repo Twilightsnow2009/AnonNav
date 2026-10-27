@@ -76,7 +76,6 @@ h1[contenteditable="true"]{ cursor:text; border-bottom:1px dashed var(--border);
 button{ padding:12px 22px; border:none; border-radius:999px; background:var(--btn-bg); color:var(--btn-text); cursor:pointer; font-size:1rem; }
 button:hover{ opacity:0.85; }
 
-/* 搜索历史面板 */
 #historyPanel{
   position: absolute; top: calc(100% + 8px); left: 0; width: calc(100% - 90px);
   background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px;
@@ -442,6 +441,12 @@ var Store = (function(){
         removeLocal(k);
       }
     },
+    clearAll(){
+      cache.forEach((v, k) => {
+        if(k.startsWith('search_')) api.remove(k);
+      });
+      forEachLocal((k, v) => { if(k.startsWith('search_')) removeLocal(k); });
+    },
     exportAll(){
       var obj = {};
       cache.forEach((v, k) => { if(k.startsWith('search_')) obj[k] = v; });
@@ -467,12 +472,35 @@ function esc(str){
   return String(str == null ? '' : str).replace(/[&<>"']/g, function(c){ return map[c]; });
 }
 
-function loadData(){
-  var savedList = Store.getJSON(STORAGE_ENGINES, null), savedSel = Store.get(STORAGE_SELECT, null);
-  if(Array.isArray(savedList) && savedList.length > 0) engineList = savedList;
-  else { engineList = JSON.parse(JSON.stringify(defaultEngines)); Store.setJSON(STORAGE_ENGINES, engineList); Store.set(STORAGE_SELECT, 0); }
-  selectedIndex = (savedSel !== null && Number(savedSel) < engineList.length) ? Number(savedSel) : 0;
+// ===== 核心即时重载逻辑 =====
+function applyImportedData() {
+  // 1. 重新加载引擎
+  engineList = Store.getJSON(STORAGE_ENGINES, null);
+  if(!Array.isArray(engineList) || engineList.length === 0) {
+    engineList = JSON.parse(JSON.stringify(defaultEngines));
+    Store.setJSON(STORAGE_ENGINES, engineList);
+    Store.set(STORAGE_SELECT, 0);
+  }
+  selectedIndex = Number(Store.get(STORAGE_SELECT, 0));
+  if(selectedIndex >= engineList.length) selectedIndex = 0;
   updateEngineText();
+
+  // 2. 重新加载主题
+  initTheme();
+
+  // 3. 重新加载标题
+  initTitle();
+
+  // 4. 重新加载壁纸 (先清空再加载)
+  wallImg.removeAttribute('src');
+  showWall(false);
+  loadWallpaper();
+
+  // 5. 清理并重新加载脚本
+  Array.from(runningScripts.keys()).forEach(id => cleanupScript(id));
+  runningScripts.clear();
+  loadScriptList();
+  runPendingScripts();
 }
 
 // ===== 极简配置导入导出 =====
@@ -482,7 +510,6 @@ document.getElementById('exportBtn').addEventListener('click', function() {
   var str = Store.exportAll();
   configTextArea.value = str;
   
-  // 自动全选并尝试复制
   configTextArea.select();
   if (navigator.clipboard && window.isSecureContext) {
     navigator.clipboard.writeText(str).then(() => {
@@ -509,15 +536,22 @@ document.getElementById('importBtn').addEventListener('click', function() {
       throw new Error('未包含有效配置');
     }
 
+    // 双向锁定：彻底清空所有现有的 search_ 配置
+    Store.clearAll();
+
+    // 写入新配置
     var promises = [];
     Object.keys(data).forEach(k => {
       if(k.startsWith('search_')) {
         promises.push(Store.set(k, data[k]));
       }
     });
+    
     Promise.all(promises).then(() => {
-      showToast('恢复成功，即将刷新...');
-      setTimeout(() => location.reload(), 800);
+      // 即时生效：不刷新页面，直接热重载
+      applyImportedData();
+      closeModalById('settingsModal');
+      showToast('配置已导入并生效！');
     });
   } catch(err) {
     alert('导入失败：格式不正确！\n' + err.message);
