@@ -2,8 +2,11 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
 <meta name="msvalidate.01" content="FCCB324DC27E060EF648ACA7A6675844" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="AnonNav">
 <title>AnonNav - 极简浏览器起始页与搜索页</title>
 <meta name="description" content="AnonNav 是一个极简的浏览器起始页与搜索导航页。支持多引擎一键切换、自定义搜索引擎、智能识别网址、本地图片壁纸设置，并内置高权限自定义 JS 脚本引擎。">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23222'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' dominant-baseline='middle' font-size='36' fill='%23fff' font-family='system-ui'%3EA%3C/text%3E%3C/svg%3E">
@@ -27,6 +30,7 @@ body{
   padding:0 16px;
   background:var(--bg); color:var(--text); transition: color 0.3s;
   font-family:system-ui,-apple-system,sans-serif;
+  overflow-x: hidden;
 }
 input, button, textarea, select{ font-family: inherit; }
 #wallpaperImg{
@@ -61,7 +65,8 @@ body.has-wallpaper .search-wrap button{ border:1px solid rgba(255,255,255,0.25);
 .time-ampm{ font-size:1.2rem; color:var(--text-soft); font-weight:300; margin-top:4px; }
 h1{ font-size:2.2rem; font-weight:400; text-align:center; margin-bottom:32px; user-select:none; cursor:pointer; outline:none; }
 h1[contenteditable="true"]{ cursor:text; border-bottom:1px dashed var(--border); }
-.search-wrap{ display:flex; gap:8px; }
+
+.search-wrap{ display:flex; gap:8px; position: relative; }
 #query{
   flex:1; padding:12px 18px; border:1px solid var(--border); border-radius:999px;
   outline:none; font-size:1rem; background:var(--bg); color:var(--text);
@@ -70,6 +75,27 @@ h1[contenteditable="true"]{ cursor:text; border-bottom:1px dashed var(--border);
 #query:focus{ border-color:#555; }
 button{ padding:12px 22px; border:none; border-radius:999px; background:var(--btn-bg); color:var(--btn-text); cursor:pointer; font-size:1rem; }
 button:hover{ opacity:0.85; }
+
+/* 搜索历史面板 */
+#historyPanel{
+  position: absolute; top: calc(100% + 8px); left: 0; width: calc(100% - 90px);
+  background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; z-index: 20;
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  transition: opacity 0.2s, transform 0.2s; transform-origin: top center;
+}
+#historyPanel.hidden{ opacity: 0; transform: scaleY(0.95); pointer-events: none; }
+body.theme-dark #historyPanel{ background: rgba(30,30,30,0.85); border-color: rgba(255,255,255,0.1); }
+body.has-wallpaper #historyPanel{ background: rgba(0,0,0,0.6); border-color: rgba(255,255,255,0.15); }
+.history-item{
+  padding: 10px 16px; font-size: 0.95rem; color: var(--text); cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center; text-align: left;
+}
+.history-item:hover, .history-item.selected { background: rgba(128,128,128,0.15); }
+.history-item .delete-icon{ font-size: 0.8rem; color: var(--text-light); padding: 4px; cursor: pointer; }
+.history-item .delete-icon:hover{ color: var(--btn-danger); }
+.history-empty{ padding: 12px; font-size: 0.85rem; color: var(--text-light); text-align: center; }
+
 .tip{ text-align:center; margin-top:20px; font-size:0.9rem; color:var(--text-soft); }
 .link-btn{
   background:none; border:none; padding:0; margin:0 4px;
@@ -77,12 +103,15 @@ button:hover{ opacity:0.85; }
   text-decoration:underline; text-underline-offset:2px;
 }
 .link-btn:hover{ opacity:0.75; }
+
 .theme-toggle{
-  position:fixed; top:20px; right:20px; width:44px; height:44px; padding:0; display:flex;
+  position:fixed; top:20px; width:44px; height:44px; padding:0; display:flex;
   align-items:center; justify-content:center; font-size:1.15rem; line-height:1; border-radius:50%;
   background:var(--card-bg); color:var(--text); border:1px solid var(--border); z-index:50;
   transition: background 0.3s, border-color 0.3s, color 0.3s;
 }
+#themeToggle{ right:20px; } #wallToggle{ right:76px; } #scriptToggle{ right:132px; } #settingsToggle{ right:188px; }
+
 .modal{ position:fixed; inset:0; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:99; padding:20px; }
 .modal.hidden{ display:none; }
 .modal-box{
@@ -98,6 +127,23 @@ body.theme-dark .modal-box{
   --btn-bg:#383838; --btn-text:#fff;
 }
 .modal-box h3{ font-size:1.5rem; font-weight:500; margin-bottom:24px; }
+
+/* 极简设置面板样式 */
+.settings-section{ margin-bottom: 20px; text-align: left; }
+.settings-btns{ display: flex; gap: 10px; }
+.settings-btns button{ flex: 1; font-size: 0.95rem; padding: 12px 0; }
+.btn-primary{ background: var(--btn-bg); color: var(--btn-text); }
+.btn-secondary{ background: rgba(128,128,128,0.15); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover{ background: rgba(128,128,128,0.25); }
+.config-textarea{
+  width: 100%; height: 100px; padding: 12px; border: 1px solid var(--border); border-radius: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.75rem;
+  background: var(--bg); color: var(--text); resize: vertical; outline: none; margin-bottom: 12px;
+}
+.config-textarea:focus{ border-color: #555; }
+.danger-zone{ border-top: 1px solid var(--card-border); padding-top: 20px; }
+.danger-btn{ width:100%; background: var(--btn-danger); color: #fff; padding: 12px 0; font-size: 0.95rem; }
+
 .engine-item{ margin-bottom:18px; }
 .engine-main{ display:flex; align-items:flex-start; gap:12px; cursor:pointer; }
 .engine-main input[type="radio"]{ margin-top:3px; width:19px; height:19px; accent-color:var(--text); flex-shrink:0; }
@@ -106,13 +152,13 @@ body.theme-dark .modal-box{
 .engine-edit-area.show{ display:flex; }
 .engine-edit-area input{ width:100%; padding:7px 9px; border:1px solid var(--border); border-radius:7px; font-size:0.9rem; background:var(--bg); color:var(--text); outline:none; }
 .engine-edit-area input:focus{ border-color:#555; }
-.modal-footer{ display:flex; justify-content:flex-end; margin-top:30px; }
+.modal-footer{ display:flex; justify-content:flex-end; margin-top:20px; }
 .add-btn-wrap{ margin-top:24px; padding-top:16px; border-top:1px solid var(--card-border); }
 .add-btn-wrap button{ background:#555; font-size:0.9rem; padding:8px 16px; }
 .del-btn{ background:var(--btn-danger); padding:6px 12px; font-size:0.85rem; align-self:flex-start; }
 .footer-text{ flex-shrink:0; width:100%; text-align:center; font-size:0.85rem; color:var(--text-light); padding:16px 0 24px; }
 .footer-text a{ color:inherit; }
-#wallToggle{ right:76px; } #scriptToggle{ right:132px; }
+
 .wall-field{ margin-bottom:16px; text-align:left; }
 .wall-field > label{ display:block; font-size:0.85rem; color:var(--text-soft); margin-bottom:6px; }
 .wall-field input{ width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; background:var(--bg); color:var(--text); outline:none; }
@@ -142,7 +188,6 @@ body.theme-dark .modal-box{
 .local-wall-btn:hover{ background:var(--card-border); border-style:solid; }
 .local-wall-hint{ font-size:0.78rem; color:var(--text-light); margin-top:6px; display:none; }
 
-/* toast 轻提示 */
 #toast{
   position:fixed; left:50%; bottom:32px; transform:translateX(-50%);
   background:rgba(0,0,0,0.82); color:#fff; padding:10px 18px; border-radius:999px;
@@ -152,10 +197,11 @@ body.theme-dark .modal-box{
 #toast.show{ opacity:1; }
 
 @media (max-width: 480px){
-  .theme-toggle{ width:40px; height:40px; font-size:1.05rem; }
-  #themeToggle{ top:12px; right:12px; }
-  #wallToggle{ top:12px; right:60px; }
-  #scriptToggle{ top:12px; right:108px; }
+  .theme-toggle{ width:40px; height:40px; font-size:1.05rem; top:12px; }
+  #themeToggle{ right:12px; }
+  #wallToggle{ right:60px; }
+  #scriptToggle{ right:108px; }
+  #settingsToggle{ right:156px; }
   .container{ padding-top:68px; }
   h1{ font-size:1.8rem; }
 }
@@ -165,9 +211,10 @@ body.theme-dark .modal-box{
 
 <img id="wallpaperImg" alt="" referrerpolicy="no-referrer">
 <div id="wallpaperOverlay"></div>
-<button id="themeToggle" class="theme-toggle" title="切换主题">🌙</button>
-<button id="wallToggle" class="theme-toggle" title="壁纸设置">🖼️</button>
+<button id="settingsToggle" class="theme-toggle" title="系统设置">⚙️</button>
 <button id="scriptToggle" class="theme-toggle" title="脚本管理">📜</button>
+<button id="wallToggle" class="theme-toggle" title="壁纸设置">🖼️</button>
+<button id="themeToggle" class="theme-toggle" title="切换主题">🌙</button>
 
 <div class="container">
   <div class="time-block">
@@ -175,10 +222,13 @@ body.theme-dark .modal-box{
     <div class="time-ampm" id="timeAmpm"></div>
   </div>
   <h1 id="mainTitle" title="双击编辑标题"></h1>
+  
   <div class="search-wrap">
     <input id="query" type="text" name="q" placeholder="输入搜索词、网址或 IP…" autocomplete="off">
     <button id="searchBtn">搜索</button>
+    <div id="historyPanel" class="hidden"></div>
   </div>
+
   <div class="tip">
     当前引擎：<span id="engineName"></span>
     &nbsp;<button id="changeEngineBtn" class="link-btn">更改</button>
@@ -189,6 +239,29 @@ body.theme-dark .modal-box{
   本站点托管于 <a href="https://pages.github.com/" target="_blank" rel="noopener">GitHub Pages</a>
   &nbsp;·&nbsp;
   <a href="https://github.com/Twilightsnow2009/AnonNav" target="_blank" rel="noopener">项目源码</a>
+</div>
+
+<!-- 极简系统设置弹窗 -->
+<div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="系统设置">
+  <div class="modal-box" tabindex="-1">
+    <h3>系统设置</h3>
+    
+    <div class="settings-section">
+      <textarea id="configText" class="config-textarea" placeholder="点击【导出配置】生成代码并自动复制；或者在此粘贴配置后，点击【导入配置】恢复。"></textarea>
+      <div class="settings-btns">
+        <button id="exportBtn" class="btn-secondary">导出配置</button>
+        <button id="importBtn" class="btn-primary">导入配置</button>
+      </div>
+    </div>
+    
+    <div class="danger-zone settings-section">
+      <button id="resetAllBtn" class="danger-btn">恢复网页初始设置</button>
+    </div>
+
+    <div class="modal-footer">
+      <button id="closeSettingsBtn">完成</button>
+    </div>
+  </div>
 </div>
 
 <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="选择默认搜索引擎">
@@ -265,8 +338,22 @@ body.theme-dark .modal-box{
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
+// 【PWA 动态注入配置】
+(function() {
+  const manifest = {
+    name: "AnonNav", short_name: "AnonNav", start_url: ".", display: "standalone",
+    background_color: "#ffffff", theme_color: "#ffffff",
+    icons: [{ src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23222'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' dominant-baseline='middle' font-size='36' fill='%23fff' font-family='system-ui'%3EA%3C/text%3E%3C/svg%3E", sizes: "192x192", type: "image/svg+xml" }]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = URL.createObjectURL(blob);
+  document.head.appendChild(link);
+})();
+
 // 【彻底剥离作用域限制，所有变量绝对全开放】
-var STORAGE_ENGINES = 'search_engine_list', STORAGE_SELECT = 'search_selected_idx', STORAGE_THEME = 'search_theme', STORAGE_WALL_VALUE = 'search_wall_value', STORAGE_TITLE_TEXT = 'search_title_text', STORAGE_SCRIPTS = 'search_user_scripts';
+var STORAGE_ENGINES = 'search_engine_list', STORAGE_SELECT = 'search_selected_idx', STORAGE_THEME = 'search_theme', STORAGE_WALL_VALUE = 'search_wall_value', STORAGE_TITLE_TEXT = 'search_title_text', STORAGE_SCRIPTS = 'search_user_scripts', STORAGE_HISTORY = 'search_history';
 var defaultEngines = [
   { name:"百度", url:"https://www.baidu.com/s?wd=%s" },
   { name:"Bing", url:"https://cn.bing.com/search?q=%s" },
@@ -274,26 +361,14 @@ var defaultEngines = [
   { name:"搜狗搜索", url:"https://www.sogou.com/web?query=%s" }
 ];
 var engineList = [], selectedIndex = 0, scriptList = [], editingScriptId = null;
-var runningScripts = new Map(); // id -> { content, cleanup }
+var runningScripts = new Map(); 
 var modal = document.getElementById('modal'), queryInput = document.getElementById('query'), titleEl = document.getElementById('mainTitle');
 var wallImg = document.getElementById('wallpaperImg'), wallOverlay = document.getElementById('wallpaperOverlay');
 var MAGIC_CODE = "20090927", MAGIC_URL = "https://space.bilibili.com/3493294795393244";
-var MAX_SCRIPT_SIZE = 2 * 1024 * 1024;
-var MAX_WALL_FILE_SIZE = 8 * 1024 * 1024;
-var MAX_WALL_DATAURL_LEN = 6 * 1024 * 1024;
+var MAX_SCRIPT_SIZE = 2 * 1024 * 1024, MAX_WALL_FILE_SIZE = 8 * 1024 * 1024, MAX_WALL_DATAURL_LEN = 6 * 1024 * 1024;
 var TYPE_LABEL = { url:'外链', file:'本地文件', code:'代码' };
 var wallModalInitial = '';
-
-// ===== toast =====
-var toastTimer = null;
-function showToast(msg, ms){
-  var el = document.getElementById('toast');
-  if(!el) return;
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(function(){ el.classList.remove('show'); }, ms || 2600);
-}
+var historySelectedIndex = -1;
 
 // ===== 脚本清理钩子：仅内联脚本（代码/本地文件）有效 =====
 window.registerCleanup = function(fn){
@@ -332,11 +407,9 @@ var Store = (function(){
           db = await openDB();
           var all = await dbReadAll();
           if(Object.keys(all).length === 0){
-            // IDB 空：从 localStorage 迁移
             forEachLocal(function(k, v){ cache.set(k, v); dbPut(k, v).catch(function(){}); });
           } else {
             Object.keys(all).forEach(function(k){ cache.set(k, all[k]); });
-            // IDB 非空：merge localStorage 中 IDB 缺失的 key（降级期间写入的新数据）
             forEachLocal(function(k, v){
               if(!cache.has(k)){ cache.set(k, v); dbPut(k, v).catch(function(){}); }
             });
@@ -354,12 +427,13 @@ var Store = (function(){
       var str = String(v);
       cache.set(k, str);
       if(useIDB && db){
-        dbPut(k, str).catch(function(){ useIDB = false; db = null; writeLocal(k, str); });
+        return dbPut(k, str).catch(function(){ useIDB = false; db = null; writeLocal(k, str); });
       } else {
         writeLocal(k, str);
+        return Promise.resolve();
       }
     },
-    setJSON(k, v){ api.set(k, JSON.stringify(v)); },
+    setJSON(k, v){ return api.set(k, JSON.stringify(v)); },
     remove(k){
       cache.delete(k);
       if(useIDB && db){
@@ -367,10 +441,25 @@ var Store = (function(){
       } else {
         removeLocal(k);
       }
+    },
+    exportAll(){
+      var obj = {};
+      cache.forEach((v, k) => { if(k.startsWith('search_')) obj[k] = v; });
+      return JSON.stringify(obj, null, 2);
     }
   };
   return api;
 })();
+
+// ===== toast =====
+function showToast(msg, ms){
+  var el = document.getElementById('toast');
+  if(!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el.toastTimer);
+  el.toastTimer = setTimeout(function(){ el.classList.remove('show'); }, ms || 2600);
+}
 
 // ===== esc =====
 function esc(str){
@@ -385,6 +474,117 @@ function loadData(){
   selectedIndex = (savedSel !== null && Number(savedSel) < engineList.length) ? Number(savedSel) : 0;
   updateEngineText();
 }
+
+// ===== 极简配置导入导出 =====
+var configTextArea = document.getElementById('configText');
+
+document.getElementById('exportBtn').addEventListener('click', function() {
+  var str = Store.exportAll();
+  configTextArea.value = str;
+  
+  // 自动全选并尝试复制
+  configTextArea.select();
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(str).then(() => {
+      showToast('配置已生成并自动复制');
+    }).catch(() => {
+      document.execCommand('copy');
+      showToast('配置已生成并自动复制');
+    });
+  } else {
+    document.execCommand('copy');
+    showToast('配置已生成并自动复制');
+  }
+});
+
+document.getElementById('importBtn').addEventListener('click', function() {
+  var text = configTextArea.value.trim();
+  if(!text) return showToast('请先在文本框粘贴配置代码');
+  
+  try {
+    var data = JSON.parse(text);
+    if(typeof data !== 'object' || !data) throw new Error('无效数据');
+    
+    if(!Object.keys(data).some(k => k.startsWith('search_'))) {
+      throw new Error('未包含有效配置');
+    }
+
+    var promises = [];
+    Object.keys(data).forEach(k => {
+      if(k.startsWith('search_')) {
+        promises.push(Store.set(k, data[k]));
+      }
+    });
+    Promise.all(promises).then(() => {
+      showToast('恢复成功，即将刷新...');
+      setTimeout(() => location.reload(), 800);
+    });
+  } catch(err) {
+    alert('导入失败：格式不正确！\n' + err.message);
+  }
+});
+
+document.getElementById('resetAllBtn').addEventListener('click', function() {
+  if(confirm('确定要恢复网页初始设置吗？所有壁纸、脚本、历史记录将被清空且无法撤销！')) {
+    try {
+      localStorage.clear();
+      indexedDB.deleteDatabase('search_app_db');
+      location.reload();
+    } catch(e) {
+      location.reload();
+    }
+  }
+});
+
+// ===== 搜索历史逻辑 =====
+function getHistory() { return Store.getJSON(STORAGE_HISTORY, []); }
+function addHistory(kw) {
+  kw = kw.trim(); if(!kw) return;
+  let list = getHistory();
+  list = list.filter(item => item !== kw);
+  list.unshift(kw); 
+  if(list.length > 8) list.pop();
+  Store.setJSON(STORAGE_HISTORY, list);
+}
+function renderHistory() {
+  var panel = document.getElementById('historyPanel'), list = getHistory();
+  historySelectedIndex = -1;
+  if(list.length === 0) {
+    panel.innerHTML = '<div class="history-empty">暂无搜索记录</div>';
+  } else {
+    panel.innerHTML = list.map((kw, i) => `
+      <div class="history-item" data-index="${i}" data-kw="${esc(kw)}">
+        <span>${esc(kw)}</span>
+        <span class="delete-icon" data-del="${i}">✕</span>
+      </div>
+    `).join('');
+  }
+  panel.classList.remove('hidden');
+}
+function hideHistory() { document.getElementById('historyPanel').classList.add('hidden'); }
+
+queryInput.addEventListener('focus', renderHistory);
+document.addEventListener('click', function(e) {
+  if(!e.target.closest('.search-wrap')) hideHistory();
+});
+document.getElementById('historyPanel').addEventListener('mousedown', function(e) {
+  e.preventDefault();
+  var delBtn = e.target.closest('.delete-icon');
+  var itemEl = e.target.closest('.history-item');
+  
+  if(delBtn) {
+    var idx = Number(delBtn.dataset.del);
+    let list = getHistory(); list.splice(idx, 1);
+    Store.setJSON(STORAGE_HISTORY, list);
+    renderHistory();
+    return;
+  }
+  if(itemEl) {
+    queryInput.value = itemEl.dataset.kw;
+    hideHistory();
+    search();
+  }
+});
 
 function renderEngineList(){
   var wrapper = document.getElementById('engineList'); wrapper.innerHTML = '';
@@ -479,7 +679,7 @@ document.querySelectorAll('.modal').forEach(function(m){
   m.addEventListener('click', function(e){ if(e.target === m) closeModalById(m.id); });
 });
 
-// ===== 主题：persist 与 apply 分离，跟随系统不再失效 =====
+// ===== 主题 =====
 function setTheme(theme, opts){
   opts = opts || {};
   document.body.classList.toggle('theme-dark', theme === 'dark');
@@ -529,9 +729,47 @@ function detectDirectUrl(input){
 }
 function search(){
   var kw = queryInput.value.trim(); if(!kw) return;
+  addHistory(kw);
+  hideHistory();
+
   if(kw === MAGIC_CODE) return window.location.href = MAGIC_URL;
   var url = detectDirectUrl(kw); if(url) return window.location.href = url;
   var eng = engineList[selectedIndex]; if(eng) window.location.href = eng.url.split('%s').join(encodeURIComponent(kw));
+}
+
+queryInput.addEventListener('keydown', function(e){
+  var panel = document.getElementById('historyPanel');
+  var isHidden = panel.classList.contains('hidden');
+
+  if(e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) {
+    search(); return;
+  }
+  
+  if(isHidden) return;
+
+  var items = panel.querySelectorAll('.history-item');
+  if(!items.length) return;
+
+  if(e.key === 'ArrowDown') {
+    e.preventDefault();
+    historySelectedIndex++;
+    if(historySelectedIndex >= items.length) historySelectedIndex = 0;
+    updateHistorySelection(items);
+  } else if(e.key === 'ArrowUp') {
+    e.preventDefault();
+    historySelectedIndex--;
+    if(historySelectedIndex < 0) historySelectedIndex = items.length - 1;
+    updateHistorySelection(items);
+  } else if(e.key === 'Escape') {
+    hideHistory();
+  }
+});
+function updateHistorySelection(items) {
+  items.forEach(el => el.classList.remove('selected'));
+  if(historySelectedIndex >= 0 && items[historySelectedIndex]) {
+    items[historySelectedIndex].classList.add('selected');
+    queryInput.value = items[historySelectedIndex].dataset.kw;
+  }
 }
 
 // ===== 标题编辑 =====
@@ -560,7 +798,6 @@ function getWallValue(){ return Store.get(STORAGE_WALL_VALUE, ''); }
 function loadImage(url){ return new Promise(function(res, rej){ wallImg.onload = function(){ res(); }; wallImg.onerror = function(){ rej(); }; wallImg.src = url; }); }
 function showWall(show){ wallImg.classList.toggle('active', show); wallOverlay.classList.toggle('active', show); document.body.classList.toggle('has-wallpaper', show); }
 
-// 每次打开都重新请求：加时间戳 + no-store，去掉所有缓存
 async function resolveWallApi(val){
   var sep = val.indexOf('?') === -1 ? '?' : '&';
   var bust = val + sep + '_t=' + Date.now();
@@ -587,7 +824,6 @@ async function loadWallpaper(){
   }catch(e){}
   showWall(false);
   showToast('壁纸加载失败，请检查地址');
-  console.warn('[壁纸加载失败]', val);
 }
 function openWallModal(){
   var val = getWallValue();
@@ -604,7 +840,6 @@ function openWallModal(){
 function saveWallpaper(){
   var v = document.getElementById('wallValue').value.trim();
   if(v === ''){
-    // 本地图片且用户未输入新 URL → 保留，不误删
     if(wallModalInitial.indexOf('data:image/') === 0){
       closeModalById('wallModal');
       return;
@@ -624,7 +859,6 @@ function clearWallpaper(){
   showWall(false);
 }
 
-// 图片压缩：最长边 1920、WebP 0.85，失败回退原始 dataURL
 async function fileToCompressedDataURL(file){
   var bitmap = null;
   try{
@@ -687,7 +921,6 @@ function saveScriptList(){ Store.setJSON(STORAGE_SCRIPTS, scriptList); }
 function injectScript(item){
   var s = document.createElement('script');
   if(item.type === 'url'){
-    // 外链脚本异步执行，无法可靠追踪 id，registerCleanup 不生效
     s.src = item.content;
     s.async = false;
     s.referrerPolicy = 'no-referrer';
@@ -733,11 +966,10 @@ function renderScriptList(){
   scriptList.forEach(function(item){
     var isUrl = item.type === 'url', div = document.createElement('div');
     div.className = 'script-item'; div.dataset.id = item.id;
-    
-    // 外层展示用兜底
+
     var displayName = item.name || '未命名';
     var metaText = isUrl ? ('外链 · ' + item.content) : (TYPE_LABEL[item.type] + ' · ' + item.content.length + ' 字符');
-    
+
     div.innerHTML = `
       <div class="script-row">
         <input type="checkbox" class="script-enabled" ${item.enabled?'checked':''}>
@@ -763,7 +995,7 @@ function collectScriptsFromDom(){
     item.enabled = el.querySelector('.script-enabled').checked;
     var nameInput = el.querySelector('.script-name-input');
     var contentInput = el.querySelector('.script-content-input');
-    if(nameInput) item.name = nameInput.value.trim(); // 允许为空
+    if(nameInput) item.name = nameInput.value.trim();
     if(contentInput) item.content = contentInput.value;
   });
 }
@@ -801,26 +1033,24 @@ function addUrlScript(){
   collectScriptsFromDom();
   var inp = document.getElementById('scriptUrlInput'), url = inp.value.trim();
   if(!/^https?:\/\//i.test(url)) return alert('请输入正确地址');
-  
+
   var defaultName = url.split('/').pop() || '外链';
-  defaultName = defaultName.replace(/\.(js|mjs)(\?.*)?$/i, ''); // 去扩展名，看着更清爽
-  
+  defaultName = defaultName.replace(/\.(js|mjs)(\?.*)?$/i, '');
+
   var item = { id: genScriptId(), name: defaultName, type: 'url', content: url, enabled: true };
   scriptList.push(item);
   inp.value = '';
-  editingScriptId = item.id; // 添加后自动展开编辑面板
+  editingScriptId = item.id;
   saveScriptList(); renderScriptList(); runPendingScripts();
 }
 function pickScriptFile(){ document.getElementById('scriptFileInput').click(); }
 function addCodeScript(){
   collectScriptsFromDom();
-  // 默认标题和内容完全空白
   var item = { id: genScriptId(), name: '', type: 'code', content: '', enabled: true };
   scriptList.push(item);
   editingScriptId = item.id;
   saveScriptList(); renderScriptList();
-  
-  // 自动聚焦到名称输入框
+
   setTimeout(function(){
     var el = document.querySelector('.script-item[data-id="' + item.id + '"] .script-name-input');
     if(el) el.focus();
@@ -832,6 +1062,8 @@ document.getElementById('themeToggle').addEventListener('click', function(){
   var next = document.body.classList.contains('theme-dark') ? 'light' : 'dark';
   setTheme(next, { persist: true });
 });
+document.getElementById('settingsToggle').addEventListener('click', function(){ openModalById('settingsModal'); });
+document.getElementById('closeSettingsBtn').addEventListener('click', function(){ closeModalById('settingsModal'); });
 document.getElementById('searchBtn').addEventListener('click', search);
 document.getElementById('changeEngineBtn').addEventListener('click', showModal);
 document.getElementById('addEngineBtn').addEventListener('click', addBlankEngine);
@@ -845,8 +1077,6 @@ document.getElementById('addUrlScriptBtn').addEventListener('click', addUrlScrip
 document.getElementById('pickScriptFileBtn').addEventListener('click', pickScriptFile);
 document.getElementById('addCodeScriptBtn').addEventListener('click', addCodeScript);
 document.getElementById('closeScriptBtn').addEventListener('click', closeScriptModal);
-
-queryInput.addEventListener('keydown', function(e){ if(e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) search(); });
 
 document.getElementById('wallFileInput').addEventListener('change', async function(e){
   var f = e.target.files && e.target.files[0];
@@ -889,7 +1119,6 @@ document.getElementById('scriptList').addEventListener('click', function(e){
   if(btn.dataset.action === 'save') saveScriptEdit(id);
   else toggleScriptEdit(id);
 });
-// 启用开关就地更新，不重建列表（保留编辑焦点）
 document.getElementById('scriptList').addEventListener('change', function(e){
   if(!e.target.classList.contains('script-enabled')) return;
   var itemEl = e.target.closest('.script-item'); if(!itemEl) return;
@@ -900,7 +1129,6 @@ document.getElementById('scriptList').addEventListener('change', function(e){
   runPendingScripts();
 });
 
-// 全局脚本错误提示
 window.addEventListener('error', function(e){
   if(e && e.message) console.warn('[页面脚本错误]', e.message, e.filename + ':' + e.lineno);
 });
