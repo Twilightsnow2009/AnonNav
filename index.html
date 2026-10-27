@@ -353,12 +353,15 @@ body.theme-dark .modal-box{
 
 // 【彻底剥离作用域限制，所有变量绝对全开放】
 var STORAGE_ENGINES = 'search_engine_list', STORAGE_SELECT = 'search_selected_idx', STORAGE_THEME = 'search_theme', STORAGE_WALL_VALUE = 'search_wall_value', STORAGE_TITLE_TEXT = 'search_title_text', STORAGE_SCRIPTS = 'search_user_scripts', STORAGE_HISTORY = 'search_history';
+
+// 必须在的四大默认引擎
 var defaultEngines = [
   { name:"百度", url:"https://www.baidu.com/s?wd=%s" },
   { name:"Bing", url:"https://cn.bing.com/search?q=%s" },
   { name:"360搜索", url:"https://www.so.com/s?q=%s" },
   { name:"搜狗搜索", url:"https://www.sogou.com/web?query=%s" }
 ];
+
 var engineList = [], selectedIndex = 0, scriptList = [], editingScriptId = null;
 var runningScripts = new Map(); 
 var modal = document.getElementById('modal'), queryInput = document.getElementById('query'), titleEl = document.getElementById('mainTitle');
@@ -436,16 +439,19 @@ var Store = (function(){
     remove(k){
       cache.delete(k);
       if(useIDB && db){
-        dbDelete(k).catch(function(){ useIDB = false; db = null; removeLocal(k); });
+        return dbDelete(k).catch(function(){ useIDB = false; db = null; removeLocal(k); });
       } else {
         removeLocal(k);
+        return Promise.resolve();
       }
     },
     clearAll(){
+      var promises = [];
       cache.forEach((v, k) => {
-        if(k.startsWith('search_')) api.remove(k);
+        if(k.startsWith('search_')) promises.push(api.remove(k));
       });
-      forEachLocal((k, v) => { if(k.startsWith('search_')) removeLocal(k); });
+      forEachLocal((k, v) => { if(k.startsWith('search_')) promises.push(api.remove(k)); });
+      return Promise.all(promises);
     },
     exportAll(){
       var obj = {};
@@ -472,15 +478,31 @@ function esc(str){
   return String(str == null ? '' : str).replace(/[&<>"']/g, function(c){ return map[c]; });
 }
 
-// ===== 核心即时重载逻辑 =====
-function applyImportedData() {
-  // 1. 重新加载引擎
-  engineList = Store.getJSON(STORAGE_ENGINES, null);
+// ===== 核心校验与加载 =====
+function ensureDefaultEngines() {
   if(!Array.isArray(engineList) || engineList.length === 0) {
     engineList = JSON.parse(JSON.stringify(defaultEngines));
     Store.setJSON(STORAGE_ENGINES, engineList);
     Store.set(STORAGE_SELECT, 0);
+    selectedIndex = 0;
   }
+}
+
+function loadData(){
+  var savedList = Store.getJSON(STORAGE_ENGINES, null);
+  var savedSel = Store.get(STORAGE_SELECT, null);
+  engineList = savedList;
+  ensureDefaultEngines();
+  
+  selectedIndex = (savedSel !== null && Number(savedSel) < engineList.length) ? Number(savedSel) : 0;
+  updateEngineText();
+}
+
+function applyImportedData() {
+  // 1. 重新加载引擎
+  engineList = Store.getJSON(STORAGE_ENGINES, null);
+  ensureDefaultEngines();
+  
   selectedIndex = Number(Store.get(STORAGE_SELECT, 0));
   if(selectedIndex >= engineList.length) selectedIndex = 0;
   updateEngineText();
@@ -506,7 +528,13 @@ function applyImportedData() {
 // ===== 极简配置导入导出 =====
 var configTextArea = document.getElementById('configText');
 
-document.getElementById('exportBtn').addEventListener('click', function() {
+document.getElementById('exportBtn').addEventListener('click', async function() {
+  ensureDefaultEngines(); // 导出前强制确保默认引擎存在
+  
+  await Store.setJSON(STORAGE_ENGINES, engineList);
+  await Store.set(STORAGE_SELECT, selectedIndex);
+  await Store.setJSON(STORAGE_SCRIPTS, scriptList);
+
   var str = Store.exportAll();
   configTextArea.value = str;
   
@@ -524,45 +552,57 @@ document.getElementById('exportBtn').addEventListener('click', function() {
   }
 });
 
-document.getElementById('importBtn').addEventListener('click', function() {
+document.getElementById('importBtn').addEventListener('click', async function() {
   var text = configTextArea.value.trim();
   if(!text) return showToast('请先在文本框粘贴配置代码');
   
+  var data;
   try {
-    var data = JSON.parse(text);
+    data = JSON.parse(text);
     if(typeof data !== 'object' || !data) throw new Error('无效数据');
     
     if(!Object.keys(data).some(k => k.startsWith('search_'))) {
       throw new Error('未包含有效配置');
     }
+  } catch(err) {
+    return alert('导入失败：格式不正确！\n' + err.message);
+  }
 
-    // 双向锁定：彻底清空所有现有的 search_ 配置
-    Store.clearAll();
+  try {
+    // 1. 双向锁定：彻底等待清空所有现有的 search_ 配置完成
+    await Store.clearAll();
 
-    // 写入新配置
+    // 2. 写入新配置，并等待写入完成
     var promises = [];
     Object.keys(data).forEach(k => {
       if(k.startsWith('search_')) {
         promises.push(Store.set(k, data[k]));
       }
     });
-    
-    Promise.all(promises).then(() => {
-      // 即时生效：不刷新页面，直接热重载
-      applyImportedData();
-      closeModalById('settingsModal');
-      showToast('配置已导入并生效！');
-    });
+    await Promise.all(promises);
+
+    // 3. 即时生效：不刷新页面，直接热重载
+    applyImportedData();
+    closeModalById('settingsModal');
+    showToast('配置已完全导入并生效！');
   } catch(err) {
-    alert('导入失败：格式不正确！\n' + err.message);
+    alert('写入数据失败：' + err.message);
   }
 });
 
-document.getElementById('resetAllBtn').addEventListener('click', function() {
-  if(confirm('确定要恢复网页初始设置吗？所有壁纸、脚本、历史记录将被清空且无法撤销！')) {
+// 恢复出厂设置（强力同步重置）
+document.getElementById('resetAllBtn').addEventListener('click', async function() {
+  if(confirm('确定要恢复网页初始设置吗？所有壁纸、脚本、历史记录将被清空，默认引擎将恢复！')) {
     try {
+      await Store.clearAll();
+      
+      // 强制写回四大默认引擎
+      engineList = JSON.parse(JSON.stringify(defaultEngines));
+      selectedIndex = 0;
+      await Store.setJSON(STORAGE_ENGINES, engineList);
+      await Store.set(STORAGE_SELECT, 0);
+      
       localStorage.clear();
-      indexedDB.deleteDatabase('search_app_db');
       location.reload();
     } catch(e) {
       location.reload();
@@ -622,6 +662,7 @@ document.getElementById('historyPanel').addEventListener('mousedown', function(e
 
 function renderEngineList(){
   var wrapper = document.getElementById('engineList'); wrapper.innerHTML = '';
+  ensureDefaultEngines();
   engineList.forEach(function(item, idx){
     var div = document.createElement('div'); div.className = 'engine-item'; div.dataset.idx = idx;
     div.innerHTML = `
