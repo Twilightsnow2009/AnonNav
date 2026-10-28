@@ -96,6 +96,18 @@ body.has-wallpaper #historyPanel{ background: rgba(0,0,0,0.6); border-color: rgb
 .history-empty{ padding: 12px; font-size: 0.85rem; color: var(--text-light); text-align: center; }
 
 .tip{ text-align:center; margin-top:20px; font-size:0.9rem; color:var(--text-soft); }
+.storage-tip{ text-align:center; margin-top:8px; font-size:0.78rem; color:var(--text-light); letter-spacing:0.2px; cursor:default; user-select:none; }
+body.has-wallpaper .storage-tip{ text-shadow:0 1px 6px rgba(0,0,0,0.75); }
+.storage-backend{
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-style: dotted;
+  text-decoration-color: currentColor;
+  transition: opacity 0.15s;
+}
+.storage-backend:hover{ opacity: 0.65; }
 .link-btn{
   background:none; border:none; padding:0; margin:0 4px;
   color:var(--text); cursor:pointer; font-size:inherit;
@@ -187,6 +199,58 @@ body.theme-dark .modal-box{
 .local-wall-btn:hover{ background:var(--card-border); border-style:solid; }
 .local-wall-hint{ font-size:0.78rem; color:var(--text-light); margin-top:6px; display:none; }
 
+/* 数据控制台 */
+#dbConsoleModal .modal-box{ max-width:640px; max-height:92vh; }
+.db-console-warn{
+  font-size:0.78rem; line-height:1.65; text-align:left;
+  color:var(--text-soft);
+  background:rgba(210,160,20,0.12);
+  border:1px solid rgba(210,160,20,0.35);
+  border-radius:10px; padding:9px 12px; margin-bottom:12px;
+}
+.db-console-warn code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  background:rgba(128,128,128,0.14);
+  padding:1px 5px; border-radius:4px; font-size:0.74rem;
+  color:var(--text);
+}
+.db-console-input{
+  width:100%; min-height:150px;
+  padding:12px;
+  border:1px solid var(--border); border-radius:12px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:0.82rem; line-height:1.6;
+  background:var(--bg); color:var(--text);
+  resize:vertical; outline:none;
+}
+.db-console-input:focus{ border-color:#555; }
+.db-console-actions{ display:flex; gap:8px; margin-top:10px; }
+.db-console-actions button{ flex:1; font-size:0.9rem; padding:10px 0; }
+.db-console-output{
+  margin-top:12px;
+  min-height:80px; max-height:230px; overflow-y:auto;
+  padding:10px 12px;
+  border:1px solid var(--card-border); border-radius:12px;
+  background:rgba(128,128,128,0.06);
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:0.78rem; line-height:1.55;
+  text-align:left; white-space:pre-wrap; word-break:break-all;
+}
+.db-console-output:empty::before{
+  content:'输出区';
+  color:var(--text-light); opacity:0.6;
+}
+.db-console-output .db-c-out-item{
+  padding:6px 0;
+  border-bottom:1px dashed var(--card-border);
+}
+.db-console-output .db-c-out-item:last-child{ border-bottom:none; }
+.db-console-output .db-c-out-time{ color:var(--text-light); font-size:0.72rem; }
+.db-console-output .db-c-out-ok{ color:#2b8a3e; margin-top:4px; }
+.db-console-output .db-c-out-err{ color:#c92a2a; margin-top:4px; }
+body.theme-dark .db-console-output .db-c-out-ok{ color:#69db7c; }
+body.theme-dark .db-console-output .db-c-out-err{ color:#ff8787; }
+
 #toast{
   position:fixed; left:50%; bottom:32px; transform:translateX(-50%);
   background:rgba(0,0,0,0.82); color:#fff; padding:10px 18px; border-radius:999px;
@@ -221,7 +285,7 @@ body.theme-dark .modal-box{
     <div class="time-ampm" id="timeAmpm"></div>
   </div>
   <h1 id="mainTitle" title="双击编辑标题"></h1>
-  
+
   <div class="search-wrap">
     <input id="query" type="text" name="q" placeholder="输入搜索词、网址或 IP…" autocomplete="off">
     <button id="searchBtn">搜索</button>
@@ -232,6 +296,7 @@ body.theme-dark .modal-box{
     当前引擎：<span id="engineName"></span>
     &nbsp;<button id="changeEngineBtn" class="link-btn">更改</button>
   </div>
+  <div class="storage-tip" id="storageTip" title="点击左侧后端名称打开数据控制台"><span class="storage-backend" id="storageBackend" title="点击打开数据控制台">—</span> 占用：<span id="storageSize">—</span></div>
 </div>
 
 <div class="footer-text">
@@ -244,7 +309,7 @@ body.theme-dark .modal-box{
 <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="系统设置">
   <div class="modal-box" tabindex="-1">
     <h3>系统设置</h3>
-    
+
     <div class="settings-section">
       <textarea id="configText" class="config-textarea" placeholder="点击【导出配置】生成代码并自动复制；或者在此粘贴配置后，点击【导入配置】恢复。"></textarea>
       <div class="settings-btns">
@@ -252,7 +317,7 @@ body.theme-dark .modal-box{
         <button id="importBtn" class="btn-primary">导入配置</button>
       </div>
     </div>
-    
+
     <div class="danger-zone settings-section">
       <button id="resetAllBtn" class="danger-btn">恢复网页初始设置</button>
     </div>
@@ -334,6 +399,34 @@ body.theme-dark .modal-box{
   </div>
 </div>
 
+<!-- 数据控制台 -->
+<div id="dbConsoleModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="数据控制台">
+  <div class="modal-box" tabindex="-1">
+    <h3>数据控制台</h3>
+    <div class="db-console-warn">
+      ⚠️ 可直接读写本站存储于 <b id="dbConsoleBackend">IndexedDB</b> 中的数据，请谨慎操作。<br>
+      <b>可用变量：</b><code>Store</code> · <code>db</code> · <code>cache</code> · <code>sizes</code> · <code>raw</code> · <code>document</code> · <code>titleEl</code><br>
+      <b>快捷命令：</b><code>list()</code> · <code>get(k)</code> · <code>set(k, v)</code> · <code>del(k)</code> · <code>clear()</code> · <code>reload()</code><br>
+      <b>提示：</b>直接操作 <code>db</code> 不会同步内存缓存；改完如需刷新界面请执行 <code>reload()</code>。
+    </div>
+    <textarea id="dbConsoleInput" class="db-console-input" spellcheck="false" placeholder="// 按 Ctrl+Enter 或点击【执行】运行
+// 示例：
+list()
+// 或
+set('search_title_text', 'Hello')
+// 或
+get('search_engine_list')"></textarea>
+    <div class="db-console-actions">
+      <button id="dbConsoleRunBtn" class="btn-primary">执行 (Ctrl+Enter)</button>
+      <button id="dbConsoleClearBtn" class="btn-secondary">清空</button>
+    </div>
+    <div class="db-console-output" id="dbConsoleOutput"></div>
+    <div class="modal-footer">
+      <button id="closeDbConsoleBtn">完成</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -371,6 +464,7 @@ var MAX_SCRIPT_SIZE = 2 * 1024 * 1024, MAX_WALL_FILE_SIZE = 8 * 1024 * 1024, MAX
 var TYPE_LABEL = { url:'外链', file:'本地文件', code:'代码' };
 var wallModalInitial = '';
 var historySelectedIndex = -1;
+var wallLoadToken = 0;
 
 // ===== 脚本清理钩子：仅内联脚本（代码/本地文件）有效 =====
 window.registerCleanup = function(fn){
@@ -383,7 +477,22 @@ window.registerCleanup = function(fn){
 // ===== Store：IDB 失败/为空时回退 localStorage；IDB 恢复后 merge 缺失 key =====
 var Store = (function(){
   var DB_NAME = 'search_app_db', DB_VERSION = 1, STORE_NAME = 'kv', LS_PREFIX = 'search_';
-  var db = null, useIDB = true, cache = new Map(), initPromise = null;
+  var db = null, useIDB = true, cache = new Map(), sizes = new Map(), initPromise = null;
+
+  var encoder = (typeof TextEncoder === 'function') ? new TextEncoder() : null;
+  function byteLen(s){
+    if(encoder){ try{ return encoder.encode(s).length; }catch(e){} }
+    return s.length * 2;
+  }
+  function cacheSet(k, v){
+    var s = String(v);
+    cache.set(k, s);
+    sizes.set(k, byteLen(k) + byteLen(s));
+  }
+  function cacheDel(k){
+    cache.delete(k);
+    sizes.delete(k);
+  }
 
   function openDB(){ return new Promise((resolve, reject) => { let req = indexedDB.open(DB_NAME, DB_VERSION); req.onupgradeneeded = e => { if(!e.target.result.objectStoreNames.contains(STORE_NAME)) e.target.result.createObjectStore(STORE_NAME); }; req.onsuccess = e => resolve(e.target.result); req.onerror = () => reject(req.error); }); }
   function dbReadAll(){ return new Promise((resolve, reject) => { var req = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).openCursor(); var out = {}; req.onsuccess = e => { var cur = e.target.result; if(cur){ out[cur.key] = cur.value; cur.continue(); } else resolve(out); }; req.onerror = () => reject(req.error); }); }
@@ -409,16 +518,16 @@ var Store = (function(){
           db = await openDB();
           var all = await dbReadAll();
           if(Object.keys(all).length === 0){
-            forEachLocal(function(k, v){ cache.set(k, v); dbPut(k, v).catch(function(){}); });
+            forEachLocal(function(k, v){ cacheSet(k, v); dbPut(k, v).catch(function(){}); });
           } else {
-            Object.keys(all).forEach(function(k){ cache.set(k, all[k]); });
+            Object.keys(all).forEach(function(k){ cacheSet(k, all[k]); });
             forEachLocal(function(k, v){
-              if(!cache.has(k)){ cache.set(k, v); dbPut(k, v).catch(function(){}); }
+              if(!cache.has(k)){ cacheSet(k, v); dbPut(k, v).catch(function(){}); }
             });
           }
         }catch(e){
           useIDB = false; db = null;
-          forEachLocal(function(k, v){ cache.set(k, v); });
+          forEachLocal(function(k, v){ cacheSet(k, v); });
         }
         return true;
       })();
@@ -427,7 +536,7 @@ var Store = (function(){
     getJSON(k, def){ if(!cache.has(k)) return def; try{ return JSON.parse(cache.get(k)); }catch(e){ return def; } },
     set(k, v){
       var str = String(v);
-      cache.set(k, str);
+      cacheSet(k, str);
       if(useIDB && db){
         return dbPut(k, str).catch(function(){ useIDB = false; db = null; writeLocal(k, str); });
       } else {
@@ -437,27 +546,43 @@ var Store = (function(){
     },
     setJSON(k, v){ return api.set(k, JSON.stringify(v)); },
     remove(k){
-      cache.delete(k);
+      cacheDel(k);
+      removeLocal(k);
       if(useIDB && db){
-        return dbDelete(k).catch(function(){ useIDB = false; db = null; removeLocal(k); });
-      } else {
-        removeLocal(k);
-        return Promise.resolve();
+        return dbDelete(k).catch(function(){ useIDB = false; db = null; });
       }
+      return Promise.resolve();
     },
     clearAll(){
+      var keys = new Set();
+      cache.forEach(function(v, k){ if(k.indexOf(LS_PREFIX) === 0) keys.add(k); });
+      try{
+        for(var i = 0; i < localStorage.length; i++){
+          var lk = localStorage.key(i);
+          if(lk && lk.indexOf(LS_PREFIX) === 0) keys.add(lk);
+        }
+      }catch(e){}
       var promises = [];
-      cache.forEach((v, k) => {
-        if(k.startsWith('search_')) promises.push(api.remove(k));
-      });
-      forEachLocal((k, v) => { if(k.startsWith('search_')) promises.push(api.remove(k)); });
+      keys.forEach(function(k){ promises.push(api.remove(k)); });
       return Promise.all(promises);
     },
+    size(){
+      var total = 0;
+      sizes.forEach(function(n){ total += n; });
+      return total;
+    },
+    backend(){ return (useIDB && db) ? 'IndexedDB' : '本地存储'; },
     exportAll(){
       var obj = {};
       cache.forEach((v, k) => { if(k.startsWith('search_')) obj[k] = v; });
       return JSON.stringify(obj, null, 2);
-    }
+    },
+    get _db(){ return db; },
+    get _cache(){ return cache; },
+    get _sizes(){ return sizes; },
+    get _useIDB(){ return useIDB; },
+    STORE_NAME: STORE_NAME,
+    DB_NAME: DB_NAME
   };
   return api;
 })();
@@ -470,6 +595,26 @@ function showToast(msg, ms){
   el.classList.add('show');
   clearTimeout(el.toastTimer);
   el.toastTimer = setTimeout(function(){ el.classList.remove('show'); }, ms || 2600);
+}
+
+// ===== 存储占用统计 =====
+function formatBytes(n){
+  n = Number(n) || 0;
+  if(n < 1024) return n + ' B';
+  var units = ['KB','MB','GB','TB'];
+  var i = -1;
+  do{ n /= 1024; i++; } while(n >= 1024 && i < units.length - 1);
+  var v = n >= 100 ? n.toFixed(0) : (n >= 10 ? n.toFixed(1) : n.toFixed(2));
+  return v + ' ' + units[i];
+}
+function updateStorageTip(){
+  var backendEl = document.getElementById('storageBackend');
+  var sizeEl = document.getElementById('storageSize');
+  if(!backendEl || !sizeEl) return;
+  try{
+    backendEl.textContent = Store.backend();
+    sizeEl.textContent = formatBytes(Store.size());
+  }catch(e){}
 }
 
 // ===== esc =====
@@ -493,51 +638,49 @@ function loadData(){
   var savedSel = Store.get(STORAGE_SELECT, null);
   engineList = savedList;
   ensureDefaultEngines();
-  
-  selectedIndex = (savedSel !== null && Number(savedSel) < engineList.length) ? Number(savedSel) : 0;
+
+  var sel = Number(savedSel);
+  selectedIndex = (savedSel !== null && !isNaN(sel) && sel >= 0 && sel < engineList.length) ? sel : 0;
   updateEngineText();
 }
 
 function applyImportedData() {
-  // 1. 重新加载引擎
   engineList = Store.getJSON(STORAGE_ENGINES, null);
   ensureDefaultEngines();
-  
-  selectedIndex = Number(Store.get(STORAGE_SELECT, 0));
-  if(selectedIndex >= engineList.length) selectedIndex = 0;
+
+  var sel = Number(Store.get(STORAGE_SELECT, 0));
+  if(isNaN(sel) || sel < 0 || sel >= engineList.length) sel = 0;
+  selectedIndex = sel;
   updateEngineText();
 
-  // 2. 重新加载主题
   initTheme();
-
-  // 3. 重新加载标题
   initTitle();
 
-  // 4. 重新加载壁纸 (先清空再加载)
   wallImg.removeAttribute('src');
   showWall(false);
   loadWallpaper();
 
-  // 5. 清理并重新加载脚本
   Array.from(runningScripts.keys()).forEach(id => cleanupScript(id));
   runningScripts.clear();
   loadScriptList();
   runPendingScripts();
+
+  updateStorageTip();
 }
 
 // ===== 极简配置导入导出 =====
 var configTextArea = document.getElementById('configText');
 
 document.getElementById('exportBtn').addEventListener('click', async function() {
-  ensureDefaultEngines(); // 导出前强制确保默认引擎存在
-  
+  ensureDefaultEngines();
+
   await Store.setJSON(STORAGE_ENGINES, engineList);
   await Store.set(STORAGE_SELECT, selectedIndex);
   await Store.setJSON(STORAGE_SCRIPTS, scriptList);
 
   var str = Store.exportAll();
   configTextArea.value = str;
-  
+
   configTextArea.select();
   if (navigator.clipboard && window.isSecureContext) {
     navigator.clipboard.writeText(str).then(() => {
@@ -555,12 +698,12 @@ document.getElementById('exportBtn').addEventListener('click', async function() 
 document.getElementById('importBtn').addEventListener('click', async function() {
   var text = configTextArea.value.trim();
   if(!text) return showToast('请先在文本框粘贴配置代码');
-  
+
   var data;
   try {
     data = JSON.parse(text);
     if(typeof data !== 'object' || !data) throw new Error('无效数据');
-    
+
     if(!Object.keys(data).some(k => k.startsWith('search_'))) {
       throw new Error('未包含有效配置');
     }
@@ -569,10 +712,7 @@ document.getElementById('importBtn').addEventListener('click', async function() 
   }
 
   try {
-    // 1. 双向锁定：彻底等待清空所有现有的 search_ 配置完成
     await Store.clearAll();
-
-    // 2. 写入新配置，并等待写入完成
     var promises = [];
     Object.keys(data).forEach(k => {
       if(k.startsWith('search_')) {
@@ -581,7 +721,6 @@ document.getElementById('importBtn').addEventListener('click', async function() 
     });
     await Promise.all(promises);
 
-    // 3. 即时生效：不刷新页面，直接热重载
     applyImportedData();
     closeModalById('settingsModal');
     showToast('配置已完全导入并生效！');
@@ -590,23 +729,43 @@ document.getElementById('importBtn').addEventListener('click', async function() 
   }
 });
 
-// 恢复出厂设置（强力同步重置）
-document.getElementById('resetAllBtn').addEventListener('click', async function() {
-  if(confirm('确定要恢复网页初始设置吗？所有壁纸、脚本、历史记录将被清空，默认引擎将恢复！')) {
-    try {
-      await Store.clearAll();
-      
-      // 强制写回四大默认引擎
-      engineList = JSON.parse(JSON.stringify(defaultEngines));
-      selectedIndex = 0;
-      await Store.setJSON(STORAGE_ENGINES, engineList);
-      await Store.set(STORAGE_SELECT, 0);
-      
-      localStorage.clear();
-      location.reload();
-    } catch(e) {
-      location.reload();
-    }
+// ===== 恢复网页初始设置（彻底版） =====
+document.getElementById('resetAllBtn').addEventListener('click', async function(){
+  if(!confirm('确定要恢复网页初始设置吗？\n\n将清除：壁纸、脚本、搜索历史、自定义搜索引擎、主题与标题设置，并恢复为四大默认引擎。')) return;
+
+  var btn = this;
+  var oldText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '正在恢复...';
+
+  try{
+    Array.from(runningScripts.keys()).forEach(function(id){ cleanupScript(id); });
+    runningScripts.clear();
+
+    await Store.clearAll();
+
+    engineList = JSON.parse(JSON.stringify(defaultEngines));
+    selectedIndex = 0;
+    scriptList = [];
+    editingScriptId = null;
+    wallModalInitial = '';
+    historySelectedIndex = -1;
+
+    await Store.setJSON(STORAGE_ENGINES, engineList);
+    await Store.set(STORAGE_SELECT, '0');
+
+    applyImportedData();
+
+    closeModalById('settingsModal');
+    updateStorageTip();
+    showToast('已恢复初始设置');
+  }catch(e){
+    console.error('[恢复初始化失败]', e);
+    showToast('恢复失败，正在强制刷新…');
+    setTimeout(function(){ try{ location.reload(); }catch(_){} }, 600);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = oldText;
   }
 });
 
@@ -645,7 +804,7 @@ document.getElementById('historyPanel').addEventListener('mousedown', function(e
   e.preventDefault();
   var delBtn = e.target.closest('.delete-icon');
   var itemEl = e.target.closest('.history-item');
-  
+
   if(delBtn) {
     var idx = Number(delBtn.dataset.del);
     let list = getHistory(); list.splice(idx, 1);
@@ -721,7 +880,7 @@ function saveEngines(){
   if(newList.length === 0){ alert('至少保留一个搜索引擎'); return; }
   engineList = newList;
   var sel = document.querySelector('input[name="eng"]:checked'); if(sel) selectedIndex = Number(sel.value);
-  if(selectedIndex >= engineList.length) selectedIndex = 0;
+  if(selectedIndex >= engineList.length || selectedIndex < 0) selectedIndex = 0;
   Store.setJSON(STORAGE_ENGINES, engineList); Store.set(STORAGE_SELECT, selectedIndex);
   closeModalById('modal'); updateEngineText();
 }
@@ -819,7 +978,7 @@ queryInput.addEventListener('keydown', function(e){
   if(e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) {
     search(); return;
   }
-  
+
   if(isHidden) return;
 
   var items = panel.querySelectorAll('.history-item');
@@ -870,7 +1029,18 @@ titleEl.addEventListener('blur', function(){
 
 // ===== 壁纸 =====
 function getWallValue(){ return Store.get(STORAGE_WALL_VALUE, ''); }
-function loadImage(url){ return new Promise(function(res, rej){ wallImg.onload = function(){ res(); }; wallImg.onerror = function(){ rej(); }; wallImg.src = url; }); }
+// 【修复】使用独立的 Image 对象预加载，避免并发加载时 wallImg.onload 相互覆盖导致死锁
+function loadImage(url){ 
+  return new Promise(function(res, rej){ 
+    var img = new Image();
+    img.onload = function(){ 
+      wallImg.src = url; 
+      res(); 
+    }; 
+    img.onerror = function(){ rej(); }; 
+    img.src = url; 
+  }); 
+}
 function showWall(show){ wallImg.classList.toggle('active', show); wallOverlay.classList.toggle('active', show); document.body.classList.toggle('has-wallpaper', show); }
 
 async function resolveWallApi(val){
@@ -886,19 +1056,23 @@ async function resolveWallApi(val){
   return null;
 }
 async function loadWallpaper(){
+  var token = ++wallLoadToken;
   var val = getWallValue();
-  if(!val){ showWall(false); return; }
+  if(!val){ if(token === wallLoadToken) showWall(false); return; }
   if(val.indexOf('data:image/') === 0){
-    try{ await loadImage(val); showWall(true); }catch(e){ showWall(false); }
+    try{ await loadImage(val); if(token === wallLoadToken) showWall(true); }
+    catch(e){ if(token === wallLoadToken) showWall(false); }
     return;
   }
-  try{ await loadImage(val); showWall(true); return; }catch(e){}
+  try{ await loadImage(val); if(token === wallLoadToken) showWall(true); return; }catch(e){}
   try{
     var apiUrl = await resolveWallApi(val);
-    if(apiUrl){ await loadImage(apiUrl); showWall(true); return; }
+    if(apiUrl){ await loadImage(apiUrl); if(token === wallLoadToken) showWall(true); return; }
   }catch(e){}
-  showWall(false);
-  showToast('壁纸加载失败，请检查地址');
+  if(token === wallLoadToken){
+    showWall(false);
+    showToast('壁纸加载失败，请检查地址');
+  }
 }
 function openWallModal(){
   var val = getWallValue();
@@ -1001,13 +1175,14 @@ function injectScript(item){
     s.referrerPolicy = 'no-referrer';
     s.onerror = function(){ console.error('[脚本加载失败]', item.name); };
     document.body.appendChild(s);
-    return;
+    return s;
   }
   var prevId = window.__ANONNAV_CURRENT_SCRIPT_ID__;
   window.__ANONNAV_CURRENT_SCRIPT_ID__ = item.id;
   s.textContent = item.content + '\n//# sourceURL=' + encodeURIComponent(item.name || 'script') + '.js';
   try{ document.body.appendChild(s); }
   finally{ window.__ANONNAV_CURRENT_SCRIPT_ID__ = prevId; }
+  return s;
 }
 
 function cleanupScript(id){
@@ -1015,6 +1190,10 @@ function cleanupScript(id){
   if(!rec) return;
   try{ if(typeof rec.cleanup === 'function') rec.cleanup(); }
   catch(e){ console.error('[脚本清理失败]', e); }
+  // 【修复】移除注入的 script 标签，防止 DOM 膨胀
+  if(rec.el && rec.el.parentNode) {
+    rec.el.parentNode.removeChild(rec.el);
+  }
   runningScripts.delete(id);
 }
 
@@ -1026,8 +1205,8 @@ function runPendingScripts(){
     var rec = runningScripts.get(item.id);
     if(rec && rec.content === item.content) return;
     cleanupScript(item.id);
-    runningScripts.set(item.id, { content: item.content, cleanup: null });
-    injectScript(item);
+    var scriptEl = injectScript(item);
+    runningScripts.set(item.id, { content: item.content, cleanup: null, el: scriptEl });
     console.log('[脚本执行]', item.name || '未命名');
   });
   Array.from(runningScripts.keys()).forEach(function(id){
@@ -1132,6 +1311,136 @@ function addCodeScript(){
   }, 50);
 }
 
+// ===== 数据控制台 =====
+var raw = {
+  isIDB: function(){ return Store._useIDB; },
+  getDB: function(){ return Store._db; },
+  getCache: function(){ return Store._cache; },
+  getSizes: function(){ return Store._sizes; },
+  STORE_NAME: Store.STORE_NAME,
+  DB_NAME: Store.DB_NAME
+};
+
+window.list = function(){
+  var arr = [];
+  Store._cache.forEach(function(v, k){
+    var str = String(v);
+    arr.push({
+      key: k,
+      size: Store._sizes.get(k) || 0,
+      preview: str.length > 60 ? str.slice(0, 60) + '…' : str
+    });
+  });
+  arr.sort(function(a, b){ return b.size - a.size; });
+  return arr;
+};
+window.get = function(k){ return Store.get(k); };
+window.set = function(k, v){ return Store.set(k, v); };
+window.del = function(k){ return Store.remove(k); };
+window.clear = function(){ return Store.clearAll(); };
+
+function reloadAllFromStore(){
+  loadData();
+  initTheme();
+  initTitle();
+  wallImg.removeAttribute('src');
+  showWall(false);
+  loadWallpaper();
+  Array.from(runningScripts.keys()).forEach(function(id){ cleanupScript(id); });
+  runningScripts.clear();
+  loadScriptList();
+  runPendingScripts();
+  updateStorageTip();
+}
+window.reload = reloadAllFromStore;
+
+function openDbConsole(){
+  var backendEl = document.getElementById('dbConsoleBackend');
+  if(backendEl) backendEl.textContent = Store.backend();
+  openModalById('dbConsoleModal');
+  setTimeout(function(){
+    try{ document.getElementById('dbConsoleInput').focus(); }catch(e){}
+  }, 60);
+}
+
+function formatConsoleResult(v){
+  if(v === undefined) return 'undefined';
+  if(v === null) return 'null';
+  if(typeof v === 'string') return JSON.stringify(v);
+  if(typeof v === 'function') return '[function ' + (v.name || 'anonymous') + ']';
+  if(typeof v === 'object'){
+    try{ return JSON.stringify(v, null, 2); }
+    catch(e){ return String(v); }
+  }
+  return String(v);
+}
+
+async function runDbConsole(){
+  var input = document.getElementById('dbConsoleInput');
+  var code = input.value;
+  if(!code.trim()) return;
+  var output = document.getElementById('dbConsoleOutput');
+
+  var item = document.createElement('div');
+  item.className = 'db-c-out-item';
+
+  var header = document.createElement('div');
+  header.className = 'db-c-out-time';
+  header.textContent = '▶ ' + new Date().toLocaleTimeString();
+  item.appendChild(header);
+
+  var codePre = document.createElement('pre');
+  codePre.style.cssText = 'margin:4px 0;white-space:pre-wrap;word-break:break-all;color:var(--text-light);font-size:0.78rem;font-family:inherit;';
+  codePre.textContent = code;
+  item.appendChild(codePre);
+
+  // 【修复】更精确的自动补全 return 逻辑，避免多行代码或注释导致的语法错误
+  var wrappedCode = code.trim();
+  var lines = wrappedCode.split('\n');
+  var lastLine = lines[lines.length - 1].trim();
+  var cleanLastLine = lastLine.replace(/;$/, '').trim();
+  
+  var isSingleExpression = cleanLastLine && 
+    cleanLastLine.indexOf(';') === -1 && 
+    cleanLastLine.indexOf('//') === -1 &&
+    !/[{}]$/.test(cleanLastLine) &&
+    !/^(return|var|let|const|if|for|while|switch|try|throw|function|class|\{|\/\/)/.test(cleanLastLine);
+    
+  if (isSingleExpression) {
+    lines[lines.length - 1] = 'return (' + cleanLastLine + ');';
+    wrappedCode = lines.join('\n');
+  }
+
+  try{
+    var AsyncFn = Object.getPrototypeOf(async function(){}).constructor;
+    var fn = new AsyncFn(
+      'Store', 'db', 'cache', 'sizes', 'raw',
+      'list', 'get', 'set', 'del', 'clear', 'reload',
+      'document', 'window', 'titleEl', 'queryInput',
+      wrappedCode
+    );
+    var result = await fn(
+      Store, Store._db, Store._cache, Store._sizes, raw,
+      window.list, window.get, window.set, window.del, window.clear, window.reload,
+      document, window, titleEl, queryInput
+    );
+
+    var ok = document.createElement('div');
+    ok.className = 'db-c-out-ok';
+    ok.textContent = '✓ ' + formatConsoleResult(result);
+    item.appendChild(ok);
+  }catch(e){
+    var err = document.createElement('div');
+    err.className = 'db-c-out-err';
+    err.textContent = '✗ ' + (e && e.message ? e.message : String(e));
+    item.appendChild(err);
+  }
+
+  output.insertBefore(item, output.firstChild);
+  while(output.children.length > 30) output.removeChild(output.lastChild);
+  updateStorageTip();
+}
+
 // ===== 事件绑定 =====
 document.getElementById('themeToggle').addEventListener('click', function(){
   var next = document.body.classList.contains('theme-dark') ? 'light' : 'dark';
@@ -1152,6 +1461,20 @@ document.getElementById('addUrlScriptBtn').addEventListener('click', addUrlScrip
 document.getElementById('pickScriptFileBtn').addEventListener('click', pickScriptFile);
 document.getElementById('addCodeScriptBtn').addEventListener('click', addCodeScript);
 document.getElementById('closeScriptBtn').addEventListener('click', closeScriptModal);
+
+document.getElementById('storageBackend').addEventListener('click', openDbConsole);
+document.getElementById('closeDbConsoleBtn').addEventListener('click', function(){ closeModalById('dbConsoleModal'); });
+document.getElementById('dbConsoleRunBtn').addEventListener('click', runDbConsole);
+document.getElementById('dbConsoleClearBtn').addEventListener('click', function(){
+  document.getElementById('dbConsoleOutput').innerHTML = '';
+  document.getElementById('dbConsoleInput').value = '';
+});
+document.getElementById('dbConsoleInput').addEventListener('keydown', function(e){
+  if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
+    e.preventDefault();
+    runDbConsole();
+  }
+});
 
 document.getElementById('wallFileInput').addEventListener('change', async function(e){
   var f = e.target.files && e.target.files[0];
@@ -1177,7 +1500,6 @@ document.getElementById('scriptFileInput').addEventListener('change', function(e
   reader.readAsText(f);
 });
 
-// 引擎列表委托
 document.getElementById('engineList').addEventListener('click', function(e){
   var itemEl = e.target.closest('.engine-item'); if(!itemEl) return;
   var idx = Number(itemEl.dataset.idx); if(isNaN(idx)) return;
@@ -1185,7 +1507,6 @@ document.getElementById('engineList').addEventListener('click', function(e){
   if(e.target.closest('.engine-main')){ toggleEdit(idx); }
 });
 
-// 脚本列表委托
 document.getElementById('scriptList').addEventListener('click', function(e){
   var itemEl = e.target.closest('.script-item'); if(!itemEl) return;
   var id = itemEl.dataset.id;
@@ -1211,6 +1532,8 @@ window.addEventListener('error', function(e){
 (async function boot(){
   try{ await Store.init(); }catch(e){}
   initTheme(); loadData(); initTitle(); loadWallpaper(); loadScriptList(); runPendingScripts();
+  updateStorageTip();
+  setInterval(updateStorageTip, 1500);
   try{
     var sp = new URLSearchParams(location.search), q = sp.get('q');
     if(q){
