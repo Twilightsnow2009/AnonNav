@@ -633,21 +633,47 @@ function delEngine(idx) {
   else if (selectedIndex > idx) selectedIndex -= 1;
   renderEngineList();
 }
+
+/* ============================================================
+ * 修复版 saveEngines
+ * ------------------------------------------------------------
+ * 原 bug：先写 K.ENGINES 会同步触发 watch → loadEngines()，
+ * 用旧的 K.SELECT 把刚算好的 selectedIndex 重置为旧值，
+ * 导致“新增/切换引擎后，页面不显示当前使用的引擎”。
+ *
+ * 修复思路：
+ *  1. 用局部变量 newIndex 记录选中项在「过滤后新数组」中的位置；
+ *  2. 先把引擎列表写入 Store，再把选中索引写入 Store；
+ *  3. 最后显式 loadEngines() + renderEngineName() 兜底刷新 UI。
+ * ============================================================ */
 function saveEngines() {
-  collectEnginesFromDom();
-  const items = document.querySelectorAll('#engineList .engine-item');
+  const items = Array.from(document.querySelectorAll('#engineList .engine-item'));
+  const selEl = document.querySelector('input[name="eng"]:checked');
+  const selIdx = selEl ? Number(selEl.value) : -1;
+
   const list = [];
-  items.forEach(el => {
-    const name = el.querySelector('.inp-name').value.trim();
-    const url = el.querySelector('.inp-url').value.trim();
-    if (name && url) list.push({ name, url });
+  let newIndex = 0;
+
+  items.forEach((el, domIdx) => {
+    const nameEl = el.querySelector('.inp-name');
+    const urlEl  = el.querySelector('.inp-url');
+    const name = nameEl ? nameEl.value.trim() : '';
+    const url  = urlEl  ? urlEl.value.trim()  : '';
+    if (!name || !url) return;                     // 过滤空项
+    if (domIdx === selIdx) newIndex = list.length;  // DOM 位置 → 新数组位置
+    list.push({ name, url });
   });
+
   if (!list.length) return alert('至少保留一个搜索引擎');
-  engineList = list;
-  const sel = document.querySelector('input[name="eng"]:checked');
-  selectedIndex = sel ? Math.min(Number(sel.value), list.length - 1) : 0;
-  Store.setJSON(K.ENGINES, engineList);
-  Store.set(K.SELECT, selectedIndex);
+
+  // 关键：先落盘引擎列表，再落盘选中索引
+  Store.setJSON(K.ENGINES, list);
+  Store.set(K.SELECT, newIndex);
+
+  // 冗余兜底：确保内存与 UI 同步（即使 watch 顺序有变也不会错）
+  loadEngines();
+  renderEngineName();
+
   closeModal('modal');
 }
 function openEngineModal() { loadEngines(); renderEngineList(); openModal('modal'); }
@@ -1092,7 +1118,6 @@ window.reload = function() {
 window.setTheme = setTheme;
 
 function openDbConsole() {
-  $('dbConsoleBackend').textContent = Store.backend();
   openModal('dbConsoleModal');
   setTimeout(() => $('dbConsoleInput').focus(), 60);
 }
