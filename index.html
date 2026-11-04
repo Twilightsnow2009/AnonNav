@@ -343,13 +343,6 @@ body.theme-dark .db-c-out-err{color:#ff8787}
 .color-confirm-name{font-size:.95rem;color:var(--text);line-height:1.4}
 .color-confirm-btns{display:flex;gap:10px}
 .color-confirm-btns button{flex:1;font-size:.95rem;padding:12px 0}
-
-/* ===== 自动备份区块 ===== */
-.backup-desc{
-  font-size:.82rem;color:var(--text-soft);line-height:1.65;
-  margin-bottom:10px;text-align:left;
-}
-.backup-time{color:var(--text-light);}
 .hidden{display:none !important}
 
 #toast{
@@ -412,13 +405,6 @@ body.theme-dark .db-c-out-err{color:#ff8787}
         <button id="exportBtn" class="btn-secondary">导出配置</button>
         <button id="importBtn" class="btn-primary">导入配置</button>
       </div>
-    </div>
-    <div class="settings-section hidden" id="backupSection">
-      <div class="backup-desc">
-        上次清空前自动备份：<br>
-        <span id="backupTime" class="backup-time"></span>
-      </div>
-      <button id="restoreBackupBtn" class="btn-secondary" style="width:100%;font-size:.95rem;padding:12px 0;">恢复上次配置</button>
     </div>
     <div class="danger-zone settings-section">
       <button id="resetAllBtn" class="danger-btn">恢复网页初始设置</button>
@@ -582,7 +568,6 @@ const K = {
   COLOR:   'search_bg_color',
   COLOR_INIT: 'search_bg_color_inited'
 };
-const BACKUP_KEY = 'anonnav_last_backup';
 const DEFAULT_ENGINES = [
   { name:"百度",    url:"https://www.baidu.com/s?wd=%s" },
   { name:"Bing",   url:"https://cn.bing.com/search?q=%s" },
@@ -1622,71 +1607,6 @@ function startClock() {
 }
 
 /* ============================================================
- * 自动备份（清空前留撤销点，独立于 Store，不随 clearAll 删除）
- * ============================================================ */
-function backupCurrent() {
-  try {
-    const cfg = Store.exportAll();
-    const payload = JSON.stringify({ time: Date.now(), config: cfg });
-    if (payload.length > 4.5 * 1024 * 1024) {
-      console.warn('[备份跳过] 配置过大，无法存入 localStorage');
-      return false;
-    }
-    localStorage.setItem(BACKUP_KEY, payload);
-    return true;
-  } catch (e) {
-    console.warn('[备份失败]', e);
-    return false;
-  }
-}
-function updateBackupUI() {
-  const section = $('backupSection');
-  if (!section) return;
-  let raw = null;
-  try { raw = localStorage.getItem(BACKUP_KEY); } catch {}
-  if (!raw) { section.classList.add('hidden'); return; }
-  try {
-    const data = JSON.parse(raw);
-    if (!data || !data.time || !data.config) { section.classList.add('hidden'); return; }
-    $('backupTime').textContent = new Date(data.time).toLocaleString('zh-CN');
-    section.classList.remove('hidden');
-  } catch {
-    section.classList.add('hidden');
-  }
-}
-async function restoreBackup() {
-  let raw = null;
-  try { raw = localStorage.getItem(BACKUP_KEY); } catch {}
-  if (!raw) return toast('没有可恢复的备份');
-  let data;
-  try { data = JSON.parse(raw); } catch { return toast('备份已损坏'); }
-  if (!data || !data.config) return toast('备份已损坏');
-  let cfg;
-  try { cfg = JSON.parse(data.config); } catch { return toast('备份已损坏'); }
-
-  if (!confirm('确定恢复上次配置？\n当前所有设置将被覆盖。')) return;
-
-  await Store.clearAll();
-  for (const k of Object.keys(cfg)) {
-    if (k.startsWith('search_')) await Store.set(k, cfg[k]);
-  }
-  try { localStorage.removeItem(BACKUP_KEY); } catch {}
-
-  loadEngines(); renderEngineName();
-  applyTitle(Store.get(K.TITLE, 'Search'));
-  applyTheme(Store.get(K.THEME, '') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
-  applyBgColor(Store.get(K.COLOR, ''));
-  scriptList = Store.getJSON(K.SCRIPTS, []);
-  Array.from(runningScripts.keys()).forEach(cleanupScript);
-  runScripts();
-  loadWallpaper();
-  updateStorageTip();
-  updateBackupUI();
-  closeModal('settingsModal');
-  toast('已恢复上次配置');
-}
-
-/* ============================================================
  * 数据控制台
  * ============================================================ */
 window.list = function() {
@@ -1806,7 +1726,6 @@ $('importBtn').addEventListener('click', async () => {
     if (!Object.keys(data).some(k => k.startsWith('search_'))) throw new Error('未包含有效配置');
   } catch (err) { return alert('导入失败：' + err.message); }
 
-  backupCurrent();
   await Store.clearAll();
   for (const k of Object.keys(data)) {
     if (k.startsWith('search_')) await Store.set(k, data[k]);
@@ -1815,7 +1734,6 @@ $('importBtn').addEventListener('click', async () => {
   scriptList = Store.getJSON(K.SCRIPTS, []);
   Array.from(runningScripts.keys()).forEach(cleanupScript);
   runScripts();
-  updateBackupUI();
   closeModal('settingsModal');
   toast('配置已完全导入并生效');
 });
@@ -1825,7 +1743,6 @@ $('importBtn').addEventListener('click', async () => {
  * ============================================================ */
 $('resetAllBtn').addEventListener('click', async () => {
   if (!confirm('确定恢复初始设置？\n将清空本地存储（IndexedDB）、壁纸、脚本、历史、自定义引擎、主题、主题色与标题。')) return;
-  backupCurrent();
   Array.from(runningScripts.keys()).forEach(cleanupScript);
   runningScripts.clear();
   await Store.clearAll();
@@ -1840,7 +1757,6 @@ $('resetAllBtn').addEventListener('click', async () => {
   applyTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   applyBgColor('');
   loadWallpaper(); updateStorageTip();
-  updateBackupUI();
   closeModal('settingsModal');
   toast('已恢复初始设置');
   setTimeout(openColorModal, 400);
@@ -1852,9 +1768,8 @@ $('resetAllBtn').addEventListener('click', async () => {
 $('themeToggle').addEventListener('click', () => {
   setTheme(document.body.classList.contains('theme-dark') ? 'light' : 'dark');
 });
-$('settingsToggle').addEventListener('click', () => { updateBackupUI(); openModal('settingsModal'); });
+$('settingsToggle').addEventListener('click', () => openModal('settingsModal'));
 $('closeSettingsBtn').addEventListener('click', () => closeModal('settingsModal'));
-$('restoreBackupBtn').addEventListener('click', restoreBackup);
 $('searchBtn').addEventListener('click', search);
 $('changeEngineBtn').addEventListener('click', openEngineModal);
 $('addEngineBtn').addEventListener('click', addBlankEngine);
