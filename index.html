@@ -10,20 +10,39 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#fff;--text:#222;--text-soft:#666;--text-light:#999;
-  --border:#ddd;--card-bg:#fff;--card-border:#eee;--btn-bg:#222;--btn-text:#fff;--btn-danger:#b33;
+  --bg:linear-gradient(135deg,#FCFCFD 0%,#F1F3F5 100%);
+  --text:#1F2328;
+  --text-soft:#57606A;
+  --text-light:#8C959F;
+  --border:#D8DEE4;
+  --card-bg:rgba(255,255,255,.86);
+  --card-border:#E3E8ED;
+  --btn-bg:#24292F;
+  --btn-text:#FFFFFF;
+  --btn-danger:#C0392B;
+  --input-bg:rgba(255,255,255,.75);
+  --input-border:#D8DEE4;
+  --accent:#24292F;
+  --accent-soft:rgba(36,41,47,.1);
+  --shadow:rgba(31,35,40,.12);
   color-scheme:light;
 }
 body.theme-dark{
-  --bg:#121212;--text:#eee;--text-soft:#bbb;--text-light:#777;
-  --border:#333;--card-bg:#1e1e1e;--card-border:#333;--btn-bg:#383838;--btn-text:#fff;
+  --bg:#121212;
+  --text:#eee;--text-soft:#bbb;--text-light:#777;
+  --border:#333;--card-bg:#1e1e1e;--card-border:#333;
+  --btn-bg:#383838;--btn-text:#fff;
+  --input-bg:#1a1a1a;--input-border:#333;
+  --accent:#eee;--accent-soft:rgba(255,255,255,.08);
+  --shadow:rgba(0,0,0,.4);
   color-scheme:dark;
 }
 html{min-height:100%}
 body{
   min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;
-  padding:0 16px;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;
-  overflow-x:hidden;transition:color .3s;
+  padding:0 16px;background:var(--bg);color:var(--text);
+  font-family:system-ui,-apple-system,sans-serif;
+  overflow-x:hidden;transition:color .3s,background-color .3s;
 }
 input,button,textarea,select{font-family:inherit}
 #wallpaperImg{
@@ -40,6 +59,9 @@ input,button,textarea,select{font-family:inherit}
 body.has-wallpaper{
   --text:#fff;--text-soft:rgba(255,255,255,.85);--text-light:rgba(255,255,255,.65);
   --border:rgba(255,255,255,.3);--bg:rgba(0,0,0,.35);--btn-bg:rgba(0,0,0,.5);--btn-text:#fff;
+  --input-bg:rgba(0,0,0,.4);--input-border:rgba(255,255,255,.25);
+  --accent:rgba(255,255,255,.9);--accent-soft:rgba(255,255,255,.12);
+  --shadow:rgba(0,0,0,.4);
 }
 body.has-wallpaper .time-date,body.has-wallpaper .time-ampm,body.has-wallpaper h1,body.has-wallpaper .tip{
   color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.75),0 0 2px rgba(0,0,0,.9);
@@ -59,30 +81,33 @@ h1{font-size:2.2rem;font-weight:400;margin-bottom:32px;user-select:none;cursor:p
 h1[contenteditable="true"]{cursor:text;border-bottom:1px dashed var(--border)}
 .search-wrap{display:flex;gap:8px;position:relative}
 #query{
-  flex:1;padding:12px 18px;border:1px solid var(--border);border-radius:999px;outline:none;
-  font-size:1rem;background:var(--bg);color:var(--text);min-width:0;
+  flex:1;padding:12px 18px;border:1px solid var(--input-border);border-radius:999px;outline:none;
+  font-size:1rem;background:var(--input-bg);color:var(--text);min-width:0;
+  transition:border-color .2s,box-shadow .2s,background .2s;
 }
-#query:focus{border-color:#555}
+#query:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+#query::placeholder{color:var(--text-light)}
 button{
   padding:12px 22px;border:none;border-radius:999px;background:var(--btn-bg);
   color:var(--btn-text);cursor:pointer;font-size:1rem;
+  transition:opacity .18s,transform .18s,box-shadow .18s;
 }
-button:hover{opacity:.85}
+button:hover{opacity:.9}
+.search-wrap button:hover{transform:translateY(-1px);box-shadow:0 6px 16px var(--shadow)}
 #historyPanel{
   position:absolute;top:calc(100% + 8px);left:0;width:calc(100% - 90px);
   background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;
-  box-shadow:0 10px 30px rgba(0,0,0,.1);overflow:hidden;z-index:20;
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  box-shadow:0 12px 32px var(--shadow);overflow:hidden;z-index:20;
+  backdrop-filter:blur(20px) saturate(1.3);-webkit-backdrop-filter:blur(20px) saturate(1.3);
   transition:opacity .2s,transform .2s;transform-origin:top center;
 }
 #historyPanel.hidden{opacity:0;transform:scaleY(.95);pointer-events:none}
-body.theme-dark #historyPanel{background:rgba(30,30,30,.85);border-color:rgba(255,255,255,.1)}
-body.has-wallpaper #historyPanel{background:rgba(0,0,0,.6);border-color:rgba(255,255,255,.15)}
 .history-item{
   padding:10px 16px;font-size:.95rem;color:var(--text);cursor:pointer;
   display:flex;justify-content:space-between;align-items:center;text-align:left;
+  transition:background .15s;
 }
-.history-item:hover,.history-item.selected{background:rgba(128,128,128,.15)}
+.history-item:hover,.history-item.selected{background:var(--accent-soft)}
 .history-item .delete-icon{font-size:.8rem;color:var(--text-light);padding:4px;cursor:pointer}
 .history-item .delete-icon:hover{color:var(--btn-danger)}
 .history-empty{padding:12px;font-size:.85rem;color:var(--text-light);text-align:center}
@@ -98,81 +123,84 @@ body.has-wallpaper .storage-tip{text-shadow:0 1px 6px rgba(0,0,0,.75)}
 }
 .storage-backend:hover{opacity:.65}
 .link-btn{
-  background:none;border:none;padding:0;margin:0 4px;color:var(--text);cursor:pointer;
+  background:none;border:none;padding:0;margin:0 4px;color:var(--accent);cursor:pointer;
   font-size:inherit;text-decoration:underline;text-underline-offset:2px;
 }
 .link-btn:hover{opacity:.75}
 .theme-toggle{
   position:fixed;top:20px;width:44px;height:44px;padding:0;display:flex;align-items:center;
   justify-content:center;font-size:1.15rem;line-height:1;border-radius:50%;
-  background:var(--card-bg);color:var(--text);border:1px solid var(--border);z-index:50;
-  transition:background .3s,border-color .3s,color .3s;
+  background:var(--card-bg);color:var(--text);border:1px solid var(--card-border);z-index:50;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  transition:background .3s,border-color .3s,color .3s,box-shadow .2s,transform .18s;
 }
+.theme-toggle:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 6px 16px var(--shadow);transform:translateY(-1px)}
 #themeToggle{right:20px}#wallToggle{right:76px}#scriptToggle{right:132px}#settingsToggle{right:188px}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:99;padding:20px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;z-index:99;padding:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 .modal.hidden{display:none}
 .modal-box{
-  background:var(--card-bg);border-radius:20px;width:100%;max-width:520px;padding:28px;
-  max-height:85vh;overflow-y:auto;color:var(--text);outline:none;
-  --bg:#fff;--text:#222;--text-soft:#666;--text-light:#999;
-  --border:#ddd;--card-bg:#fff;--card-border:#eee;--btn-bg:#222;--btn-text:#fff;
-}
-body.theme-dark .modal-box{
-  --bg:#121212;--text:#eee;--text-soft:#bbb;--text-light:#777;
-  --border:#333;--card-bg:#1e1e1e;--card-border:#333;--btn-bg:#383838;--btn-text:#fff;
+  background:var(--card-bg);border:1px solid var(--card-border);border-radius:20px;
+  width:100%;max-width:520px;padding:28px;max-height:85vh;overflow-y:auto;
+  color:var(--text);outline:none;
+  backdrop-filter:blur(28px) saturate(1.5);-webkit-backdrop-filter:blur(28px) saturate(1.5);
+  box-shadow:0 24px 60px var(--shadow);
 }
 .modal-box h3{font-size:1.5rem;font-weight:500;margin-bottom:24px}
 .settings-section{margin-bottom:20px;text-align:left}
 .settings-btns{display:flex;gap:10px}
 .settings-btns button{flex:1;font-size:.95rem;padding:12px 0}
 .btn-primary{background:var(--btn-bg);color:var(--btn-text)}
-.btn-secondary{background:rgba(128,128,128,.15);color:var(--text);border:1px solid var(--border)}
-.btn-secondary:hover{background:rgba(128,128,128,.25)}
+.btn-secondary{background:var(--accent-soft);color:var(--text);border:1px solid var(--card-border)}
+.btn-secondary:hover{background:var(--accent-soft);opacity:.85}
 .config-textarea{
-  width:100%;height:100px;padding:12px;border:1px solid var(--border);border-radius:12px;
+  width:100%;height:100px;padding:12px;border:1px solid var(--input-border);border-radius:12px;
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.75rem;
-  background:var(--bg);color:var(--text);resize:vertical;outline:none;margin-bottom:12px;
+  background:var(--input-bg);color:var(--text);resize:vertical;outline:none;margin-bottom:12px;
+  transition:border-color .2s,box-shadow .2s;
 }
-.config-textarea:focus{border-color:#555}
+.config-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .danger-zone{border-top:1px solid var(--card-border);padding-top:20px}
 .danger-btn{width:100%;background:var(--btn-danger);color:#fff;padding:12px 0;font-size:.95rem}
 .engine-item{margin-bottom:18px}
 .engine-main{display:flex;align-items:flex-start;gap:12px;cursor:pointer}
-.engine-main input[type="radio"]{margin-top:3px;width:19px;height:19px;accent-color:var(--text);flex-shrink:0}
+.engine-main input[type="radio"]{margin-top:3px;width:19px;height:19px;accent-color:var(--accent);flex-shrink:0}
 .engine-name{font-size:1.1rem}
 .engine-edit-area{padding-left:31px;margin-top:8px;display:none;gap:8px;flex-direction:column}
 .engine-edit-area.show{display:flex}
 .engine-edit-area input{
-  width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:7px;
-  font-size:.9rem;background:var(--bg);color:var(--text);outline:none;
+  width:100%;padding:7px 9px;border:1px solid var(--input-border);border-radius:7px;
+  font-size:.9rem;background:var(--input-bg);color:var(--text);outline:none;
+  transition:border-color .2s,box-shadow .2s;
 }
-.engine-edit-area input:focus{border-color:#555}
+.engine-edit-area input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .modal-footer{display:flex;justify-content:flex-end;margin-top:20px}
 .add-btn-wrap{margin-top:24px;padding-top:16px;border-top:1px solid var(--card-border)}
-.add-btn-wrap button{background:#555;font-size:.9rem;padding:8px 16px}
+.add-btn-wrap button{background:var(--accent-soft);color:var(--text);border:1px solid var(--card-border);font-size:.9rem;padding:8px 16px}
+.add-btn-wrap button:hover{opacity:.85}
 .del-btn{background:var(--btn-danger);padding:6px 12px;font-size:.85rem;align-self:flex-start}
 .footer-text{flex-shrink:0;width:100%;text-align:center;font-size:.85rem;color:var(--text-light);padding:16px 0 24px}
 .footer-text a{color:inherit}
 .wall-field{margin-bottom:16px;text-align:left}
 .wall-field>label{display:block;font-size:.85rem;color:var(--text-soft);margin-bottom:6px}
 .wall-field input{
-  width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;
-  font-size:.9rem;background:var(--bg);color:var(--text);outline:none;
+  width:100%;padding:9px 12px;border:1px solid var(--input-border);border-radius:8px;
+  font-size:.9rem;background:var(--input-bg);color:var(--text);outline:none;
+  transition:border-color .2s,box-shadow .2s;
 }
-.wall-field input:focus{border-color:#555}
+.wall-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .wall-hint{font-size:.78rem;color:var(--text-light);line-height:1.6;text-align:left}
 .script-warn{
   font-size:.78rem;line-height:1.6;text-align:left;color:var(--text-soft);
-  background:rgba(210,160,20,.12);border:1px solid rgba(210,160,20,.35);
+  background:var(--accent-soft);border:1px solid var(--card-border);
   border-radius:10px;padding:9px 12px;margin-bottom:16px;
 }
 .script-empty{font-size:.85rem;color:var(--text-light);padding:8px 0 12px;text-align:center}
 .script-item{
   border:1px solid var(--card-border);border-radius:12px;padding:10px 12px;
-  margin-bottom:10px;background:rgba(128,128,128,.04);
+  margin-bottom:10px;background:var(--accent-soft);
 }
 .script-row{display:flex;align-items:center;gap:10px}
-.script-enabled{width:17px;height:17px;accent-color:var(--text);flex-shrink:0;cursor:pointer}
+.script-enabled{width:17px;height:17px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
 .script-info{flex:1;min-width:0;text-align:left}
 .script-name{font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .script-meta{font-size:.74rem;color:var(--text-light);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -180,47 +208,71 @@ body.theme-dark .modal-box{
 .script-edit{margin-top:10px;display:flex;flex-direction:column;gap:8px}
 .script-edit.hidden{display:none}
 .script-edit input,.script-edit textarea{
-  width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
-  font-size:.82rem;line-height:1.5;background:var(--bg);color:var(--text);
+  width:100%;padding:8px 10px;border:1px solid var(--input-border);border-radius:8px;
+  font-size:.82rem;line-height:1.5;background:var(--input-bg);color:var(--text);
   outline:none;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;resize:vertical;
 }
-.script-edit input:focus,.script-edit textarea:focus{border-color:#555}
-.script-add{margin-top:18px;padding-top:14px;border-top:1px solid var(--card-border)}
-.script-add-label{display:block;font-size:.8rem;color:var(--text-soft);margin-bottom:8px;text-align:left}
+.script-edit input:focus,.script-edit textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+
+/* ===== 添加脚本区 ===== */
+.script-add{
+  margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--card-border);
+}
+.script-add-tabs{display:flex;gap:6px;margin-bottom:10px}
+.script-add-tab{
+  flex:1;min-width:0;padding:8px 6px;font-size:.8rem;line-height:1.2;border-radius:999px;
+  background:var(--accent-soft);color:var(--text-soft);
+  border:1px solid transparent;white-space:nowrap;transition:background .18s,color .18s;
+}
+.script-add-tab:hover{opacity:1;background:var(--accent-soft);border-color:var(--card-border)}
+.script-add-tab.active{background:var(--btn-bg);color:var(--btn-text);font-weight:500}
+.script-add-tab.active:hover{background:var(--btn-bg);opacity:.9}
+.script-add-panel{display:flex;flex-direction:column;gap:8px}
+.script-add-panel.hidden{display:none}
+.script-add-panel input[type="text"],.script-add-panel textarea{
+  width:100%;padding:8px 10px;border:1px solid var(--input-border);border-radius:8px;
+  font-size:.82rem;line-height:1.5;background:var(--input-bg);color:var(--text);
+  outline:none;resize:vertical;
+}
+.script-add-panel textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.script-add-panel input[type="text"]:focus,.script-add-panel textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.script-add-hint{font-size:.74rem;color:var(--text-light);line-height:1.5;text-align:left}
+.script-add-actions{display:flex;justify-content:flex-end}
+.script-add-actions button{padding:8px 18px;font-size:.85rem}
 .script-add-row{display:flex;gap:8px;align-items:center}
 .script-add-row input[type="text"]{
-  flex:1;min-width:0;padding:9px 12px;border:1px solid var(--border);border-radius:8px;
-  font-size:.85rem;background:var(--bg);color:var(--text);outline:none;
+  flex:1;min-width:0;padding:9px 12px;border:1px solid var(--input-border);border-radius:8px;
+  font-size:.85rem;background:var(--input-bg);color:var(--text);outline:none;
 }
-.script-add-row input[type="text"]:focus{border-color:#555}
+.script-add-row input[type="text"]:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .script-add-row button{font-size:.85rem;padding:9px 16px;white-space:nowrap}
 .local-wall-btn{
-  width:100%;padding:10px;border-radius:8px;background:var(--bg);color:var(--text);
-  border:1px dashed var(--border);font-size:.9rem;text-align:center;cursor:pointer;transition:all .2s;
+  width:100%;padding:10px;border-radius:8px;background:var(--input-bg);color:var(--text);
+  border:1px dashed var(--input-border);font-size:.9rem;text-align:center;cursor:pointer;transition:all .2s;
 }
-.local-wall-btn:hover{background:var(--card-border);border-style:solid}
+.local-wall-btn:hover{background:var(--accent-soft);border-style:solid;border-color:var(--accent)}
 .local-wall-hint{font-size:.78rem;color:var(--text-light);margin-top:6px;display:none}
 #dbConsoleModal .modal-box{max-width:640px;max-height:92vh}
 .db-console-warn{
   font-size:.78rem;line-height:1.65;text-align:left;color:var(--text-soft);
-  background:rgba(210,160,20,.12);border:1px solid rgba(210,160,20,.35);
+  background:var(--accent-soft);border:1px solid var(--card-border);
   border-radius:10px;padding:9px 12px;margin-bottom:12px;
 }
 .db-console-warn code{
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  background:rgba(128,128,128,.14);padding:1px 5px;border-radius:4px;font-size:.74rem;color:var(--text);
+  background:var(--accent-soft);padding:1px 5px;border-radius:4px;font-size:.74rem;color:var(--text);
 }
 .db-console-input{
-  width:100%;min-height:150px;padding:12px;border:1px solid var(--border);border-radius:12px;
+  width:100%;min-height:150px;padding:12px;border:1px solid var(--input-border);border-radius:12px;
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem;
-  line-height:1.6;background:var(--bg);color:var(--text);resize:vertical;outline:none;
+  line-height:1.6;background:var(--input-bg);color:var(--text);resize:vertical;outline:none;
 }
-.db-console-input:focus{border-color:#555}
+.db-console-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .db-console-actions{display:flex;gap:8px;margin-top:10px}
 .db-console-actions button{flex:1;font-size:.9rem;padding:10px 0}
 .db-console-output{
   margin-top:12px;min-height:80px;max-height:230px;overflow-y:auto;padding:10px 12px;
-  border:1px solid var(--card-border);border-radius:12px;background:rgba(128,128,128,.06);
+  border:1px solid var(--card-border);border-radius:12px;background:var(--accent-soft);
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.78rem;
   line-height:1.55;text-align:left;white-space:pre-wrap;word-break:break-all;
 }
@@ -228,10 +280,78 @@ body.theme-dark .modal-box{
 .db-c-out-item{padding:6px 0;border-bottom:1px dashed var(--card-border)}
 .db-c-out-item:last-child{border-bottom:none}
 .db-c-out-time{color:var(--text-light);font-size:.72rem}
-.db-c-out-ok{color:#2b8a3e;margin-top:4px}
-.db-c-out-err{color:#c92a2a;margin-top:4px}
+.db-c-out-ok{color:#1F7A3D;margin-top:4px}
+.db-c-out-err{color:#C0392B;margin-top:4px}
 body.theme-dark .db-c-out-ok{color:#69db7c}
 body.theme-dark .db-c-out-err{color:#ff8787}
+
+/* ===== 背景色选择 ===== */
+.color-modal-desc{
+  font-size:.85rem;color:var(--text-soft);line-height:1.6;text-align:left;
+  margin:-12px 0 16px;
+}
+.color-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));
+  gap:10px;margin-bottom:14px;
+}
+.color-swatch{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:10px 4px 8px;border-radius:16px;background:transparent;color:var(--text-soft);
+  border:1px solid transparent;cursor:pointer;
+  transition:background .18s,border-color .18s,transform .12s;
+}
+.color-swatch:hover{background:var(--accent-soft);opacity:1}
+.color-swatch:active{transform:scale(.97)}
+.color-swatch.selected{background:var(--accent-soft);border-color:var(--accent)}
+.swatch-dot{
+  width:40px;height:40px;border-radius:12px;
+  border:1px solid rgba(128,128,128,.22);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.35), 0 2px 6px rgba(0,0,0,.08);
+  transition:transform .18s,box-shadow .18s;
+}
+.color-swatch:hover .swatch-dot{transform:translateY(-2px)}
+.color-swatch.selected .swatch-dot{
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.35), 0 0 0 2px var(--accent), 0 0 0 4px var(--card-bg), 0 3px 10px var(--shadow);
+}
+.swatch-name{font-size:.72rem;line-height:1;white-space:nowrap;opacity:.85}
+.color-swatch.selected .swatch-name{color:var(--text);opacity:1;font-weight:500}
+.color-custom-row{
+  display:flex;align-items:center;gap:10px;font-size:.85rem;
+  color:var(--text-soft);margin-bottom:4px;
+}
+.color-custom-row input[type="color"]{
+  width:48px;height:32px;padding:2px;border:1px solid var(--input-border);
+  border-radius:8px;background:var(--input-bg);cursor:pointer;
+}
+
+/* ===== 主题色：预览 / 确认 ===== */
+.color-preview-hint{
+  display:none;margin-top:12px;font-size:.82rem;color:var(--text-soft);
+  text-align:center;letter-spacing:.3px;
+}
+.color-preview-hint.show{display:block}
+.color-confirm-box{
+  display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;
+  background:var(--accent-soft);border:1px solid var(--card-border);
+  margin-bottom:18px;text-align:left;
+}
+.color-confirm-dot{
+  width:46px;height:46px;border-radius:12px;flex-shrink:0;
+  border:1px solid rgba(128,128,128,.22);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.35), 0 2px 6px rgba(0,0,0,.08);
+}
+.color-confirm-name{font-size:.95rem;color:var(--text);line-height:1.4}
+.color-confirm-btns{display:flex;gap:10px}
+.color-confirm-btns button{flex:1;font-size:.95rem;padding:12px 0}
+
+/* ===== 自动备份区块 ===== */
+.backup-desc{
+  font-size:.82rem;color:var(--text-soft);line-height:1.65;
+  margin-bottom:10px;text-align:left;
+}
+.backup-time{color:var(--text-light);}
+.hidden{display:none !important}
+
 #toast{
   position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:rgba(0,0,0,.82);
   color:#fff;padding:10px 18px;border-radius:999px;font-size:.88rem;z-index:200;
@@ -242,6 +362,8 @@ body.theme-dark .db-c-out-err{color:#ff8787}
   .theme-toggle{width:40px;height:40px;font-size:1.05rem;top:12px}
   #themeToggle{right:12px}#wallToggle{right:60px}#scriptToggle{right:108px}#settingsToggle{right:156px}
   .container{padding-top:68px}h1{font-size:1.8rem}
+  .color-grid{grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px}
+  .swatch-dot{width:36px;height:36px;border-radius:11px}
 }
 </style>
 </head>
@@ -291,6 +413,13 @@ body.theme-dark .db-c-out-err{color:#ff8787}
         <button id="importBtn" class="btn-primary">导入配置</button>
       </div>
     </div>
+    <div class="settings-section hidden" id="backupSection">
+      <div class="backup-desc">
+        上次清空前自动备份：<br>
+        <span id="backupTime" class="backup-time"></span>
+      </div>
+      <button id="restoreBackupBtn" class="btn-secondary" style="width:100%;font-size:.95rem;padding:12px 0;">恢复上次配置</button>
+    </div>
     <div class="danger-zone settings-section">
       <button id="resetAllBtn" class="danger-btn">恢复网页初始设置</button>
     </div>
@@ -310,6 +439,12 @@ body.theme-dark .db-c-out-err{color:#ff8787}
 <div id="wallModal" class="modal hidden" role="dialog" aria-modal="true">
   <div class="modal-box" tabindex="-1">
     <h3>壁纸设置</h3>
+
+    <div class="wall-field">
+      <label>界面主题色</label>
+      <div class="color-grid" id="wallColorGrid"></div>
+    </div>
+
     <div class="wall-field">
       <label>本地上传图片</label>
       <input type="file" id="wallFileInput" accept="image/*" hidden>
@@ -324,7 +459,8 @@ body.theme-dark .db-c-out-err{color:#ff8787}
     <div class="wall-hint">
       · 图片直链：每次打开重新加载<br>
       · 壁纸 API：每次打开随机换图<br>
-      · 留空保存可恢复纯色背景
+      · 留空保存可恢复主题色<br>
+      · 设置壁纸后，主题色仍会保存在设置中
     </div>
     <div class="modal-footer">
       <button class="del-btn" style="margin-right:auto;" id="clearWallBtn">清除壁纸</button>
@@ -342,22 +478,37 @@ body.theme-dark .db-c-out-err{color:#ff8787}
       <b>🧹 清理钩子：</b>脚本内调用 <code>registerCleanup(fn)</code>，禁用/删除/修改时自动执行（外链脚本不支持）<br>
       <b>⚡ 实时生效：</b>编辑后 1 秒内自动保存并热重载
     </div>
+
+    <div class="script-add">
+      <div class="script-add-tabs" id="scriptAddTabs" role="tablist">
+        <button type="button" class="script-add-tab" data-mode="code">✏️ 编写代码</button>
+        <button type="button" class="script-add-tab" data-mode="url">🔗 外链脚本</button>
+        <button type="button" class="script-add-tab" data-mode="file">📁 本地文件</button>
+      </div>
+      <div class="script-add-panel" data-mode="code">
+        <input id="newScriptName" type="text" placeholder="脚本名称（选填）" autocomplete="off">
+        <textarea id="newScriptCode" rows="8" spellcheck="false" placeholder="// 在此输入 JS 代码…"></textarea>
+        <div class="script-add-hint">未点「添加脚本」时，直接点「完成」会自动保存已输入的内容；未输入任何内容则不会保存。</div>
+        <div class="script-add-actions">
+          <button id="addCodeScriptBtn" class="mini-btn" style="padding:8px 18px;font-size:.85rem;">添加脚本</button>
+        </div>
+      </div>
+      <div class="script-add-panel hidden" data-mode="url">
+        <div class="script-add-row">
+          <input id="scriptUrlInput" type="text" placeholder="https://example.com/script.js" autocomplete="off">
+          <button id="addUrlScriptBtn">添加</button>
+        </div>
+      </div>
+      <div class="script-add-panel hidden" data-mode="file">
+        <div class="script-add-row">
+          <input type="file" id="scriptFileInput" accept=".js,.mjs" hidden>
+          <button id="pickScriptFileBtn">选择 JS 文件</button>
+        </div>
+      </div>
+    </div>
+
     <div id="scriptList"></div>
-    <div class="script-add">
-      <label class="script-add-label">添加外链脚本（.js 直链）</label>
-      <div class="script-add-row">
-        <input id="scriptUrlInput" type="text" placeholder="https://example.com/script.js" autocomplete="off">
-        <button id="addUrlScriptBtn">添加</button>
-      </div>
-    </div>
-    <div class="script-add">
-      <label class="script-add-label">本地脚本</label>
-      <div class="script-add-row">
-        <input type="file" id="scriptFileInput" accept=".js,.mjs" hidden>
-        <button id="pickScriptFileBtn">上传 JS 文件</button>
-        <button id="addCodeScriptBtn">编写代码</button>
-      </div>
-    </div>
+
     <div class="modal-footer"><button id="closeScriptBtn">完成</button></div>
   </div>
 </div>
@@ -368,18 +519,46 @@ body.theme-dark .db-c-out-err{color:#ff8787}
     <div class="db-console-warn">
       ⚠️ 直接读写本站存储，<b>所有修改实时生效无需刷新</b>。<br>
       <b>变量：</b><code>Store</code> · <code>list()</code> · <code>get(k)</code> · <code>set(k,v)</code> · <code>del(k)</code> · <code>clear()</code> · <code>reload()</code><br>
-      <b>示例：</b><code>set('search_title_text','Hello')</code> · <code>set('search_theme','dark')</code>
+      <b>示例：</b><code>set('search_title_text','Hello')</code> · <code>set('search_bg_color','linear-gradient(135deg,#EDF5FB,#CFE4F2)')</code>
     </div>
     <textarea id="dbConsoleInput" class="db-console-input" spellcheck="false" placeholder="// Ctrl+Enter 执行
 list()
 // 或
-set('search_theme', 'dark')"></textarea>
+set('search_bg_color', 'linear-gradient(135deg, #EDF5FB, #CFE4F2)')"></textarea>
     <div class="db-console-actions">
       <button id="dbConsoleRunBtn" class="btn-primary">执行 (Ctrl+Enter)</button>
       <button id="dbConsoleClearBtn" class="btn-secondary">清空</button>
     </div>
     <div class="db-console-output" id="dbConsoleOutput"></div>
     <div class="modal-footer"><button id="closeDbConsoleBtn">完成</button></div>
+  </div>
+</div>
+
+<!-- 主题色选择：第一步选色 / 第二步确认 -->
+<div id="colorModal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-box" tabindex="-1">
+    <div id="colorPickView">
+      <h3>选择界面主题色</h3>
+      <p class="color-modal-desc">整页文字、搜索框、按钮都会跟着这套颜色走。点击色块会先预览 3 秒，随后可确认保存。</p>
+      <div class="color-grid" id="colorGrid"></div>
+      <div class="color-custom-row">
+        <span>自定义纯色</span>
+        <input type="color" id="colorPicker" value="#FCFCFD">
+      </div>
+      <div class="color-preview-hint" id="colorPreviewHint"></div>
+    </div>
+    <div id="colorConfirmView" class="hidden">
+      <h3>确认使用这个颜色？</h3>
+      <p class="color-modal-desc">颜色已预览 3 秒。确认后会保存到本地（IndexedDB）并立即生效；也可以返回重新选择。</p>
+      <div class="color-confirm-box">
+        <span class="color-confirm-dot" id="colorConfirmDot"></span>
+        <span class="color-confirm-name" id="colorConfirmName"></span>
+      </div>
+      <div class="color-confirm-btns">
+        <button id="colorReselectBtn" class="btn-secondary">重新选择</button>
+        <button id="colorConfirmBtn" class="btn-primary">确认使用</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -398,8 +577,12 @@ const K = {
   WALL:    'search_wall_value',
   TITLE:   'search_title_text',
   SCRIPTS: 'search_user_scripts',
-  HISTORY: 'search_history'
+  HISTORY: 'search_history',
+  ADD_MODE:'search_script_add_mode',
+  COLOR:   'search_bg_color',
+  COLOR_INIT: 'search_bg_color_inited'
 };
+const BACKUP_KEY = 'anonnav_last_backup';
 const DEFAULT_ENGINES = [
   { name:"百度",    url:"https://www.baidu.com/s?wd=%s" },
   { name:"Bing",   url:"https://cn.bing.com/search?q=%s" },
@@ -410,10 +593,95 @@ const MAGIC_CODE = "20090927", MAGIC_URL = "https://space.bilibili.com/349329479
 const MAX_SCRIPT_SIZE = 2 * 1024 * 1024;
 const MAX_WALL_FILE_SIZE = 8 * 1024 * 1024;
 const MAX_WALL_DATAURL_LEN = 6 * 1024 * 1024;
+const COLOR_PREVIEW_MS = 3000;
 const TYPE_LABEL = { url:'外链', file:'本地文件', code:'代码' };
+const ADD_MODES = ['code', 'url', 'file'];
+
+/* 主题变量清单（apply/clear 时统一处理） */
+const THEME_VARS = [
+  '--bg','--text','--text-soft','--text-light','--border',
+  '--card-bg','--card-border','--btn-bg','--btn-text',
+  '--input-bg','--input-border','--accent','--accent-soft','--shadow'
+];
+
+/* 8 套浅色主题，每种色相一个，全部联动 */
+const BG_THEMES = [
+  {
+    name: '素白',
+    value: 'linear-gradient(135deg,#FCFCFD 0%,#F1F3F5 100%)',
+    text: '#1F2328', textSoft: '#57606A', textLight: '#8C959F',
+    border: '#D8DEE4', cardBg: 'rgba(255,255,255,.86)', cardBorder: '#E3E8ED',
+    btnBg: '#24292F', btnText: '#FFFFFF',
+    inputBg: 'rgba(255,255,255,.75)', inputBorder: '#D8DEE4',
+    accent: '#24292F', accentSoft: 'rgba(36,41,47,.1)', shadow: 'rgba(31,35,40,.12)'
+  },
+  {
+    name: '晨曦',
+    value: 'linear-gradient(135deg,#FFF6EA 0%,#FFE0C2 100%)',
+    text: '#3D2A1A', textSoft: '#7D5E42', textLight: '#B08A66',
+    border: '#F0D6B8', cardBg: 'rgba(255,250,244,.86)', cardBorder: '#F2DCC2',
+    btnBg: '#D07A3E', btnText: '#FFF7EF',
+    inputBg: 'rgba(255,252,248,.72)', inputBorder: '#EBD2B4',
+    accent: '#D07A3E', accentSoft: 'rgba(208,122,62,.14)', shadow: 'rgba(180,110,50,.16)'
+  },
+  {
+    name: '樱语',
+    value: 'linear-gradient(135deg,#FFF2F5 0%,#FBD6E0 100%)',
+    text: '#3E1E2A', textSoft: '#8A5568', textLight: '#B98A9A',
+    border: '#F2C9D5', cardBg: 'rgba(255,248,250,.86)', cardBorder: '#F4CED9',
+    btnBg: '#C05A7A', btnText: '#FFF5F8',
+    inputBg: 'rgba(255,250,252,.72)', inputBorder: '#EFC5D2',
+    accent: '#C05A7A', accentSoft: 'rgba(192,90,122,.14)', shadow: 'rgba(180,80,110,.16)'
+  },
+  {
+    name: '海盐',
+    value: 'linear-gradient(135deg,#EDF5FB 0%,#CFE4F2 100%)',
+    text: '#1A2E3D', textSoft: '#4A6577', textLight: '#7E99AB',
+    border: '#C5DCEA', cardBg: 'rgba(246,251,254,.86)', cardBorder: '#CFE2EF',
+    btnBg: '#3D7CA3', btnText: '#F5FBFF',
+    inputBg: 'rgba(250,253,255,.72)', inputBorder: '#C3DAE8',
+    accent: '#3D7CA3', accentSoft: 'rgba(61,124,163,.14)', shadow: 'rgba(60,110,145,.16)'
+  },
+  {
+    name: '薄荷',
+    value: 'linear-gradient(135deg,#ECF7EF 0%,#CDE7D6 100%)',
+    text: '#1A3024', textSoft: '#476B55', textLight: '#7A9C87',
+    border: '#C3E0CE', cardBg: 'rgba(246,252,248,.86)', cardBorder: '#CCE6D6',
+    btnBg: '#3E8A5E', btnText: '#F4FBF7',
+    inputBg: 'rgba(250,254,251,.72)', inputBorder: '#C1DECC',
+    accent: '#3E8A5E', accentSoft: 'rgba(62,138,94,.14)', shadow: 'rgba(55,120,80,.16)'
+  },
+  {
+    name: '紫藤',
+    value: 'linear-gradient(135deg,#F6EFFC 0%,#DFCFF2 100%)',
+    text: '#2C1F3D', textSoft: '#5E4A78', textLight: '#8E7BA8',
+    border: '#DCCBEE', cardBg: 'rgba(250,246,254,.86)', cardBorder: '#E0D0F0',
+    btnBg: '#7A5AA8', btnText: '#F8F4FE',
+    inputBg: 'rgba(252,249,255,.72)', inputBorder: '#D8C6EC',
+    accent: '#7A5AA8', accentSoft: 'rgba(122,90,168,.14)', shadow: 'rgba(100,70,150,.16)'
+  },
+  {
+    name: '奶油',
+    value: 'linear-gradient(135deg,#FDF9EE 0%,#F2E4C4 100%)',
+    text: '#3A2F18', textSoft: '#7A6638', textLight: '#A89468',
+    border: '#EADCB8', cardBg: 'rgba(255,252,244,.86)', cardBorder: '#EDE0BE',
+    btnBg: '#B08A3E', btnText: '#FFFAEE',
+    inputBg: 'rgba(255,253,247,.72)', inputBorder: '#E8D9B2',
+    accent: '#B08A3E', accentSoft: 'rgba(176,138,62,.14)', shadow: 'rgba(160,130,60,.16)'
+  },
+  {
+    name: '云石',
+    value: 'linear-gradient(135deg,#F6F8FA 0%,#DDE4EC 100%)',
+    text: '#232B36', textSoft: '#54606E', textLight: '#8590A0',
+    border: '#D2DAE4', cardBg: 'rgba(249,251,253,.86)', cardBorder: '#DCE3EB',
+    btnBg: '#4A5A6B', btnText: '#F5F8FB',
+    inputBg: 'rgba(251,253,255,.72)', inputBorder: '#D0D8E2',
+    accent: '#4A5A6B', accentSoft: 'rgba(74,90,107,.14)', shadow: 'rgba(45,60,80,.16)'
+  }
+];
 
 /* ============================================================
- * 响应式 Store —— 单一数据源，set 即刻通知 UI
+ * 响应式 Store
  * ============================================================ */
 const Store = (() => {
   const PREFIX = 'search_';
@@ -558,7 +826,7 @@ let engineList = [];
 let selectedIndex = 0;
 let scriptList = [];
 let editingScriptId = null;
-let runningScripts = new Map();     // id → { content, cleanup, el }
+let runningScripts = new Map();
 let scriptsRunning = false;
 let wallLoadToken = 0;
 let wallModalInitial = '';
@@ -566,6 +834,12 @@ let historySelectedIndex = -1;
 let scriptEditTimer = null;
 let scriptRunTimer = null;
 let pushingScripts = false;
+let scriptAddMode = 'code';
+let colorModalValue = '';
+let wallColorSelected = '';
+let colorPreviewValue = '';
+let colorPreviewTimer = null;
+let colorPreviewCountdown = null;
 
 /* ============================================================
  * 搜索引擎
@@ -634,18 +908,6 @@ function delEngine(idx) {
   renderEngineList();
 }
 
-/* ============================================================
- * 修复版 saveEngines
- * ------------------------------------------------------------
- * 原 bug：先写 K.ENGINES 会同步触发 watch → loadEngines()，
- * 用旧的 K.SELECT 把刚算好的 selectedIndex 重置为旧值，
- * 导致“新增/切换引擎后，页面不显示当前使用的引擎”。
- *
- * 修复思路：
- *  1. 用局部变量 newIndex 记录选中项在「过滤后新数组」中的位置；
- *  2. 先把引擎列表写入 Store，再把选中索引写入 Store；
- *  3. 最后显式 loadEngines() + renderEngineName() 兜底刷新 UI。
- * ============================================================ */
 function saveEngines() {
   const items = Array.from(document.querySelectorAll('#engineList .engine-item'));
   const selEl = document.querySelector('input[name="eng"]:checked');
@@ -659,18 +921,16 @@ function saveEngines() {
     const urlEl  = el.querySelector('.inp-url');
     const name = nameEl ? nameEl.value.trim() : '';
     const url  = urlEl  ? urlEl.value.trim()  : '';
-    if (!name || !url) return;                     // 过滤空项
-    if (domIdx === selIdx) newIndex = list.length;  // DOM 位置 → 新数组位置
+    if (!name || !url) return;
+    if (domIdx === selIdx) newIndex = list.length;
     list.push({ name, url });
   });
 
   if (!list.length) return alert('至少保留一个搜索引擎');
 
-  // 关键：先落盘引擎列表，再落盘选中索引
   Store.setJSON(K.ENGINES, list);
   Store.set(K.SELECT, newIndex);
 
-  // 冗余兜底：确保内存与 UI 同步（即使 watch 顺序有变也不会错）
   loadEngines();
   renderEngineName();
 
@@ -679,7 +939,7 @@ function saveEngines() {
 function openEngineModal() { loadEngines(); renderEngineList(); openModal('modal'); }
 
 /* ============================================================
- * 主题
+ * 主题（暗色兜底，仅当未选择主题色时生效）
  * ============================================================ */
 function applyTheme(theme) {
   const dark = theme === 'dark';
@@ -687,9 +947,175 @@ function applyTheme(theme) {
   $('themeToggle').textContent = dark ? '☀️' : '🌙';
   let meta = document.querySelector('meta[name="theme-color"]');
   if (!meta) { meta = document.createElement('meta'); meta.name = 'theme-color'; document.head.appendChild(meta); }
-  meta.content = dark ? '#121212' : '#ffffff';
+  const cur = Store.get(K.COLOR, '');
+  meta.content = cur && BG_THEMES.find(t => t.value === cur) ? (BG_THEMES.find(t => t.value === cur).accent) : (dark ? '#121212' : '#F1F3F5');
 }
-function setTheme(theme) { Store.set(K.THEME, theme); }   // 触发 watch → applyTheme
+function setTheme(theme) { Store.set(K.THEME, theme); }
+
+/* ============================================================
+ * 背景主题 —— 整页联动
+ * ============================================================ */
+function isDarkColor(hex) {
+  const m = /^#([0-9a-f]{6})$/i.exec(hex || '');
+  if (!m) return false;
+  const n = parseInt(m[1], 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return (0.299 * r + 0.587 * g + 0.114 * b) < 128;
+}
+function clearThemeVars() {
+  const root = document.documentElement;
+  THEME_VARS.forEach(k => root.style.removeProperty(k));
+  document.body.classList.remove('bg-themed');
+}
+function applyBgColor(value) {
+  const v = String(value || '').trim();
+  const body = document.body;
+
+  if (!v) { clearThemeVars(); return; }
+
+  const root = document.documentElement;
+  const theme = BG_THEMES.find(t => t.value === v);
+
+  if (theme) {
+    body.classList.add('bg-themed');
+    root.style.setProperty('--bg', theme.value);
+    root.style.setProperty('--text', theme.text);
+    root.style.setProperty('--text-soft', theme.textSoft);
+    root.style.setProperty('--text-light', theme.textLight);
+    root.style.setProperty('--border', theme.border);
+    root.style.setProperty('--card-bg', theme.cardBg);
+    root.style.setProperty('--card-border', theme.cardBorder);
+    root.style.setProperty('--btn-bg', theme.btnBg);
+    root.style.setProperty('--btn-text', theme.btnText);
+    root.style.setProperty('--input-bg', theme.inputBg);
+    root.style.setProperty('--input-border', theme.inputBorder);
+    root.style.setProperty('--accent', theme.accent);
+    root.style.setProperty('--accent-soft', theme.accentSoft);
+    root.style.setProperty('--shadow', theme.shadow);
+    return;
+  }
+
+  // 自定义纯色兜底
+  if (/^#[0-9a-f]{6}$/i.test(v)) {
+    body.classList.add('bg-themed');
+    const dark = isDarkColor(v);
+    root.style.setProperty('--bg', v);
+    root.style.setProperty('--text', dark ? '#F2F4F7' : '#1F2328');
+    root.style.setProperty('--text-soft', dark ? 'rgba(242,244,247,.72)' : '#57606A');
+    root.style.setProperty('--text-light', dark ? 'rgba(242,244,247,.5)' : '#8C959F');
+    root.style.setProperty('--border', dark ? 'rgba(255,255,255,.18)' : 'rgba(0,0,0,.12)');
+    root.style.setProperty('--card-bg', dark ? 'rgba(30,30,30,.82)' : 'rgba(255,255,255,.86)');
+    root.style.setProperty('--card-border', dark ? 'rgba(255,255,255,.14)' : 'rgba(0,0,0,.08)');
+    root.style.setProperty('--btn-bg', dark ? 'rgba(255,255,255,.16)' : '#24292F');
+    root.style.setProperty('--btn-text', dark ? '#FFFFFF' : '#FFFFFF');
+    root.style.setProperty('--input-bg', dark ? 'rgba(255,255,255,.12)' : 'rgba(255,255,255,.75)');
+    root.style.setProperty('--input-border', dark ? 'rgba(255,255,255,.2)' : 'rgba(0,0,0,.12)');
+    root.style.setProperty('--accent', dark ? '#F2F4F7' : '#24292F');
+    root.style.setProperty('--accent-soft', dark ? 'rgba(255,255,255,.12)' : 'rgba(0,0,0,.06)');
+    root.style.setProperty('--shadow', 'rgba(0,0,0,.18)');
+    return;
+  }
+
+  clearThemeVars();
+}
+function renderColorGrid(container, selected) {
+  if (!container) return;
+  const cur = selected || '';
+  container.innerHTML = BG_THEMES.map(t => `
+    <button type="button" class="color-swatch${t.value === cur ? ' selected' : ''}"
+            data-value="${esc(t.value)}" title="${esc(t.name)}">
+      <span class="swatch-dot" style="background:${t.value}"></span>
+      <span class="swatch-name">${esc(t.name)}</span>
+    </button>`).join('');
+}
+function bindColorGrid(container, onChange) {
+  if (!container || container._colorBound) return;
+  container._colorBound = true;
+  container.addEventListener('click', e => {
+    const btn = e.target.closest('.color-swatch');
+    if (!btn) return;
+    container.querySelectorAll('.color-swatch').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    onChange(btn.dataset.value || '');
+  });
+}
+
+/* ---------- 主题色：预览 3 秒 → 确认 → 保存到 IndexedDB ---------- */
+function colorLabel(v) {
+  const t = BG_THEMES.find(x => x.value === v);
+  if (t) return t.name;
+  if (/^#[0-9a-f]{6}$/i.test(v)) return '自定义 ' + v.toUpperCase();
+  return '默认主题色';
+}
+function showColorStep(step) {
+  const pick = $('colorPickView'), confirm = $('colorConfirmView');
+  if (pick) pick.classList.toggle('hidden', step !== 'pick');
+  if (confirm) confirm.classList.toggle('hidden', step !== 'confirm');
+}
+function stopColorPreview(restore) {
+  clearTimeout(colorPreviewTimer);
+  clearInterval(colorPreviewCountdown);
+  colorPreviewTimer = null;
+  colorPreviewCountdown = null;
+  const hint = $('colorPreviewHint');
+  if (hint) { hint.classList.remove('show'); hint.textContent = ''; }
+  if (restore) {
+    colorModalValue = Store.get(K.COLOR, '') || '';
+    colorPreviewValue = colorModalValue;
+    applyBgColor(colorModalValue);
+    renderColorGrid($('colorGrid'), colorModalValue);
+    const pick = $('colorPicker');
+    if (pick) pick.value = /^#[0-9a-f]{6}$/i.test(colorModalValue) ? colorModalValue : '#FCFCFD';
+    showColorStep('pick');
+  }
+}
+function startColorPreview(value) {
+  clearTimeout(colorPreviewTimer);
+  clearInterval(colorPreviewCountdown);
+  colorPreviewValue = String(value || '');
+  applyBgColor(colorPreviewValue);
+
+  const hint = $('colorPreviewHint');
+  if (!hint) return;
+  hint.classList.add('show');
+  let left = Math.round(COLOR_PREVIEW_MS / 1000);
+  hint.textContent = `正在预览… ${left} 秒后可确认`;
+  colorPreviewCountdown = setInterval(() => {
+    left -= 1;
+    if (left > 0) hint.textContent = `正在预览… ${left} 秒后可确认`;
+  }, 1000);
+  colorPreviewTimer = setTimeout(() => {
+    clearInterval(colorPreviewCountdown);
+    colorPreviewCountdown = null;
+    showColorConfirm();
+  }, COLOR_PREVIEW_MS);
+}
+function showColorConfirm() {
+  const dot = $('colorConfirmDot');
+  if (dot) dot.style.background = colorPreviewValue || 'var(--bg)';
+  const name = $('colorConfirmName');
+  if (name) name.textContent = colorLabel(colorPreviewValue);
+  showColorStep('confirm');
+}
+async function confirmColorSelection() {
+  stopColorPreview(false);
+  const v = colorPreviewValue || '';
+  await Store.set(K.COLOR, v);
+  await Store.set(K.COLOR_INIT, '1');
+  closeModal('colorModal');
+  toast(v ? '主题色已保存' : '已使用默认主题色');
+}
+function openColorModal() {
+  colorModalValue = Store.get(K.COLOR, '') || '';
+  colorPreviewValue = colorModalValue;
+  renderColorGrid($('colorGrid'), colorModalValue);
+  const pick = $('colorPicker');
+  if (pick) pick.value = /^#[0-9a-f]{6}$/i.test(colorModalValue) ? colorModalValue : '#FCFCFD';
+  const hint = $('colorPreviewHint');
+  if (hint) { hint.classList.remove('show'); hint.textContent = ''; }
+  showColorStep('pick');
+  openModal('colorModal');
+}
 
 /* ============================================================
  * 标题
@@ -766,17 +1192,29 @@ function openWallModal() {
     $('wallValue').value = wallModalInitial;
     $('localWallHint').style.display = 'none';
   }
+  wallColorSelected = Store.get(K.COLOR, '') || '';
+  renderColorGrid($('wallColorGrid'), wallColorSelected);
+
   openModal('wallModal');
 }
 function saveWallpaper() {
   const v = $('wallValue').value.trim();
+
+  Store.set(K.COLOR, wallColorSelected || '');
+
   if (!v) {
-    if (wallModalInitial.startsWith('data:image/')) { closeModal('wallModal'); return; }
-    clearWallpaper();
+    if (wallModalInitial.startsWith('data:image/')) { closeModal('wallModal'); toast('设置已保存'); return; }
+    Store.set(K.WALL, '');
+    $('wallValue').value = '';
+    $('wallpaperImg').removeAttribute('src');
+    showWall(false);
+    closeModal('wallModal');
+    toast('设置已保存');
     return;
   }
   Store.set(K.WALL, v);
   closeModal('wallModal');
+  toast('设置已保存');
 }
 function clearWallpaper() {
   Store.set(K.WALL, '');
@@ -896,6 +1334,23 @@ function pushScripts() {
   Store.setJSON(K.SCRIPTS, scriptList);
   pushingScripts = false;
 }
+
+function applyScriptAddMode(mode) {
+  if (!ADD_MODES.includes(mode)) mode = 'code';
+  scriptAddMode = mode;
+  document.querySelectorAll('#scriptAddTabs .script-add-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+  document.querySelectorAll('#scriptModal .script-add-panel').forEach(p => {
+    p.classList.toggle('hidden', p.dataset.mode !== mode);
+  });
+}
+function setScriptAddMode(mode) {
+  if (!ADD_MODES.includes(mode)) return;
+  applyScriptAddMode(mode);
+  Store.set(K.ADD_MODE, mode);
+}
+
 function renderScriptList() {
   const wrap = $('scriptList');
   if (!scriptList.length) { wrap.innerHTML = '<div class="script-empty">暂无脚本</div>'; return; }
@@ -935,16 +1390,57 @@ function collectScriptsFromDom() {
     if (c) item.content = c.value;
   });
 }
-function openScriptModal() { editingScriptId = null; renderScriptList(); openModal('scriptModal'); }
+
+function openScriptModal() {
+  editingScriptId = null;
+  renderScriptList();
+  const saved = Store.get(K.ADD_MODE, 'code');
+  applyScriptAddMode(ADD_MODES.includes(saved) ? saved : 'code');
+  openModal('scriptModal');
+}
+
 function closeScriptModal() {
+  if ($('scriptModal').classList.contains('hidden')) return;
+
+  const nameEl = $('newScriptName');
+  const codeEl = $('newScriptCode');
+  let draftSaved = false, nameOnly = false;
+  if (nameEl && codeEl) {
+    const name = (nameEl.value || '').trim();
+    const code = (codeEl.value || '').trim();
+    if (code) {
+      collectScriptsFromDom();
+      scriptList.push({
+        id: genScriptId(),
+        name: name || ('脚本' + (scriptList.length + 1)),
+        type: 'code',
+        content: code,
+        enabled: true
+      });
+      draftSaved = true;
+    } else if (name) {
+      nameOnly = true;
+    }
+    nameEl.value = '';
+    codeEl.value = '';
+  }
+
   collectScriptsFromDom();
+
   editingScriptId = null;
   clearTimeout(scriptEditTimer);
   clearTimeout(scriptRunTimer);
+
+  scriptList = scriptList.filter(s => (s.content || '').trim());
+
   pushScripts();
   runScripts();
   closeModal('scriptModal');
+
+  if (draftSaved) toast('草稿已自动保存');
+  else if (nameOnly) toast('未输入脚本代码，草稿未保存');
 }
+
 function toggleScriptEdit(id) {
   collectScriptsFromDom();
   editingScriptId = editingScriptId === id ? null : id;
@@ -967,26 +1463,46 @@ function delScript(id) {
   pushScripts();
   renderScriptList();
 }
+
+function addCodeScript() {
+  const nameEl = $('newScriptName');
+  const codeEl = $('newScriptCode');
+  const code = (codeEl.value || '').trim();
+  if (!code) { toast('请输入脚本代码'); return; }
+  const name = (nameEl.value || '').trim();
+
+  collectScriptsFromDom();
+  scriptList.push({
+    id: genScriptId(),
+    name: name || ('脚本' + (scriptList.length + 1)),
+    type: 'code',
+    content: code,
+    enabled: true
+  });
+
+  nameEl.value = '';
+  codeEl.value = '';
+
+  pushScripts();
+  renderScriptList();
+  runScripts();
+  toast('脚本已添加');
+}
+
 function addUrlScript() {
   collectScriptsFromDom();
   const inp = $('scriptUrlInput');
   const url = inp.value.trim();
   if (!/^https?:\/\//i.test(url)) return alert('请输入正确地址');
   let defaultName = url.split('/').pop() || '外链';
-  defaultName = defaultName.replace(/\.(js|mjs)(\?.*)?$/i, '');
+  defaultName = defaultName.replace(/\.(js|mjs)(\?.*)?$/i, '') || '外链';
   const item = { id: genScriptId(), name: defaultName, type: 'url', content: url, enabled: true };
   scriptList.push(item);
   inp.value = '';
-  editingScriptId = item.id;
-  pushScripts(); renderScriptList(); runScripts();
-}
-function addCodeScript() {
-  collectScriptsFromDom();
-  const item = { id: genScriptId(), name: '', type: 'code', content: '', enabled: true };
-  scriptList.push(item);
-  editingScriptId = item.id;
-  pushScripts(); renderScriptList();
-  setTimeout(() => document.querySelector(`.script-item[data-id="${item.id}"] .script-name-input`)?.focus(), 50);
+  pushScripts();
+  renderScriptList();
+  runScripts();
+  toast('外链脚本已添加');
 }
 
 /* ============================================================
@@ -1069,12 +1585,23 @@ function closeModal(id) {
   lastFocused = null;
 }
 function closeAllModals() {
+  if (!$('colorModal').classList.contains('hidden')) stopColorPreview(true);
   document.querySelectorAll('.modal:not(.hidden)').forEach(m => m.classList.add('hidden'));
   lastFocused = null;
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllModals(); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (!$('scriptModal').classList.contains('hidden')) { closeScriptModal(); return; }
+  if (!$('colorModal').classList.contains('hidden')) { stopColorPreview(true); closeModal('colorModal'); return; }
+  closeAllModals();
+});
 document.querySelectorAll('.modal').forEach(m => {
-  m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+  m.addEventListener('click', e => {
+    if (e.target !== m) return;
+    if (m.id === 'scriptModal') closeScriptModal();
+    else if (m.id === 'colorModal') { stopColorPreview(true); closeModal('colorModal'); }
+    else closeModal(m.id);
+  });
 });
 
 /* ============================================================
@@ -1092,6 +1619,71 @@ function startClock() {
     setTimeout(tick, 1000 - (Date.now() % 1000));
   }
   tick();
+}
+
+/* ============================================================
+ * 自动备份（清空前留撤销点，独立于 Store，不随 clearAll 删除）
+ * ============================================================ */
+function backupCurrent() {
+  try {
+    const cfg = Store.exportAll();
+    const payload = JSON.stringify({ time: Date.now(), config: cfg });
+    if (payload.length > 4.5 * 1024 * 1024) {
+      console.warn('[备份跳过] 配置过大，无法存入 localStorage');
+      return false;
+    }
+    localStorage.setItem(BACKUP_KEY, payload);
+    return true;
+  } catch (e) {
+    console.warn('[备份失败]', e);
+    return false;
+  }
+}
+function updateBackupUI() {
+  const section = $('backupSection');
+  if (!section) return;
+  let raw = null;
+  try { raw = localStorage.getItem(BACKUP_KEY); } catch {}
+  if (!raw) { section.classList.add('hidden'); return; }
+  try {
+    const data = JSON.parse(raw);
+    if (!data || !data.time || !data.config) { section.classList.add('hidden'); return; }
+    $('backupTime').textContent = new Date(data.time).toLocaleString('zh-CN');
+    section.classList.remove('hidden');
+  } catch {
+    section.classList.add('hidden');
+  }
+}
+async function restoreBackup() {
+  let raw = null;
+  try { raw = localStorage.getItem(BACKUP_KEY); } catch {}
+  if (!raw) return toast('没有可恢复的备份');
+  let data;
+  try { data = JSON.parse(raw); } catch { return toast('备份已损坏'); }
+  if (!data || !data.config) return toast('备份已损坏');
+  let cfg;
+  try { cfg = JSON.parse(data.config); } catch { return toast('备份已损坏'); }
+
+  if (!confirm('确定恢复上次配置？\n当前所有设置将被覆盖。')) return;
+
+  await Store.clearAll();
+  for (const k of Object.keys(cfg)) {
+    if (k.startsWith('search_')) await Store.set(k, cfg[k]);
+  }
+  try { localStorage.removeItem(BACKUP_KEY); } catch {}
+
+  loadEngines(); renderEngineName();
+  applyTitle(Store.get(K.TITLE, 'Search'));
+  applyTheme(Store.get(K.THEME, '') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  applyBgColor(Store.get(K.COLOR, ''));
+  scriptList = Store.getJSON(K.SCRIPTS, []);
+  Array.from(runningScripts.keys()).forEach(cleanupScript);
+  runScripts();
+  loadWallpaper();
+  updateStorageTip();
+  updateBackupUI();
+  closeModal('settingsModal');
+  toast('已恢复上次配置');
 }
 
 /* ============================================================
@@ -1113,6 +1705,7 @@ window.reload = function() {
   loadEngines(); renderEngineName();
   applyTitle(Store.get(K.TITLE, 'Search'));
   applyTheme(Store.get(K.THEME, '') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  applyBgColor(Store.get(K.COLOR, ''));
   loadWallpaper(); runScripts(); updateStorageTip();
 };
 window.setTheme = setTheme;
@@ -1147,7 +1740,6 @@ async function runDbConsole() {
   pre.textContent = code;
   item.appendChild(pre);
 
-  // 单表达式自动 return（避免多行/注释误判）
   let wrapped = code;
   const lines = wrapped.split('\n');
   const last = lines[lines.length - 1].trim();
@@ -1214,15 +1806,16 @@ $('importBtn').addEventListener('click', async () => {
     if (!Object.keys(data).some(k => k.startsWith('search_'))) throw new Error('未包含有效配置');
   } catch (err) { return alert('导入失败：' + err.message); }
 
+  backupCurrent();
   await Store.clearAll();
   for (const k of Object.keys(data)) {
     if (k.startsWith('search_')) await Store.set(k, data[k]);
   }
-  // 重新加载内部状态（watch 已触发 UI，但需要重建脚本/引擎缓存）
   loadEngines(); renderEngineName();
   scriptList = Store.getJSON(K.SCRIPTS, []);
   Array.from(runningScripts.keys()).forEach(cleanupScript);
   runScripts();
+  updateBackupUI();
   closeModal('settingsModal');
   toast('配置已完全导入并生效');
 });
@@ -1231,7 +1824,8 @@ $('importBtn').addEventListener('click', async () => {
  * 恢复初始设置
  * ============================================================ */
 $('resetAllBtn').addEventListener('click', async () => {
-  if (!confirm('确定恢复初始设置？\n将清除壁纸、脚本、历史、自定义引擎、主题与标题。')) return;
+  if (!confirm('确定恢复初始设置？\n将清空本地存储（IndexedDB）、壁纸、脚本、历史、自定义引擎、主题、主题色与标题。')) return;
+  backupCurrent();
   Array.from(runningScripts.keys()).forEach(cleanupScript);
   runningScripts.clear();
   await Store.clearAll();
@@ -1244,9 +1838,12 @@ $('resetAllBtn').addEventListener('click', async () => {
   loadEngines(); renderEngineName();
   applyTitle('Search');
   applyTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  applyBgColor('');
   loadWallpaper(); updateStorageTip();
+  updateBackupUI();
   closeModal('settingsModal');
   toast('已恢复初始设置');
+  setTimeout(openColorModal, 400);
 });
 
 /* ============================================================
@@ -1255,8 +1852,9 @@ $('resetAllBtn').addEventListener('click', async () => {
 $('themeToggle').addEventListener('click', () => {
   setTheme(document.body.classList.contains('theme-dark') ? 'light' : 'dark');
 });
-$('settingsToggle').addEventListener('click', () => openModal('settingsModal'));
+$('settingsToggle').addEventListener('click', () => { updateBackupUI(); openModal('settingsModal'); });
 $('closeSettingsBtn').addEventListener('click', () => closeModal('settingsModal'));
+$('restoreBackupBtn').addEventListener('click', restoreBackup);
 $('searchBtn').addEventListener('click', search);
 $('changeEngineBtn').addEventListener('click', openEngineModal);
 $('addEngineBtn').addEventListener('click', addBlankEngine);
@@ -1265,11 +1863,47 @@ $('wallToggle').addEventListener('click', openWallModal);
 $('clearWallBtn').addEventListener('click', clearWallpaper);
 $('saveWallBtn').addEventListener('click', saveWallpaper);
 $('pickWallFileBtn').addEventListener('click', () => $('wallFileInput').click());
+
+/* ---------- 主题色 ---------- */
+bindColorGrid($('wallColorGrid'), v => { wallColorSelected = v; });
+
+bindColorGrid($('colorGrid'), v => {
+  colorModalValue = v;
+  if (/^#[0-9a-f]{6}$/i.test(v)) $('colorPicker').value = v;
+  startColorPreview(v);
+});
+
+$('colorPicker').addEventListener('input', e => {
+  const v = e.target.value;
+  colorModalValue = v;
+  document.querySelectorAll('#colorGrid .color-swatch').forEach(b => b.classList.remove('selected'));
+  startColorPreview(v);
+});
+
+$('colorReselectBtn').addEventListener('click', () => {
+  stopColorPreview(false);
+  renderColorGrid($('colorGrid'), colorPreviewValue);
+  const pick = $('colorPicker');
+  if (/^#[0-9a-f]{6}$/i.test(colorPreviewValue)) pick.value = colorPreviewValue;
+  showColorStep('pick');
+});
+
+$('colorConfirmBtn').addEventListener('click', confirmColorSelection);
+
+/* ---------- 脚本弹窗 ---------- */
 $('scriptToggle').addEventListener('click', openScriptModal);
+$('closeScriptBtn').addEventListener('click', closeScriptModal);
+
+$('scriptAddTabs').addEventListener('click', e => {
+  const btn = e.target.closest('.script-add-tab');
+  if (!btn) return;
+  setScriptAddMode(btn.dataset.mode);
+});
+
+$('addCodeScriptBtn').addEventListener('click', addCodeScript);
 $('addUrlScriptBtn').addEventListener('click', addUrlScript);
 $('pickScriptFileBtn').addEventListener('click', () => $('scriptFileInput').click());
-$('addCodeScriptBtn').addEventListener('click', addCodeScript);
-$('closeScriptBtn').addEventListener('click', closeScriptModal);
+
 $('storageBackend').addEventListener('click', openDbConsole);
 $('closeDbConsoleBtn').addEventListener('click', () => closeModal('dbConsoleModal'));
 $('dbConsoleRunBtn').addEventListener('click', runDbConsole);
@@ -1281,7 +1915,6 @@ $('dbConsoleInput').addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); runDbConsole(); }
 });
 
-// 查询框：聚焦显示历史 + Enter 搜索 + 上下键选择
 queryInput.addEventListener('focus', renderHistory);
 queryInput.addEventListener('keydown', e => {
   const panel = $('historyPanel');
@@ -1314,7 +1947,6 @@ $('historyPanel').addEventListener('mousedown', e => {
   if (item) { queryInput.value = item.dataset.kw; hideHistory(); search(); }
 });
 
-// 引擎列表
 $('engineList').addEventListener('click', e => {
   const item = e.target.closest('.engine-item'); if (!item) return;
   const idx = Number(item.dataset.idx);
@@ -1323,7 +1955,6 @@ $('engineList').addEventListener('click', e => {
   if (e.target.closest('.engine-main')) toggleEdit(idx);
 });
 
-// 脚本列表 —— 事件委托
 $('scriptList').addEventListener('click', e => {
   const item = e.target.closest('.script-item'); if (!item) return;
   const id = item.dataset.id;
@@ -1340,7 +1971,6 @@ $('scriptList').addEventListener('change', e => {
   it.enabled = e.target.checked;
   pushScripts();
 });
-// 编辑输入 —— 实时双向绑定
 $('scriptList').addEventListener('input', e => {
   const t = e.target;
   if (!t.classList.contains('script-name-input') && !t.classList.contains('script-content-input')) return;
@@ -1354,7 +1984,6 @@ $('scriptList').addEventListener('input', e => {
   scriptEditTimer = setTimeout(pushScripts, 400);
 });
 
-// 壁纸文件
 $('wallFileInput').addEventListener('change', async e => {
   const f = e.target.files?.[0]; if (!f) return;
   const dataUrl = await processWallFile(f);
@@ -1364,7 +1993,6 @@ $('wallFileInput').addEventListener('change', async e => {
   closeModal('wallModal');
   toast('壁纸已更新');
 });
-// 脚本文件上传
 $('scriptFileInput').addEventListener('change', e => {
   const f = e.target.files?.[0]; if (!f) return;
   if (f.size > MAX_SCRIPT_SIZE) { e.target.value = ''; return alert('脚本不能超过 2MB'); }
@@ -1374,6 +2002,7 @@ $('scriptFileInput').addEventListener('change', e => {
     scriptList.push({ id: genScriptId(), name: f.name.replace(/\.(js|mjs)$/i, ''), type: 'file', content: r.result, enabled: true });
     pushScripts(); renderScriptList(); runScripts();
     e.target.value = '';
+    toast('本地脚本已添加');
   };
   r.readAsText(f);
 });
@@ -1384,20 +2013,18 @@ $('scriptFileInput').addEventListener('change', e => {
 (async () => {
   await Store.init();
 
-  // 初始化默认值（避免 watch 触发递归）
   if (!Store.get(K.ENGINES)) {
     await Store.setJSON(K.ENGINES, DEFAULT_ENGINES);
     await Store.set(K.SELECT, 0);
   }
 
-  // ===== 响应式订阅 =====
   Store.watch(K.TITLE, applyTitle);
   Store.watch(K.THEME, applyTheme);
+  Store.watch(K.COLOR, applyBgColor);
   Store.watch(K.ENGINES, () => { loadEngines(); renderEngineName(); });
   Store.watch(K.SELECT, () => { loadEngines(); renderEngineName(); });
   Store.watch(K.WALL, () => loadWallpaper());
   Store.watch(K.SCRIPTS, () => {
-    // 内部推送触发时跳过重渲染（避免光标丢失）；外部变化时同步回 UI
     if (!pushingScripts && !$('scriptModal').classList.contains('hidden')
         && !$('scriptModal').contains(document.activeElement)) {
       scriptList = Store.getJSON(K.SCRIPTS, []);
@@ -1409,10 +2036,10 @@ $('scriptFileInput').addEventListener('change', e => {
     if (!$('historyPanel').classList.contains('hidden')) renderHistory();
   });
 
-  // ===== 初始渲染 =====
   loadEngines(); renderEngineName();
   applyTitle(Store.get(K.TITLE, 'Search'));
   applyTheme(Store.get(K.THEME, '') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  applyBgColor(Store.get(K.COLOR, ''));
   scriptList = Store.getJSON(K.SCRIPTS, []);
   loadWallpaper();
   runScripts();
@@ -1421,7 +2048,10 @@ $('scriptFileInput').addEventListener('change', e => {
   initTitleEvents();
   setInterval(updateStorageTip, 1500);
 
-  // ===== URL 参数 =====
+  if (!Store.get(K.COLOR_INIT, '')) {
+    setTimeout(openColorModal, 400);
+  }
+
   try {
     const sp = new URLSearchParams(location.search);
     const q = sp.get('q');
@@ -1433,7 +2063,6 @@ $('scriptFileInput').addEventListener('change', e => {
   } catch {}
 })();
 
-// 系统主题跟随（未显式设置时）
 try {
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
     if (!Store.get(K.THEME)) applyTheme(e.matches ? 'dark' : 'light');
