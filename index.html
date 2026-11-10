@@ -140,7 +140,7 @@ body.has-wallpaper .storage-tip{text-shadow:0 1px 6px rgba(0,0,0,.75)}
 .modal.hidden{display:none}
 .modal-box{
   background:var(--card-bg);border:1px solid var(--card-border);border-radius:20px;
-  width:100%;max-width:520px;padding:28px;max-height:85vh;overflow-y:auto;
+  width:100%;max-width:520px;padding:28px;max-height:85vh;overflow-y:auto;overflow-x:hidden;
   color:var(--text);outline:none;
   backdrop-filter:blur(28px) saturate(1.5);-webkit-backdrop-filter:blur(28px) saturate(1.5);
   box-shadow:0 24px 60px var(--shadow);
@@ -257,10 +257,12 @@ body.has-wallpaper .storage-tip{text-shadow:0 1px 6px rgba(0,0,0,.75)}
   font-size:.78rem;line-height:1.65;text-align:left;color:var(--text-soft);
   background:var(--accent-soft);border:1px solid var(--card-border);
   border-radius:10px;padding:9px 12px;margin-bottom:12px;
+  word-wrap: break-word; overflow-wrap: break-word;
 }
 .db-console-warn code{
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   background:var(--accent-soft);padding:1px 5px;border-radius:4px;font-size:.74rem;color:var(--text);
+  word-break: break-all; overflow-wrap: break-word;
 }
 .db-console-input{
   width:100%;min-height:150px;padding:12px;border:1px solid var(--input-border);border-radius:12px;
@@ -345,6 +347,37 @@ body.theme-dark .db-c-out-err{color:#ff8787}
 .color-confirm-btns button{flex:1;font-size:.95rem;padding:12px 0}
 .hidden{display:none !important}
 
+/* ===== 云同步（S3 兼容） ===== */
+.settings-title{
+  font-size:.95rem;font-weight:500;margin-bottom:14px;
+  display:flex;align-items:center;gap:6px;color:var(--text);
+}
+.cloud-row{display:flex;gap:10px;margin-bottom:16px}
+.cloud-row .wall-field{flex:1;min-width:0;margin-bottom:0}
+.cloud-auto{
+  display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--text-soft);
+  cursor:pointer;user-select:none;margin-top:2px;
+}
+.cloud-auto input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+.cloud-status{
+  font-size:.76rem;color:var(--text-light);margin-top:10px;line-height:1.6;
+  text-align:left;word-break:break-all;
+}
+.cloud-status.ok{color:#1F7A3D}
+.cloud-status.err{color:var(--btn-danger)}
+body.theme-dark .cloud-status.ok{color:#69db7c}
+.cloud-hint{
+  font-size:.74rem;color:var(--text-light);line-height:1.7;text-align:left;
+  background:var(--accent-soft);border:1px solid var(--card-border);
+  border-radius:10px;padding:9px 12px;margin-top:14px;
+  word-wrap: break-word; overflow-wrap: break-word;
+}
+.cloud-hint code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  background:var(--accent-soft);padding:1px 5px;border-radius:4px;font-size:.72rem;color:var(--text);
+  word-break: break-all; overflow-wrap: break-word; white-space: normal;
+}
+
 #toast{
   position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:rgba(0,0,0,.82);
   color:#fff;padding:10px 18px;border-radius:999px;font-size:.88rem;z-index:200;
@@ -406,6 +439,50 @@ body.theme-dark .db-c-out-err{color:#ff8787}
         <button id="importBtn" class="btn-primary">导入配置</button>
       </div>
     </div>
+
+    <div class="settings-section">
+      <div class="settings-title">☁️ 云同步 · S3 兼容对象存储</div>
+      <div class="wall-field">
+        <label>Endpoint 地址</label>
+        <input id="r2Endpoint" type="text" placeholder="https://<account_id>.r2.cloudflarestorage.com" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="cloud-row">
+        <div class="wall-field">
+          <label>Bucket 名称</label>
+          <input id="r2Bucket" type="text" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="wall-field">
+          <label>对象路径</label>
+          <input id="r2FileKey" type="text" placeholder="anonnav/anonnav-backup.json" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="cloud-row">
+        <div class="wall-field">
+          <label>Access Key ID</label>
+          <input id="r2AccessKey" type="text" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="wall-field">
+          <label>Secret Access Key</label>
+          <input id="r2SecretKey" type="password" autocomplete="off">
+        </div>
+      </div>
+      <div class="wall-field">
+        <label>Region（选填，留空自动探测）</label>
+        <input id="r2Region" type="text" placeholder="留空即可，会自动探测；也可手动填 us-east-005 等" autocomplete="off" spellcheck="false">
+      </div>
+      <label class="cloud-auto"><input type="checkbox" id="r2Auto"> 每次打开页面自动同步</label>
+      <div class="settings-btns" style="margin-top:14px;">
+        <button id="r2UploadBtn" class="btn-secondary">⬆️ 一键上传云端</button>
+        <button id="r2RestoreBtn" class="btn-primary">⬇️ 一键恢复本地</button>
+      </div>
+      <div class="cloud-status" id="r2Status">未配置云存储</div>
+      <div class="cloud-hint">
+        · R2 控制台需为 Bucket 配置 CORS，允许来源为本站域名，方法 <code>GET</code> / <code>PUT</code>，头 <code>Authorization</code> / <code>Content-Type</code> / <code>x-amz-*</code>；<code>ExposeHeaders</code> 建议含 <code>x-amz-bucket-region</code><br>
+        · Endpoint 示例：<code>https://&lt;account_id&gt;.r2.cloudflarestorage.com</code>（AWS S3 / B2 / MinIO 填各自地址）<br>
+        · Region 留空会自动探测，多数情况无需手动填写
+      </div>
+    </div>
+
     <div class="danger-zone settings-section">
       <button id="resetAllBtn" class="danger-btn">恢复网页初始设置</button>
     </div>
@@ -566,8 +643,13 @@ const K = {
   HISTORY: 'search_history',
   ADD_MODE:'search_script_add_mode',
   COLOR:   'search_bg_color',
-  COLOR_INIT: 'search_bg_color_inited'
+  COLOR_INIT: 'search_bg_color_inited',
+  R2:      'search_r2_config',
+  R2_TS:   'search_r2_local_ts'
 };
+const CLOUD_EXCLUDE = 'search_r2';
+const R2_FILE_KEY_DEFAULT = 'anonnav/anonnav-backup.json';
+
 const DEFAULT_ENGINES = [
   { name:"百度",    url:"https://www.baidu.com/s?wd=%s" },
   { name:"Bing",   url:"https://cn.bing.com/search?q=%s" },
@@ -582,14 +664,12 @@ const COLOR_PREVIEW_MS = 3000;
 const TYPE_LABEL = { url:'外链', file:'本地文件', code:'代码' };
 const ADD_MODES = ['code', 'url', 'file'];
 
-/* 主题变量清单（apply/clear 时统一处理） */
 const THEME_VARS = [
   '--bg','--text','--text-soft','--text-light','--border',
   '--card-bg','--card-border','--btn-bg','--btn-text',
   '--input-bg','--input-border','--accent','--accent-soft','--shadow'
 ];
 
-/* 8 套浅色主题，每种色相一个，全部联动 */
 const BG_THEMES = [
   {
     name: '素白',
@@ -674,6 +754,7 @@ const Store = (() => {
   const cache = new Map();
   const subs = new Map();
   let db = null, useIDB = true;
+  let touchSuppressed = false;
 
   function emit(key) {
     const set = subs.get(key);
@@ -707,6 +788,26 @@ const Store = (() => {
   function putLS(k, v) { try { localStorage.setItem(k, v); } catch {} }
   function delLS(k) { try { localStorage.removeItem(k); } catch {} }
 
+  function persist(k, v) {
+    return new Promise(res => {
+      try {
+        if (useIDB && db) {
+          dbOp('readwrite', st => st.put(v, k)).then(res, () => { useIDB = false; putLS(k, v); res(); });
+          return;
+        }
+      } catch { useIDB = false; }
+      putLS(k, v);
+      res();
+    });
+  }
+
+  function markLocalChange() {
+    if (touchSuppressed) return;
+    const ts = String(Date.now());
+    cache.set(K.R2_TS, ts);
+    persist(K.R2_TS, ts);
+  }
+
   const api = {
     async init() {
       try {
@@ -737,16 +838,15 @@ const Store = (() => {
       const s = String(v);
       cache.set(k, s);
       emit(k);
-      try {
-        if (useIDB && db) await dbOp('readwrite', st => st.put(s, k));
-        else putLS(k, s);
-      } catch { useIDB = false; putLS(k, s); }
+      if (!k.startsWith(CLOUD_EXCLUDE)) markLocalChange();
+      await persist(k, s);
     },
     async setJSON(k, v) { return api.set(k, JSON.stringify(v)); },
     async remove(k) {
       cache.delete(k);
       delLS(k);
       emit(k);
+      if (!k.startsWith(CLOUD_EXCLUDE)) markLocalChange();
       if (useIDB && db) { try { await dbOp('readwrite', st => st.delete(k)); } catch {} }
     },
     async clearAll() {
@@ -768,6 +868,7 @@ const Store = (() => {
       for (const [k, v] of cache) if (k.startsWith(PREFIX)) o[k] = v;
       return JSON.stringify(o, null, 2);
     },
+    _suppressTouch(v) { touchSuppressed = !!v; },
     _cache: cache,
     _db: () => db,
     _useIDB: () => useIDB
@@ -825,6 +926,7 @@ let wallColorSelected = '';
 let colorPreviewValue = '';
 let colorPreviewTimer = null;
 let colorPreviewCountdown = null;
+let cloudBusy = false;
 
 /* ============================================================
  * 搜索引擎
@@ -924,7 +1026,7 @@ function saveEngines() {
 function openEngineModal() { loadEngines(); renderEngineList(); openModal('modal'); }
 
 /* ============================================================
- * 主题（暗色兜底，仅当未选择主题色时生效）
+ * 主题（暗色兜底）
  * ============================================================ */
 function applyTheme(theme) {
   const dark = theme === 'dark';
@@ -938,7 +1040,7 @@ function applyTheme(theme) {
 function setTheme(theme) { Store.set(K.THEME, theme); }
 
 /* ============================================================
- * 背景主题 —— 整页联动
+ * 背景主题
  * ============================================================ */
 function isDarkColor(hex) {
   const m = /^#([0-9a-f]{6})$/i.exec(hex || '');
@@ -980,7 +1082,6 @@ function applyBgColor(value) {
     return;
   }
 
-  // 自定义纯色兜底
   if (/^#[0-9a-f]{6}$/i.test(v)) {
     body.classList.add('bg-themed');
     const dark = isDarkColor(v);
@@ -992,7 +1093,7 @@ function applyBgColor(value) {
     root.style.setProperty('--card-bg', dark ? 'rgba(30,30,30,.82)' : 'rgba(255,255,255,.86)');
     root.style.setProperty('--card-border', dark ? 'rgba(255,255,255,.14)' : 'rgba(0,0,0,.08)');
     root.style.setProperty('--btn-bg', dark ? 'rgba(255,255,255,.16)' : '#24292F');
-    root.style.setProperty('--btn-text', dark ? '#FFFFFF' : '#FFFFFF');
+    root.style.setProperty('--btn-text', '#FFFFFF');
     root.style.setProperty('--input-bg', dark ? 'rgba(255,255,255,.12)' : 'rgba(255,255,255,.75)');
     root.style.setProperty('--input-border', dark ? 'rgba(255,255,255,.2)' : 'rgba(0,0,0,.12)');
     root.style.setProperty('--accent', dark ? '#F2F4F7' : '#24292F');
@@ -1025,7 +1126,7 @@ function bindColorGrid(container, onChange) {
   });
 }
 
-/* ---------- 主题色：预览 3 秒 → 确认 → 保存到 IndexedDB ---------- */
+/* ---------- 主题色预览 / 确认 ---------- */
 function colorLabel(v) {
   const t = BG_THEMES.find(x => x.value === v);
   if (t) return t.name;
@@ -1247,7 +1348,7 @@ async function processWallFile(file) {
 }
 
 /* ============================================================
- * 脚本引擎 —— 实时热重载
+ * 脚本引擎
  * ============================================================ */
 window.registerCleanup = function(fn) {
   const id = window.__ANONNAV_CURRENT_SCRIPT_ID__;
@@ -1488,6 +1589,286 @@ function addUrlScript() {
   renderScriptList();
   runScripts();
   toast('外链脚本已添加');
+}
+
+/* ============================================================
+ * 云同步：S3 兼容对象存储（SigV4 + 自动 region 探测）
+ * ============================================================ */
+function r2Cfg() {
+  const c = Store.getJSON(K.R2, {}) || {};
+  return {
+    endpoint:  String(c.endpoint  || '').trim(),
+    bucket:    String(c.bucket    || '').trim(),
+    fileKey:   String(c.fileKey   || R2_FILE_KEY_DEFAULT).trim(),
+    accessKey: String(c.accessKey || ''),
+    secretKey: String(c.secretKey || ''),
+    region:    String(c.region    || '').trim(),
+    auto:      !!c.auto
+  };
+}
+function r2Host(cfg) {
+  if (!cfg.endpoint) throw new Error('请填写 Endpoint 地址');
+  return cfg.endpoint.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+}
+
+async function sha256Hex(data) {
+  const buf = await crypto.subtle.digest('SHA-256',
+    typeof data === 'string' ? new TextEncoder().encode(data) : data);
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+async function hmacRaw(key, data) {
+  const keyBuf = typeof key === 'string' ? new TextEncoder().encode(key) : key;
+  const ck = await crypto.subtle.importKey('raw', keyBuf,
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', ck,
+    typeof data === 'string' ? new TextEncoder().encode(data) : data);
+  return new Uint8Array(sig);
+}
+async function signingKey(secret, dateStamp, region, service) {
+  let k = await hmacRaw('AWS4' + secret, dateStamp);
+  k = await hmacRaw(k, region);
+  k = await hmacRaw(k, service);
+  k = await hmacRaw(k, 'aws4_request');
+  return k;
+}
+
+/* 从 endpoint 推断 region */
+function guessRegionFromEndpoint(endpoint) {
+  const m = String(endpoint || '').match(/\b([a-z]{2}(?:-[a-z]+)+-\d+)\b/i);
+  return m ? m[1].toLowerCase() : '';
+}
+
+/* 用指定 region 签名并发起一次请求 */
+async function signAndFetch(method, cfg, body, region) {
+  const host = r2Host(cfg);
+  const service = 's3';
+  if (!cfg.bucket) throw new Error('请填写 Bucket 名称');
+  if (!cfg.accessKey || !cfg.secretKey) throw new Error('请填写 Access Key / Secret Key');
+
+  const now = new Date();
+  const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '');
+  const dateStamp = amzDate.slice(0, 8);
+
+  const keyParts = cfg.fileKey.split('/').filter(Boolean).map(encodeURIComponent);
+  const canonicalUri = '/' + cfg.bucket + '/' + keyParts.join('/');
+
+  const payload = body == null ? '' : String(body);
+  const payloadHash = await sha256Hex(payload);
+
+  const canonicalHeaders =
+    'host:' + host + '\n' +
+    'x-amz-content-sha256:' + payloadHash + '\n' +
+    'x-amz-date:' + amzDate + '\n';
+  const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
+
+  const canonicalRequest = [method, canonicalUri, '', canonicalHeaders, signedHeaders, payloadHash].join('\n');
+  const credentialScope = dateStamp + '/' + region + '/' + service + '/aws4_request';
+  const stringToSign = ['AWS4-HMAC-SHA256', amzDate, credentialScope,
+    await sha256Hex(canonicalRequest)].join('\n');
+  const sk = await signingKey(cfg.secretKey, dateStamp, region, service);
+  const sigBytes = await hmacRaw(sk, stringToSign);
+  const signature = [...sigBytes].map(b => b.toString(16).padStart(2, '0')).join('');
+
+  const auth = 'AWS4-HMAC-SHA256 Credential=' + cfg.accessKey + '/' + credentialScope
+    + ', SignedHeaders=' + signedHeaders + ', Signature=' + signature;
+
+  const url = 'https://' + host + canonicalUri;
+  const headers = {
+    'Authorization': auth,
+    'x-amz-content-sha256': payloadHash,
+    'x-amz-date': amzDate
+  };
+  if (body != null) headers['Content-Type'] = 'application/json;charset=utf-8';
+
+  let res;
+  try {
+    res = await fetch(url, {
+      method, headers,
+      body: body != null ? body : undefined,
+      cache: 'no-store'
+    });
+  } catch (e) {
+    throw new Error('网络请求失败（请检查 Endpoint 与 CORS 配置）');
+  }
+  return res;
+}
+
+/* 记住自动探测到的 region */
+function saveDiscoveredRegion(region) {
+  try {
+    const c = Store.getJSON(K.R2, {}) || {};
+    if (c.region === region) return;
+    c.region = region;
+    Store.setJSON(K.R2, c).catch(() => {});
+  } catch {}
+}
+
+/* 自动多 region 尝试 */
+async function r2Fetch(method, cfg, body) {
+  const candidates = [];
+  const push = r => { const v = String(r || '').trim(); if (v && !candidates.includes(v)) candidates.push(v); };
+
+  if (cfg.region) push(cfg.region);
+  const epRegion = guessRegionFromEndpoint(cfg.endpoint);
+  if (epRegion) push(epRegion);
+  push('auto');
+  push('us-east-1');
+
+  let lastRes = null, lastErr = null;
+
+  for (const region of candidates) {
+    try {
+      const res = await signAndFetch(method, cfg, body, region);
+      if (res.ok || res.status === 404) {
+        if (cfg.region !== region) saveDiscoveredRegion(region);
+        return res;
+      }
+      const hint = res.headers.get('x-amz-bucket-region');
+      if (hint && !candidates.includes(hint) && !/^auto$/i.test(hint)) push(hint);
+      if (res.status === 301 || res.status === 400 || res.status === 403) {
+        lastRes = res;
+        continue;
+      }
+      return res;
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  if (lastRes) return lastRes;
+  throw lastErr || new Error('请求失败');
+}
+
+async function r2Put() {
+  const cfg = r2Cfg();
+  const ts = Number(Store.get(K.R2_TS, 0)) || Date.now();
+  const payload = {
+    app: 'anonnav',
+    version: 1,
+    ts,
+    updatedAt: new Date(ts).toISOString(),
+    data: r2Snapshot()
+  };
+  const body = JSON.stringify(payload, null, 2);
+  const res = await r2Fetch('PUT', cfg, body);
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    throw new Error('HTTP ' + res.status + (txt ? ' · ' + txt.slice(0, 160) : ''));
+  }
+  return payload;
+}
+
+async function r2Get() {
+  const cfg = r2Cfg();
+  const res = await r2Fetch('GET', cfg, null);
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    throw new Error('HTTP ' + res.status + (txt ? ' · ' + txt.slice(0, 160) : ''));
+  }
+  let data;
+  try { data = await res.json(); } catch { throw new Error('云端文件不是有效的 JSON'); }
+  if (!data || typeof data !== 'object' || !data.data) throw new Error('云端文件格式不正确');
+  return data;
+}
+
+function r2Snapshot() {
+  let all = {};
+  try { all = JSON.parse(Store.exportAll()); } catch {}
+  const out = {};
+  for (const k in all) if (!k.startsWith(CLOUD_EXCLUDE)) out[k] = all[k];
+  return out;
+}
+
+async function r2Apply(payload) {
+  const data = payload.data || {};
+  Store._suppressTouch(true);
+  try {
+    for (const k of [...Store._cache.keys()]) {
+      if (k.startsWith('search_') && !k.startsWith(CLOUD_EXCLUDE)) await Store.remove(k);
+    }
+    for (const k in data) {
+      if (k.startsWith('search_') && !k.startsWith(CLOUD_EXCLUDE)) await Store.set(k, data[k]);
+    }
+    await Store.set(K.R2_TS, String(Number(payload.ts) || Date.now()));
+  } finally {
+    Store._suppressTouch(false);
+  }
+
+  scriptList = Store.getJSON(K.SCRIPTS, []);
+  Array.from(runningScripts.keys()).forEach(cleanupScript);
+  runningScripts.clear();
+  window.reload();
+
+  if (!$('colorModal').classList.contains('hidden')) {
+    clearTimeout(colorPreviewTimer);
+    clearInterval(colorPreviewCountdown);
+    closeModal('colorModal');
+  }
+}
+
+function setR2Status(msg, type) {
+  const el = $('r2Status');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'cloud-status' + (type === 'ok' ? ' ok' : type === 'err' ? ' err' : '');
+}
+function r2FillForm() {
+  const c = Store.getJSON(K.R2, {}) || {};
+  $('r2Endpoint').value  = c.endpoint  || '';
+  $('r2Bucket').value    = c.bucket    || '';
+  $('r2FileKey').value   = c.fileKey   || R2_FILE_KEY_DEFAULT;
+  $('r2AccessKey').value = c.accessKey || '';
+  $('r2SecretKey').value = c.secretKey || '';
+  $('r2Region').value    = c.region    || '';
+  $('r2Auto').checked    = !!c.auto;
+  if (!c.endpoint) setR2Status('未配置云存储', '');
+  else if (c.auto) setR2Status('已配置 · 自动同步已开启' + (c.region ? ' · region=' + c.region : ''), 'ok');
+  else setR2Status('已配置 · 自动同步未开启' + (c.region ? ' · region=' + c.region : ''), '');
+}
+async function r2SaveForm() {
+  await Store.setJSON(K.R2, {
+    endpoint:  $('r2Endpoint').value.trim(),
+    bucket:    $('r2Bucket').value.trim(),
+    fileKey:   $('r2FileKey').value.trim() || R2_FILE_KEY_DEFAULT,
+    accessKey: $('r2AccessKey').value.trim(),
+    secretKey: $('r2SecretKey').value,
+    region:    $('r2Region').value.trim(),
+    auto:      $('r2Auto').checked
+  });
+}
+
+async function r2AutoSync() {
+  const cfg = r2Cfg();
+  if (!cfg.endpoint || !cfg.auto || cloudBusy) return;
+
+  cloudBusy = true;
+  setR2Status('正在自动同步…');
+  try {
+    const remote = await r2Get();
+    const localTs = Number(Store.get(K.R2_TS, 0)) || 0;
+
+    if (!remote) {
+      await r2Put();
+      setR2Status('✓ 已上传初始备份 · ' + new Date().toLocaleString(), 'ok');
+    } else {
+      const rTs = Number(remote.ts) || 0;
+      if (rTs > localTs + 1500) {
+        await r2Apply(remote);
+        setR2Status('✓ 已自动恢复云端配置 · ' + new Date(rTs).toLocaleString(), 'ok');
+        toast('已从云端同步最新配置');
+      } else if (localTs > rTs + 1500) {
+        await r2Put();
+        setR2Status('✓ 已自动上传本地配置 · ' + new Date().toLocaleString(), 'ok');
+      } else {
+        setR2Status('✓ 已是最新 · ' + new Date(rTs || Date.now()).toLocaleString(), 'ok');
+      }
+    }
+  } catch (e) {
+    console.warn('[云同步] 自动同步失败', e);
+    setR2Status('✗ 自动同步失败：' + e.message, 'err');
+  } finally {
+    cloudBusy = false;
+  }
 }
 
 /* ============================================================
@@ -1768,8 +2149,14 @@ $('resetAllBtn').addEventListener('click', async () => {
 $('themeToggle').addEventListener('click', () => {
   setTheme(document.body.classList.contains('theme-dark') ? 'light' : 'dark');
 });
-$('settingsToggle').addEventListener('click', () => openModal('settingsModal'));
-$('closeSettingsBtn').addEventListener('click', () => closeModal('settingsModal'));
+$('settingsToggle').addEventListener('click', () => {
+  r2FillForm();
+  openModal('settingsModal');
+});
+$('closeSettingsBtn').addEventListener('click', async () => {
+  if ($('r2Endpoint').value.trim() || Store.getJSON(K.R2, null)) await r2SaveForm();
+  closeModal('settingsModal');
+});
 $('searchBtn').addEventListener('click', search);
 $('changeEngineBtn').addEventListener('click', openEngineModal);
 $('addEngineBtn').addEventListener('click', addBlankEngine);
@@ -1778,6 +2165,44 @@ $('wallToggle').addEventListener('click', openWallModal);
 $('clearWallBtn').addEventListener('click', clearWallpaper);
 $('saveWallBtn').addEventListener('click', saveWallpaper);
 $('pickWallFileBtn').addEventListener('click', () => $('wallFileInput').click());
+
+/* ---------- 云同步按钮 ---------- */
+$('r2UploadBtn').addEventListener('click', async () => {
+  if (cloudBusy) return;
+  cloudBusy = true;
+  try {
+    await r2SaveForm();
+    setR2Status('正在上传…');
+    const p = await r2Put();
+    setR2Status('✓ 已上传 · ' + new Date(p.ts).toLocaleString(), 'ok');
+    toast('配置已上传到云端');
+  } catch (e) {
+    setR2Status('✗ 上传失败：' + e.message, 'err');
+    toast('上传失败：' + e.message);
+  } finally { cloudBusy = false; }
+});
+
+$('r2RestoreBtn').addEventListener('click', async () => {
+  if (cloudBusy) return;
+  await r2SaveForm();
+  if (!confirm('将用云端备份覆盖本地全部设置，确定继续？')) return;
+  cloudBusy = true;
+  try {
+    setR2Status('正在读取云端…');
+    const p = await r2Get();
+    if (!p) {
+      setR2Status('✗ 云端还没有备份文件', 'err');
+      toast('云端暂无备份');
+      return;
+    }
+    await r2Apply(p);
+    setR2Status('✓ 已恢复 · ' + new Date(Number(p.ts) || Date.now()).toLocaleString(), 'ok');
+    toast('已从云端恢复配置');
+  } catch (e) {
+    setR2Status('✗ 恢复失败：' + e.message, 'err');
+    toast('恢复失败：' + e.message);
+  } finally { cloudBusy = false; }
+});
 
 /* ---------- 主题色 ---------- */
 bindColorGrid($('wallColorGrid'), v => { wallColorSelected = v; });
@@ -1929,8 +2354,13 @@ $('scriptFileInput').addEventListener('change', e => {
   await Store.init();
 
   if (!Store.get(K.ENGINES)) {
-    await Store.setJSON(K.ENGINES, DEFAULT_ENGINES);
-    await Store.set(K.SELECT, 0);
+    Store._suppressTouch(true);
+    try {
+      await Store.setJSON(K.ENGINES, DEFAULT_ENGINES);
+      await Store.set(K.SELECT, 0);
+    } finally {
+      Store._suppressTouch(false);
+    }
   }
 
   Store.watch(K.TITLE, applyTitle);
@@ -1964,8 +2394,11 @@ $('scriptFileInput').addEventListener('change', e => {
   setInterval(updateStorageTip, 1500);
 
   if (!Store.get(K.COLOR_INIT, '')) {
-    setTimeout(openColorModal, 400);
+    setTimeout(() => { if (!Store.get(K.COLOR_INIT, '')) openColorModal(); }, 400);
   }
+
+  /* 云存储自动同步 */
+  setTimeout(r2AutoSync, 1000);
 
   try {
     const sp = new URLSearchParams(location.search);
